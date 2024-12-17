@@ -743,6 +743,7 @@ function detectColumnType(colIndex, table) {
     if (headerText.includes("wc")) return "wind_chill";
 
     return null;
+    //test github
 }
 </script>
 </body>
