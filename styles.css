@@ -1,0 +1,95 @@
+/* Ensure uniform table layout */
+table.dataTable {
+    width: 100%;
+    table-layout: auto;
+}
+
+/* Sticky first column */
+table.dataTable tbody tr td:first-child,
+table.dataTable thead tr th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background-color: #ffffff;
+    box-shadow: 1px 0 2px rgba(0, 0, 0, 0.1);
+}
+
+table.dataTable th, table.dataTable td {
+    max-width: 175px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Remove all spacing and borders between header rows */
+table.dataTable thead th {
+    border-bottom: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+table.dataTable thead tr:nth-child(2) th {
+    border-top: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Save button styling */
+#saveCsvButton {
+    margin-top: 15px;
+    display: block;
+    width: 150px;
+    padding: 10px;
+    background-color: #007BFF;
+    color: white;
+    text-align: center;
+    font-size: 14px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+#saveCsvButton:hover {
+    background-color: #0056b3;
+}
+
+/* Hide the default DataTables button container */
+.dt-buttons {
+    display: none;
+}
+
+.climate-flag {
+    background-color: #e0f7fa !important; /* Very light blue */
+}
+
+table.dataTable thead .sorting,
+table.dataTable thead .sorting_asc,
+table.dataTable thead .sorting_desc {
+    background-image: none !important; /* Remove the sorting arrow */
+    cursor: default;
+}
+
+/* Styling for the last row in the table */
+#dataTable tbody tr:last-child {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    border-top: 2px solid #dee2e6;
+}
+
+.toggle-buttons {
+    margin: 15px 0;
+}
+
+.toggle-buttons button {
+    margin-right: 10px;
+    padding: 8px 16px;
+    border: none;
+    background-color: #007BFF;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.toggle-buttons button:hover {
+    background-color: #0056b3;
+}
