@@ -119,7 +119,7 @@
     <button class="toggle-display" data-display="basic">Basic</button>
     <button class="toggle-display" data-display="water">Water</button>
     <button class="toggle-display" data-display="other">Other</button>
-    <button class="toggle-display" data-display="ag">Ag</button>
+    <button class="toggle-display" data-display="ag">Ag Wx</button>
 
     <!-- Dropdowns for Month and Year Selection -->
     <label for="station">Station:</label>
@@ -222,13 +222,17 @@ $metadata = [
     ["data_name_full" => "Daily Min ST",               "data_name_display" => "Min ST",           "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "other"],
     ["data_name_full" => "Heating Degree Days",        "data_name_display" => "HDD",              "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "other"],
     ["data_name_full" => "Cooling Degree Days",        "data_name_display" => "CDD",              "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "other"],
+    ["data_name_full" => "Daily Solar",                "data_name_display" => "Solar",            "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "other"],
+    ["data_name_full" => "Mean Daily RH",              "data_name_display" => "Mean RH",          "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "other"],
 
-    ["data_name_full" => "Mean Daily RH",              "data_name_display" => "Mean RH",          "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "ag"],
+
+    ["data_name_full" => "Gage Precipitation (Daily)", "data_name_display" => "Precip",           "conversion_type" => "mm_to_inches",         "precision_type" => 2, "view_type" => "numeric", "display_type" => "ag"],
     ["data_name_full" => "Daily Avg ST",               "data_name_display" => "Avg ST",           "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "ag"],
-    ["data_name_full" => "Daily Solar",                "data_name_display" => "Solar",            "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "ag"],
+    ["data_name_full" => "Daily Avg VWC",               "data_name_display" => "Avg VWC",           "conversion_type" => "none", "precision_type" => 3, "view_type" => "numeric", "display_type" => "ag"],
+ 
     ["data_name_full" => "Reference Evapotrans.",      "data_name_display" => "Ref. ET",          "conversion_type" => "mm_to_inches",         "precision_type" => 2, "view_type" => "numeric", "display_type" => "ag"],
-    ["data_name_full" => "GDD0C",                      "data_name_display" => "GDD (0°C)",        "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "ag"],
-    ["data_name_full" => "GDD32F",                     "data_name_display" => "GDD (32°F)",       "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "ag"]
+    ["data_name_full" => "GDD32F",                      "data_name_display" => "GDD (50°F)",        "conversion_type" => "gdd32F_50F",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "ag"]
+
 ];
 
 // Conversion function
@@ -242,11 +246,14 @@ function convertToEnglishUnits($value, $conversionType) {
             return $value * 0.0393701;
         case 'rad_to_degrees':
             return rad2deg($value);
+        case 'gdd32F_50F':
+            return max($value - 18, 0);
         case 'none':
         default:
             return $value;
     }
 }
+
 
 // Precision
 function getPrecision($precisionType) {
@@ -349,7 +356,7 @@ if (isset($data['data']) && is_array($data['data'])) {
                                 $row[$dataTypeDisplay] = degreesToWindDirection($convertedValue);
                                 $row[$dataTypeDisplay . '_degrees'] = $convertedValue;
                             } else {
-                                $row[$dataTypeDisplay] = round($convertedValue, $precision);
+                                $row[$dataTypeDisplay] = number_format($convertedValue, $precision, '.', '');
                             }
 
                             // Climate flag

@@ -29,7 +29,7 @@ function getQueryParams() {
 
 // Refresh page with new parameters
 function refreshWithNewParams() {
-    const station = document.getElementById("station").value;
+    const station = document.getElementById("station-select").value;
     const month = document.getElementById("month").value;
     const year = document.getElementById("year").value;
     const date = month + '_' + year;
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!isNaN(cellValue)) {
                     consecutiveSum += cellValue;
                 }
-                cell.text('');
+                cell.text('**');
             } else if (consecutiveStartRow !== null) {
                 // Place the total in the start row
                 consecutiveStartRow
@@ -141,18 +141,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const headers = [];
         const subHeaders = [];
 
-        // Get headers and sub-headers
-        $('#dataTable thead tr').each(function (index, row) {
-            $(row).find('th').each(function (colIndex, col) {
-                if (dataTable.column(colIndex).visible()) {
-                    if (index === 0) {
-                        headers.push($(col).text());
-                    } else {
-                        subHeaders.push($(col).text());
-                    }
-                }
-            });
-        });
+       // Get headers and sub-headers
+$('#dataTable thead tr').each(function (index, row) {
+    $(row).find('th').each(function (colIndex, col) {
+        if (dataTable.column(colIndex).visible()) {
+            let textVal = $(col).text();
+
+              // Fix encoding issues by normalizing and removing unwanted characters
+              textVal = textVal.normalize('NFKC')  // Normalize to standard Unicode form
+              .replace(/\u00C2/g, '') // Remove the specific UTF-8 encoding for "Â"
+              .replace(/Â°/g, '°')    // Fix degree symbol
+              .replace(/[^\x00-\x7F]/g, ''); // Remove non-ASCII characters
+
+
+            if (index === 0) {
+                headers.push(textVal);
+            } else {
+                subHeaders.push(textVal);
+            }
+        }
+    });
+});
 
         csvData.push(headers.join(','));
         csvData.push(subHeaders.join(','));
@@ -226,10 +235,13 @@ function highlightExtremes() {
                     cell.style.fontWeight = "bold";
                 }
             } else if (["wind_gust", "wind"].includes(columnType) || columnType === "precip") {
-                if (val === maxValue) {
+                const isPartOfMultiDayClog = cell.classList.contains('climate-flag');  // Check if cell has the clog flag
+            
+                if (val === maxValue && !isPartOfMultiDayClog) {
                     cell.style.color = "green";
                     cell.style.fontWeight = "bold";
                 }
+            
             } else if (columnType === "heat_index") {
                 if (val === maxValue) {
                     cell.style.color = "red";
@@ -275,3 +287,144 @@ function hideNaNColumns() {
         }
     });
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const buttons = document.querySelectorAll(".toggle-display");
+
+    buttons.forEach(button => {
+        button.addEventListener("click", function () {
+            // Remove active class from all buttons
+            buttons.forEach(btn => btn.classList.remove("active"));
+
+            // Add active class to the clicked button
+            this.classList.add("active");
+        });
+    });
+});
+
+// Function to populate the selection menu
+async function populateStationSelect() {
+    const selectElement = document.getElementById('station-select');
+    const metadataUrl = 'metadata.json'; // Ensure this path is correct relative to your HTML file
+
+    // Verify that the select element exists
+    if (!selectElement) {
+        console.error('Select element with ID "station-select" not found in the DOM.');
+        return;
+    }
+
+    try {
+        console.log(`Fetching metadata from: ${metadataUrl}`);
+
+        // Fetch the JSON data
+        const response = await fetch(metadataUrl);
+
+        // Log the response status
+        console.log(`Fetch response status: ${response.status} ${response.statusText}`);
+
+        // Check if the response is OK (status code 200-299)
+        if (!response.ok) {
+            throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+        }
+
+        // Parse the JSON data
+        const metadata = await response.json();
+        console.log('Metadata successfully parsed:', metadata);
+
+        // Extract DEOS stations
+        const deosStations = [];
+
+        for (const stationKey in metadata) {
+            if (metadata.hasOwnProperty(stationKey)) {
+                const station = metadata[stationKey];
+                console.log(`Processing station: ${stationKey}, Network_name: ${station.Network_name}`);
+
+                // Check if Network_name is "DEOS"
+                if (station.Network_name === "DEOS") {
+                    console.log(`Adding DEOS station: ${station.Description} (Name: ${station.Name})`);
+                    deosStations.push({
+                        Name: station.Name,
+                        Description: station.Description
+                    });
+                }
+            }
+        }
+
+        console.log(`Total DEOS stations found: ${deosStations.length}`);
+
+        // Sort the DEOS stations alphabetically by Description
+        deosStations.sort((a, b) => {
+            const descA = a.Description.toUpperCase(); // Ignore case
+            const descB = b.Description.toUpperCase(); // Ignore case
+            if (descA < descB) {
+                return -1;
+            }
+            if (descA > descB) {
+                return 1;
+            }
+            return 0;
+        });
+
+        // Log sorted stations for verification
+        console.log('Sorted DEOS stations:', deosStations);
+
+        // Read the 'station' parameter from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const defaultStation = urlParams.get('station') || ''; // Default to empty string if not present
+        console.log(`Default station from URL parameter: ${defaultStation}`);
+
+        // Flag to check if the default station exists
+        let defaultStationExists = false;
+
+        // Iterate over the sorted DEOS stations and append them to the select element
+        deosStations.forEach(station => {
+            const option = document.createElement('option');
+            option.value = station.Name; // Set the value to 'Name'
+            option.textContent = station.Description; // Display 'Description'
+
+            // Check if this station should be the default selected option
+            if (station.Name === defaultStation) {
+                option.selected = true;
+                defaultStationExists = true;
+                console.log(`Setting default selected station: ${station.Description} (Name: ${station.Name})`);
+            }
+
+            // Append the option to the select element
+            selectElement.appendChild(option);
+        });
+
+        // If the default station parameter doesn't match any DEOS station, you can handle it accordingly
+        if (defaultStation && !defaultStationExists) {
+            console.warn(`Default station "${defaultStation}" not found among DEOS stations.`);
+            // Optionally, you can set a fallback default or inform the user
+            // For example, selecting the first DEOS station:
+            /*
+            if (deosStations.length > 0) {
+                selectElement.selectedIndex = 1; // Assuming the first option is the default placeholder
+                console.log(`Falling back to the first DEOS station: ${deosStations[0].Description}`);
+            }
+            */
+        }
+
+        // Handle case where no DEOS stations match the criteria
+        if (deosStations.length === 0) { // Only the default option exists
+            console.warn('No DEOS stations available to display.');
+            const noOption = document.createElement('option');
+            noOption.value = "";
+            noOption.textContent = "No DEOS stations available";
+            selectElement.appendChild(noOption);
+        }
+
+    } catch (error) {
+        console.error('Error fetching or processing metadata:', error);
+
+        // Inform the user of the error
+        const errorOption = document.createElement('option');
+        errorOption.value = "";
+        errorOption.textContent = "Error loading stations";
+        selectElement.appendChild(errorOption);
+    }
+}
+
+// Call the function when the page loads
+window.addEventListener('DOMContentLoaded', populateStationSelect);

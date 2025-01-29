@@ -20,12 +20,13 @@ if (strpos($date, '_') !== false) {
     $dateObj = DateTime::createFromFormat('M', ucfirst(strtolower($month)));
 
     if ($dateObj && is_numeric($year)) {
+     
         $monthNumber = $dateObj->format('m');
-        $start_date = "$year-$monthNumber-01";
-        $end_date = date("Y-m-t", strtotime($start_date));
-
+        $start_date  = "$year-$monthNumber-01";
+        $end_date    = date("Y-m-t", strtotime($start_date));
         // JSON data URL
         $jsonFile = "http://150.136.239.199/almanac/retrieve.old.php?start=$start_date&end=$end_date&station_name=$station_name";
+       
     } else {
         die("Invalid month or year format provided.<br>");
     }
@@ -34,43 +35,259 @@ if (strpos($date, '_') !== false) {
 }
 
 $jsonData = file_get_contents($jsonFile);
-$data = json_decode($jsonData, true);
+$data     = json_decode($jsonData, true);
 if ($data === null) {
     echo "<p>Error decoding JSON data. Please check the data format.</p>";
     exit;
 }
 
-// Metadata array
+/**
+ * Metadata array with conditional sum/mean
+ * Note: Removed second 'Gage Precipitation (Daily)' in 'ag' to avoid duplicating precipitation.
+ * Now including Mean Wind Direction's monthly average by setting display_mean => 'Yes'.
+ */
 $metadata = [
-    ["data_name_full" => "Mean Daily Temp.",           "data_name_display" => "Mean Temp.",       "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "basic"],
-    ["data_name_full" => "Max Daily Temp.",            "data_name_display" => "Max Temp.",        "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "basic"],
-    ["data_name_full" => "Min Daily Temp.",            "data_name_display" => "Min Temp.",        "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "basic"],
-    ["data_name_full" => "Mean Wind Speed",            "data_name_display" => "Wind Speed",       "conversion_type" => "ms_to_mph",            "precision_type" => 0, "view_type" => "numeric", "display_type" => "basic"],
-    ["data_name_full" => "Mean Wind Direction",        "data_name_display" => "Wind Dir.",        "conversion_type" => "rad_to_degrees",       "precision_type" => 0, "view_type" => "text",    "display_type" => "basic"],
-    ["data_name_full" => "Peak Wind Gust Speed (Daily)","data_name_display" => "Max Gust",         "conversion_type" => "ms_to_mph",            "precision_type" => 0, "view_type" => "numeric", "display_type" => "basic"],
-    ["data_name_full" => "Gage Precipitation (Daily)", "data_name_display" => "Precip",           "conversion_type" => "mm_to_inches",         "precision_type" => 2, "view_type" => "numeric", "display_type" => "basic"],
-    ["data_name_full" => "Mean Daily Dew Point",       "data_name_display" => "Dew Point",        "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "basic"],
-    ["data_name_full" => "Daily Min WC",               "data_name_display" => "Min WC",           "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "basic"],
-    ["data_name_full" => "Daily Max HI",               "data_name_display" => "Max HI",           "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "basic"],
+    // BASIC
+    [
+        "data_name_full"    => "Mean Daily Temp.",
+        "data_name_display" => "Mean Temp.",
+        "conversion_type"   => "kelvin_to_fahrenheit",
+        "precision_type"    => 1,
+        "view_type"         => "numeric",
+        "display_type"      => "basic",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes"
+    ],
+    [
+        "data_name_full"    => "Max Daily Temp.",
+        "data_name_display" => "Max Temp.",
+        "conversion_type"   => "kelvin_to_fahrenheit",
+        "precision_type"    => 1,
+        "view_type"         => "numeric",
+        "display_type"      => "basic",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes"
+    ],
+    [
+        "data_name_full"    => "Min Daily Temp.",
+        "data_name_display" => "Min Temp.",
+        "conversion_type"   => "kelvin_to_fahrenheit",
+        "precision_type"    => 1,
+        "view_type"         => "numeric",
+        "display_type"      => "basic",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes"
+    ],
+    [
+        "data_name_full"    => "Mean Wind Speed",
+        "data_name_display" => "Wind Speed",
+        "conversion_type"   => "ms_to_mph",
+        "precision_type"    => 1,
+        "view_type"         => "numeric",
+        "display_type"      => "basic",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes"
+    ],
+    [
+        "data_name_full"    => "Mean Wind Direction",
+        "data_name_display" => "Wind Dir.",
+        "conversion_type"   => "rad_to_degrees",
+        "precision_type"    => 0,
+        "view_type"         => "text",
+        "display_type"      => "basic",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes"  // now compute monthly average direction
+    ],
+    [
+        "data_name_full"    => "Peak Wind Gust Speed (Daily)",
+        "data_name_display" => "Max Gust",
+        "conversion_type"   => "ms_to_mph",
+        "precision_type"    => 1,
+        "view_type"         => "numeric",
+        "display_type"      => "basic",
+        "display_sum"       => "No",
+        "display_mean"      => "No"
+    ],
+    [
+        "data_name_full"    => "Gage Precipitation (Daily)",
+        "data_name_display" => "Precip",
+        "conversion_type"   => "mm_to_inches",
+        "precision_type"    => 2,
+        "view_type"         => "numeric",
+        "display_type"      => "basic",
+        "display_sum"       => "Yes",
+        "display_mean"      => "No"
+    ],
+    [
+        "data_name_full"    => "Mean Daily Dew Point",
+        "data_name_display" => "Dew Point",
+        "conversion_type"   => "kelvin_to_fahrenheit",
+        "precision_type"    => 1,
+        "view_type"         => "numeric",
+        "display_type"      => "basic",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes"
+    ],
+    [
+        "data_name_full"    => "Daily Min WC",
+        "data_name_display" => "Min WC",
+        "conversion_type"   => "kelvin_to_fahrenheit",
+        "precision_type"    => 1,
+        "view_type"         => "numeric",
+        "display_type"      => "basic",
+        "display_sum"       => "No",
+        "display_mean"      => "No"
+    ],
+    [
+        "data_name_full"    => "Daily Max HI",
+        "data_name_display" => "Max HI",
+        "conversion_type"   => "kelvin_to_fahrenheit",
+        "precision_type"    => 1,
+        "view_type"         => "numeric",
+        "display_type"      => "basic",
+        "display_sum"       => "No",
+        "display_mean"      => "No"
+    ],
 
-    ["data_name_full" => "Mean Water Temp",            "data_name_display" => "Water Temp.",      "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "water"],
-    ["data_name_full" => "Max Daily Water Temp",       "data_name_display" => "Max Water Temp.",  "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "water"],
-    ["data_name_full" => "Min Daily Water Temp",       "data_name_display" => "Min Water Temp.",  "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "water"],
-    ["data_name_full" => "Mean Daily Well Level",      "data_name_display" => "Well Level",       "conversion_type" => "none",                "precision_type" => 2, "view_type" => "numeric", "display_type" => "water"],
+    // WATER
+    [
+        "data_name_full"    => "Mean Water Temp",
+        "data_name_display" => "Water Temp.",
+        "conversion_type"   => "kelvin_to_fahrenheit",
+        "precision_type"    => 1,
+        "view_type"         => "numeric",
+        "display_type"      => "water",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes"
+    ],
+    [
+        "data_name_full"    => "Max Daily Water Temp",
+        "data_name_display" => "Max Water Temp.",
+        "conversion_type"   => "kelvin_to_fahrenheit",
+        "precision_type"    => 1,
+        "view_type"         => "numeric",
+        "display_type"      => "water",
+        "display_sum"       => "No",
+        "display_mean"      => "No"
+    ],
+    [
+        "data_name_full"    => "Min Daily Water Temp",
+        "data_name_display" => "Min Water Temp.",
+        "conversion_type"   => "kelvin_to_fahrenheit",
+        "precision_type"    => 1,
+        "view_type"         => "numeric",
+        "display_type"      => "water",
+        "display_sum"       => "No",
+        "display_mean"      => "No"
+    ],
+    [
+        "data_name_full"    => "Mean Daily Well Level",
+        "data_name_display" => "Well Level",
+        "conversion_type"   => "none",
+        "precision_type"    => 2,
+        "view_type"         => "numeric",
+        "display_type"      => "water",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes"
+    ],
 
-    ["data_name_full" => "Daily Max RH",               "data_name_display" => "Max RH",           "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "other"],
-    ["data_name_full" => "Daily Min RH",               "data_name_display" => "Min RH",           "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "other"],
-    ["data_name_full" => "Daily Max ST",               "data_name_display" => "Max ST",           "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "other"],
-    ["data_name_full" => "Daily Min ST",               "data_name_display" => "Min ST",           "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "other"],
-    ["data_name_full" => "Heating Degree Days",        "data_name_display" => "HDD",              "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "other"],
-    ["data_name_full" => "Cooling Degree Days",        "data_name_display" => "CDD",              "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "other"],
+    // OTHER
+  
+    [
+        "data_name_full"    => "Mean Daily Barometric Pressure",
+        "data_name_display" => "Pressure",
+        "conversion_type"   => "none",
+        "precision_type"    => 1,
+        "view_type"         => "numeric",
+        "display_type"      => "other",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes"
+    ],
+    [
+        "data_name_full"    => "Mean Daily RH",
+        "data_name_display" => "Mean RH",
+        "conversion_type"   => "none",
+        "precision_type"    => 0,
+        "view_type"         => "numeric",
+        "display_type"      => "other",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes"
+    ],
+   
+    [
+        "data_name_full"    => "Heating Degree Days",
+        "data_name_display" => "HDD",
+        "conversion_type"   => "none",
+        "precision_type"    => 0,
+        "view_type"         => "numeric",
+        "display_type"      => "other",
+        "display_sum"       => "Yes",
+        "display_mean"      => "No"
+    ],
+    [
+        "data_name_full"    => "Cooling Degree Days",
+        "data_name_display" => "CDD",
+        "conversion_type"   => "none",
+        "precision_type"    => 0,
+        "view_type"         => "numeric",
+        "display_type"      => "other",
+        "display_sum"       => "Yes",
+        "display_mean"      => "No"
+    ],
+    [
+        "data_name_full"    => "Daily Solar",
+        "data_name_display" => "Solar",
+        "conversion_type"   => "none",
+        "precision_type"    => 0,
+        "view_type"         => "numeric",
+        "display_type"      => "other",
+        "display_sum"       => "Yes",
+        "display_mean"      => "No"
+    ],
+    
 
-    ["data_name_full" => "Mean Daily RH",              "data_name_display" => "Mean RH",          "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "ag"],
-    ["data_name_full" => "Daily Avg ST",               "data_name_display" => "Avg ST",           "conversion_type" => "kelvin_to_fahrenheit", "precision_type" => 1, "view_type" => "numeric", "display_type" => "ag"],
-    ["data_name_full" => "Daily Solar",                "data_name_display" => "Solar",            "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "ag"],
-    ["data_name_full" => "Reference Evapotrans.",      "data_name_display" => "Ref. ET",          "conversion_type" => "mm_to_inches",         "precision_type" => 2, "view_type" => "numeric", "display_type" => "ag"],
-    ["data_name_full" => "GDD0C",                      "data_name_display" => "GDD (0°C)",        "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "ag"],
-    ["data_name_full" => "GDD32F",                     "data_name_display" => "GDD (32°F)",       "conversion_type" => "none",                "precision_type" => 0, "view_type" => "numeric", "display_type" => "ag"]
+    // AG
+    // Note: removed second 'Gage Precipitation (Daily)' for 'ag' to avoid duplicating precipitation
+    [
+        "data_name_full"    => "Daily Avg ST",
+        "data_name_display" => "Avg ST",
+        "conversion_type"   => "kelvin_to_fahrenheit",
+        "precision_type"    => 1,
+        "view_type"         => "numeric",
+        "display_type"      => "ag",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes"
+    ],
+    [
+        "data_name_full"    => "Daily Avg VWC",
+        "data_name_display" => "Avg VWC",
+        "conversion_type"   => "none",
+        "precision_type"    => 3,
+        "view_type"         => "numeric",
+        "display_type"      => "ag",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes"
+    ],
+    [
+        "data_name_full"    => "Reference Evapotrans.",
+        "data_name_display" => "Ref. ET",
+        "conversion_type"   => "mm_to_inches",
+        "precision_type"    => 2,
+        "view_type"         => "numeric",
+        "display_type"      => "ag",
+        "display_sum"       => "Yes",
+        "display_mean"      => "No"
+    ],
+    [
+        "data_name_full"    => "GDD32F",
+        "data_name_display" => "GDD (50°F)", //data converted to 50°F base
+        "conversion_type"   => "gdd32F_50F",
+        "precision_type"    => 0,
+        "view_type"         => "numeric",
+        "display_type"      => "ag",
+        "display_sum"       => "Yes",
+        "display_mean"      => "No"
+    ]
 ];
 
 // Conversion function
@@ -84,13 +301,17 @@ function convertToEnglishUnits($value, $conversionType) {
             return $value * 0.0393701;
         case 'rad_to_degrees':
             return rad2deg($value);
+        case 'gdd32F_50F':
+            // GDD(50°F) = max(T - 50, 0).
+            // For T in Kelvin, we'd convert first, but here we simply do max($value - 18, 0).
+            return max($value - 18, 0);
         case 'none':
         default:
             return $value;
     }
 }
 
-// Precision
+// Precision function
 function getPrecision($precisionType) {
     return $precisionType;
 }
@@ -101,20 +322,24 @@ function degreesToWindDirection($degrees) {
     if ($degrees < 0) {
         $degrees += 360.0;
     }
-
     $shiftedDegrees = $degrees + 11.25;
     if ($shiftedDegrees >= 360.0) {
         $shiftedDegrees -= 360.0;
     }
-
     $index = (int) floor($shiftedDegrees / 22.5);
-    $directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
-                   'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-
+    $directions = [
+        'N','NNE','NE','ENE','E','ESE','SE','SSE',
+        'S','SSW','SW','WSW','W','WNW','NW','NNW'
+    ];
     return $directions[$index];
 }
 
-// Get unit label
+// We'll convert a final average angle to a cardinal direction
+function degreesToWindDirectionAvg($degrees) {
+    return degreesToWindDirection($degrees);
+}
+
+// Return label for units
 function getUnitLabel($conversionType, $units) {
     switch ($conversionType) {
         case 'kelvin_to_fahrenheit':
@@ -155,10 +380,10 @@ $initialColumns = array_map(function($meta) {
 }, $metadata);
 
 $uniqueDataTypes = [];
-$tableData = [];
-$columnData = [];
+$tableData       = [];
+$columnData      = [];
 $columnPrecision = [];
-$flaggedData = [];
+$flaggedData     = [];
 
 // Process data from JSON
 if (isset($data['data']) && is_array($data['data'])) {
@@ -171,40 +396,41 @@ if (isset($data['data']) && is_array($data['data'])) {
                     $metaInfo = getMetadataByDataType($info['DATA_TYPE'], $metadata);
                     if ($metaInfo) {
                         $dataTypeDisplay = $metaInfo['data_name_display'];
-                        $conversionType = $metaInfo['conversion_type'];
-                        $precisionType = $metaInfo['precision_type'];
-                        $viewType = $metaInfo['view_type'];
-                        $units = $info['UNITS'];
+                        $conversionType  = $metaInfo['conversion_type'];
+                        $precisionType   = $metaInfo['precision_type'];
+                        $viewType        = $metaInfo['view_type'];
+                        $units           = $info['UNITS'];
+
                         $unitLabel = getUnitLabel($conversionType, $units);
                         $uniqueDataTypes[$dataTypeDisplay] = $unitLabel;
 
-                        $value = $info['VALUE'];
+                        $value     = $info['VALUE'];
                         $precision = getPrecision($precisionType);
                         $columnPrecision[$dataTypeDisplay] = $precision;
 
-                        // Flags
+                        // Check flags
                         if ($info['FLAG'] == '1' || $info['FLAG'] == '7') {
                             $convertedValue = convertToEnglishUnits($value, $conversionType);
 
                             if ($viewType === 'text') {
-                                // Wind direction
+                                // Convert numeric angle to cardinal direction
                                 $row[$dataTypeDisplay] = degreesToWindDirection($convertedValue);
                                 $row[$dataTypeDisplay . '_degrees'] = $convertedValue;
                             } else {
-                                $row[$dataTypeDisplay] = round($convertedValue, $precision);
+                                $row[$dataTypeDisplay] = number_format($convertedValue, $precision, '.', '');
                             }
 
-                            // Climate flag
+                            // Mark climate data if FLAG == '7'
                             if ($info['FLAG'] == '7') {
                                 $flaggedData[$formattedDate][$dataTypeDisplay] = 'CLIMATE';
                             }
                         } else {
-                            // Non-1/7 flags
-                            $row[$dataTypeDisplay] = 'N/A';
+                            // For non-1/7 flags, no data
+                            $row[$dataTypeDisplay] = '--';
                         }
                     } else {
-                        // No metadata
-                        $row[$info['DATA_TYPE']] = 'N/A';
+                        // No metadata for this data_type
+                        $row[$info['DATA_TYPE']] = '--';
                     }
                 }
             }
@@ -224,74 +450,74 @@ foreach ($columns as $colName) {
 }
 
 // Build HTML table
-echo "<!DOCTYPE html>
-<html lang='en'>
-<head>
-    <meta charset='UTF-8'>
-    <title>Responsive Data Table</title>
-    <!-- DataTables CSS -->
-    <link rel='stylesheet' href='https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css'>
-    <link rel='stylesheet' href='https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css'>
-    <link rel='stylesheet' href='styles.css'>
+echo "<!DOCTYPE html>\n";
+echo "<html lang='en'>\n";
+echo "<head>\n";
+echo "    <meta charset='UTF-8'>\n";
+echo "    <title>Responsive Data Table</title>\n";
+echo "    <!-- DataTables CSS -->\n";
+echo "    <link rel='stylesheet' href='https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css'>\n";
+echo "    <link rel='stylesheet' href='https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css'>\n";
+echo "    <link rel='stylesheet' href='styles.css'>\n\n";
+echo "    <!-- jQuery -->\n";
+echo "    <script src='https://code.jquery.com/jquery-3.5.1.js'></script>\n";
+echo "    <!-- DataTables JS -->\n";
+echo "    <script src='https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js'></script>\n";
+echo "    <script src='https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js'></script>\n";
+echo "    <script src='https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js'></script>\n";
+echo "    <script src='https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js'></script>\n";
+echo "    <script src='scripts.js'></script>\n";
+echo "</head>\n";
+echo "<body>\n";
 
-    <!-- jQuery -->
-    <script src='https://code.jquery.com/jquery-3.5.1.js'></script>
-    <!-- DataTables JS -->
-    <script src='https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js'></script>
-    <script src='https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js'></script>
-    <script src='https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js'></script>
-    <script src='https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js'></script>
-    <script src='scripts.js'></script>
-</head>
-<body>
-<!-- Buttons for Display Type -->
-<div class='toggle-buttons'>
-    <button class='toggle-display' data-display='basic'>Basic</button>
-    <button class='toggle-display' data-display='water'>Water</button>
-    <button class='toggle-display' data-display='other'>Other</button>
-    <button class='toggle-display' data-display='ag'>Ag</button>
+echo "    <!-- Dropdowns for Month and Year Selection -->\n";
+echo "    <input hidden type='text' id='station' value='" . htmlspecialchars($station_name) . "'>\n\n";
 
-    <!-- Dropdowns for Month and Year Selection -->
-    <label for='station'>Station:</label>
-    <input type='text' id='station' value='DWWK'>
+// Wrap each select in a div for additional styling if needed
+echo "<div class='select-wrapper'>
+        <select id='station-select' class='custom-select' onchange='refreshWithNewParams()'>
+            <option value='' >--Select a station--</option>
+        </select>
+      </div>";
 
-    <label for='month'>Month:</label>
-    <select id='month'>
-        <option value='JAN'>January</option>
-        <option value='FEB'>February</option>
-        <option value='MAR'>March</option>
-        <option value='APR'>April</option>
-        <option value='MAY'>May</option>
-        <option value='JUN'>June</option>
-        <option value='JUL'>July</option>
-        <option value='AUG'>August</option>
-        <option value='SEP'>September</option>
-        <option value='OCT'>October</option>
-        <option value='NOV'>November</option>
-        <option value='DEC'>December</option>
-    </select>
+echo "<div class='select-wrapper'>
+        <select id='month' class='custom-select' onchange='refreshWithNewParams()'>\n";
 
-    <label for='year'>Year:</label>
-    <select id='year'>
-        <script>
-            const yearDropdown = document.getElementById('year');
-            const startYear = 2020;
-            const currentYear = new Date().getFullYear();
-            for (let y = currentYear; y >= startYear; y--) {
-                const option = document.createElement('option');
-                option.value = y;
-                option.textContent = y;
-                yearDropdown.appendChild(option);
-            }
-        </script>
-    </select>
+$months = [
+    "JAN"=>"January","FEB"=>"February","MAR"=>"March","APR"=>"April","MAY"=>"May","JUN"=>"June",
+    "JUL"=>"July","AUG"=>"August","SEP"=>"September","OCT"=>"October","NOV"=>"November","DEC"=>"December"
+];
 
-    <button id='submitButton' onclick='refreshWithNewParams()'>Submit</button>
-</div>
+foreach($months as $code => $name) {
+    echo "<option value='$code'" . ($code === strtoupper($month) ? " selected" : "") . ">$name</option>\n";
+}
+echo "    </select>
+      </div>\n\n";
 
-<table id='dataTable' class='display nowrap' style='width:100%'>
-<thead>
-<tr>";
+echo "<div class='select-wrapper'>
+        <select id='year' class='custom-select' onchange='refreshWithNewParams()'>\n";
+echo "        <script>\n";
+echo "            const yearDropdown = document.getElementById('year');\n";
+echo "            const startYear = 2020;\n";
+echo "            const currentYear = new Date().getFullYear();\n";
+echo "            const selectedYear = '" . $year . "';\n";
+echo "            for (let y = currentYear; y >= startYear; y--) {\n";
+echo "                const option = document.createElement('option');\n";
+echo "                option.value = y;\n";
+echo "                option.textContent = y;\n";
+echo "                if (y.toString() === selectedYear) {\n";
+echo "                   option.selected = true;\n";
+echo "                }\n";
+echo "                yearDropdown.appendChild(option);\n";
+echo "            }\n";
+echo "        </script>\n";
+echo "    </select>
+      </div>\n\n";
+
+echo "</div>\n\n";
+echo "<table id='dataTable' class='display nowrap' style='width:100%'>\n";
+echo "<thead>\n";
+echo "<tr>";
 foreach ($columns as $colName) {
     echo "<th>$colName</th>";
 }
@@ -299,13 +525,22 @@ echo "</tr><tr>";
 foreach ($columns as $colName) {
     echo "<th>" . ($colName === "Date" ? "" : ($uniqueDataTypes[$colName] ?? '')) . "</th>";
 }
-echo "</tr></thead><tbody>";
+echo "</tr></thead><tbody>\n";
 
+// Display type, month, year, station
+echo "<div class='toggle-buttons'>\n";
+echo "    <button class='toggle-display active' data-display='basic'>Basic</button>\n";
+echo "    <button class='toggle-display' data-display='other'>Other</button>\n";
+echo "    <button class='toggle-display' data-display='water'>Water</button>\n";
+echo "    <button class='toggle-display' data-display='ag'>Ag Wx</button>\n";
+echo "</div>\n";
+
+// Table data rows
 foreach ($tableData as $row) {
     echo "<tr>";
     foreach ($columns as $colName) {
-        $cellValue = isset($row[$colName]) ? $row[$colName] : 'N/A';
-        // Highlight flagged data
+        $cellValue = isset($row[$colName]) ? $row[$colName] : '--';
+        // If climate data flagged, highlight with a CSS class (not bold)
         $highlightClass = '';
         if (isset($flaggedData[$row['Date']][$colName]) && $flaggedData[$row['Date']][$colName] === 'CLIMATE') {
             $highlightClass = 'climate-flag';
@@ -319,117 +554,128 @@ foreach ($tableData as $row) {
             if ($metaInfo) {
                 $viewType = $metaInfo['view_type'];
                 if ($viewType === 'numeric') {
-                    $columnData[$colName][] = is_numeric($cellValue) ? $cellValue : 'N/A';
+                    $columnData[$colName][] = is_numeric($cellValue) ? $cellValue : '--';
                 } elseif ($viewType === 'text') {
-                    // For wind direction, we stored degrees in _degrees
-                    $originalDegrees = $row[$colName . '_degrees'] ?? 'N/A';
-                    $columnData[$colName][] = is_numeric($originalDegrees) ? $originalDegrees : 'N/A';
+                    // For wind direction, store numeric degrees if available
+                    $originalDegrees = $row[$colName . '_degrees'] ?? '--';
+                    $columnData[$colName][] = is_numeric($originalDegrees) ? $originalDegrees : '--';
                 }
             } else {
-                $columnData[$colName][] = 'N/A';
+                $columnData[$colName][] = '--';
             }
         }
     }
     echo "</tr>";
 }
 
+echo "</tbody>\n";
+
 // Calculate summary rows
-$summarySumRow = [];
+$summarySumRow  = [];
 $summaryMeanRow = [];
 
+// We'll do a final function that helps compute average direction if needed
 foreach ($columns as $colName) {
     if ($colName == 'Date') {
-        $summarySumRow[$colName] = '<b>Summary Sum</b>';
-        $summaryMeanRow[$colName] = '<b>Summary Mean</b>';
+        // We'll store the label but wrap in <b> for the final rendering
+        $summarySumRow[$colName]  = 'Total';
+        $summaryMeanRow[$colName] = 'Mean';
     } else {
-        $metaInfo = getMetadataByDisplayName($colName, $metadata);
+        $metaInfo     = getMetadataByDisplayName($colName, $metadata);
         if ($metaInfo) {
-            $precision = getPrecision($metaInfo['precision_type']);
-            $viewType = $metaInfo['view_type'];
-            $values = $columnData[$colName];
-
-            // Exclude these from summary calculations
-            if (in_array($colName, ['Max HI', 'Min WC'])) {
-                $summarySumRow[$colName] = '<b>N/A</b>';
-                $summaryMeanRow[$colName] = '<b>N/A</b>';
-                continue;
-            }
+            $precision   = getPrecision($metaInfo['precision_type']);
+            $viewType    = $metaInfo['view_type'];
+            $values      = $columnData[$colName];
+            $displaySum  = isset($metaInfo['display_sum'])  && $metaInfo['display_sum']  === 'Yes';
+            $displayMean = isset($metaInfo['display_mean']) && $metaInfo['display_mean'] === 'Yes';
 
             if ($viewType === 'numeric') {
-                // Check if all values are numeric
+                // Filter numeric data
                 $validValues = array_filter($values, 'is_numeric');
-
-                if (empty($validValues)) {
-                    // No valid numeric values
-                    $summarySumRow[$colName] = '<b>N/A</b>';
-                    $summaryMeanRow[$colName] = '<b>N/A</b>';
-                } else {
-                    // Special handling for precip (Sum only)
-                    if (stripos($colName, 'precip') !== false) {
-                        $summarySumRow[$colName] = '<b>' . round(array_sum($validValues), $precision) . '</b>';
-                        $summaryMeanRow[$colName] = '<b>N/A</b>';
+                if (!empty($validValues)) {
+                    // Summation
+                    if ($displaySum) {
+                        $summarySumRow[$colName] = number_format(array_sum($validValues), $precision);
                     } else {
-                        $sum = array_sum($validValues);
-                        $mean = $sum / count($validValues);
-                        $summarySumRow[$colName] = '<b>' . round($sum, $precision) . '</b>';
-                        $summaryMeanRow[$colName] = '<b>' . round($mean, $precision) . '</b>';
+                        $summarySumRow[$colName] = '--';
                     }
-                }
-            } elseif ($viewType === 'text' && $colName === 'Wind Dir.') {
-                // Averaging wind direction
-                $validValues = array_filter($values, 'is_numeric');
-                if (empty($validValues)) {
-                    $summarySumRow[$colName] = '<b>N/A</b>';
-                    $summaryMeanRow[$colName] = '<b>N/A</b>';
+                    // Mean
+                    if ($displayMean) {
+                        $mean = array_sum($validValues) / count($validValues);
+                        $summaryMeanRow[$colName] = number_format($mean, $precision, '.', '');
+                    } else {
+                        $summaryMeanRow[$colName] = '--';
+                    }
                 } else {
-                    $sumSin = 0;
-                    $sumCos = 0;
-                    foreach ($validValues as $deg) {
-                        $rad = deg2rad($deg);
-                        $sumSin += sin($rad);
-                        $sumCos += cos($rad);
-                    }
-                    $avgRad = atan2($sumSin, $sumCos);
-                    $avgDeg = rad2deg($avgRad);
-                    if ($avgDeg < 0) {
-                        $avgDeg += 360;
-                    }
-                    $avgDir = degreesToWindDirection($avgDeg);
-                    $summarySumRow[$colName] = '<b>N/A</b>';
-                    $summaryMeanRow[$colName] = '<b>' . $avgDir . '</b>';
+                    // No valid numeric entries
+                    $summarySumRow[$colName]  = '--';
+                    $summaryMeanRow[$colName] = '--';
                 }
+            } elseif ($viewType === 'text') {
+                // Potentially do mean wind direction if $displayMean is Yes
+                if ($displayMean) {
+                    // We have stored numeric degrees in $values if they exist
+                    $validDegrees = array_filter($values, 'is_numeric');
+                    if (!empty($validDegrees)) {
+                        $sumSin = 0;
+                        $sumCos = 0;
+                        foreach ($validDegrees as $deg) {
+                            $rad = deg2rad($deg);
+                            $sumSin += sin($rad);
+                            $sumCos += cos($rad);
+                        }
+                        $avgRad = atan2($sumSin, $sumCos);
+                        $avgDeg = rad2deg($avgRad);
+                        if ($avgDeg < 0) {
+                            $avgDeg += 360;
+                        }
+                        // Convert average angle to cardinal direction
+                        $summaryMeanRow[$colName] = degreesToWindDirectionAvg($avgDeg);
+                    } else {
+                        $summaryMeanRow[$colName] = '--';
+                    }
+                } else {
+                    $summaryMeanRow[$colName] = '--';
+                }
+                // For sum, we do not sum directions
+                $summarySumRow[$colName] = '--';
             } else {
-                $summarySumRow[$colName] = '<b>N/A</b>';
-                $summaryMeanRow[$colName] = '<b>N/A</b>';
+                // For any other view type, skip summary
+                $summarySumRow[$colName]  = '--';
+                $summaryMeanRow[$colName] = '--';
             }
         } else {
             // No metadata
-            $summarySumRow[$colName] = '<b>N/A</b>';
-            $summaryMeanRow[$colName] = '<b>N/A</b>';
+            $summarySumRow[$colName]  = '--';
+            $summaryMeanRow[$colName] = '--';
         }
     }
 }
 
-// Add summary rows
+echo "<tfoot>\n";
+
+// Render the sum row, all bold
 echo "<tr>";
 foreach ($columns as $colName) {
-    echo "<td>" . $summarySumRow[$colName] . "</td>";
+    echo "<td><b>" . $summarySumRow[$colName] . "</b></td>";
 }
-echo "</tr>";
+echo "</tr>\n";
 
+// Render the mean row, all bold
 echo "<tr>";
 foreach ($columns as $colName) {
-    echo "<td>" . $summaryMeanRow[$colName] . "</td>";
+    echo "<td><b>" . $summaryMeanRow[$colName] . "</b></td>";
 }
-echo "</tr>";
+echo "</tr>\n";
 
-echo "</tbody></table>";
+echo "</tfoot>\n";
+echo "</table>\n";
 
-// Save to CSV Button
-echo "<a id='saveCsvButton' href='#'>Save to CSV</a>";
+// CSV download link
+echo "<a id='saveCsvButton' href='#'>Save to CSV</a>\n";
 
 // Embed metadata for JavaScript
-echo "<script id='metadata' type='application/json'>" . json_encode($metadata) . "</script>";
+echo "<script id='metadata' type='application/json'>" . json_encode($metadata) . "</script>\n";
 
-echo "</body></html>";
+echo "</body></html>\n";
 ?>

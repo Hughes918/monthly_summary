@@ -72,9 +72,13 @@ table.dataTable thead .sorting_desc {
 /* Styling for the last row in the table */
 #dataTable tbody tr:last-child {
     background-color: #f8f9fa;
-    font-weight: bold;
     border-top: 2px solid #dee2e6;
 }
+
+
+
+
+
 
 .toggle-buttons {
     margin: 15px 0;
@@ -84,12 +88,91 @@ table.dataTable thead .sorting_desc {
     margin-right: 10px;
     padding: 8px 16px;
     border: none;
-    background-color: #007BFF;
+    background-color: #007BFF; /* Default color */
     color: white;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.3s, border 0.3s;
 }
 
 .toggle-buttons button:hover {
     background-color: #0056b3;
+}
+
+/* Selected button styling */
+.toggle-buttons button.active {
+    background-color: #004080; /* Darker shade when selected */
+    color: #ffffff;
+    font-weight: bold;
+    border: 2px solid #002f5f;
+}
+
+
+/* Add this CSS to your stylesheet or within a <style> tag in your HTML head */
+
+/* Container for the select elements */
+.select-wrapper {
+    position: relative;
+    display: inline-block;
+    margin: 10px;
+}
+
+/* Style the custom select */
+.custom-select {
+    appearance: none; /* Remove default arrow */
+    -webkit-appearance: none; /* Remove default arrow in Safari */
+    -moz-appearance: none; /* Remove default arrow in Firefox */
+    background-color: #007BFF; /* Button background color */
+    color: #fff; /* Text color */
+    border: none; /* Remove borders */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px 40px 10px 15px; /* Padding */
+    font-size: 16px;
+    text-align: center; /* Center text */
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease;
+}
+
+/* Change background color on hover */
+.custom-select:hover {
+    background-color: #0056b3;
+}
+
+/* Add a custom arrow using a pseudo-element */
+.select-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #fff; /* Arrow color */
+    transform: translateY(-50%);
+}
+
+/* Remove the default arrow in Internet Explorer */
+.custom-select::-ms-expand {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .select-wrapper {
+        width: 100%; /* Full width on mobile */
+        margin: 5px 0;
+    }
+
+    .custom-select {
+        font-size: 14px;
+        padding: 8px 35px 8px 12px;
+    }
+
+    .select-wrapper::after {
+        right: 12px;
+    }
 }
