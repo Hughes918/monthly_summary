@@ -2,16 +2,37 @@
 table.dataTable {
     width: 100%;
     table-layout: auto;
+    border-collapse: collapse;
 }
 
 /* Sticky first column */
-table.dataTable tbody tr td:first-child,
-table.dataTable thead tr th:first-child {
+table.dataTable tbody tfoot tr td:first-child,
+table.dataTable thead tfoot str th:first-child {
     position: sticky;
     left: 0;
     z-index: 2;
     background-color: #ffffff;
     box-shadow: 1px 0 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Scrollable table container */
+.table-container {
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+/* Remove unnecessary scrollbars */
+.dataTables_wrapper {
+    overflow: hidden !important;
+}
+
+.dataTables_scrollBody {
+    overflow-x: auto !important; /* Ensure horizontal scroll */
+    overflow-y: hidden !important; /* Hide vertical scroll */
+}
+
+.dataTables_scrollFoot {
+    overflow: hidden !important;
 }
 
 table.dataTable th, table.dataTable td {
@@ -20,6 +41,8 @@ table.dataTable th, table.dataTable td {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding: 8px;
+    border: 1px solid #ddd;
 }
 
 /* Remove all spacing and borders between header rows */
@@ -75,11 +98,6 @@ table.dataTable thead .sorting_desc {
     border-top: 2px solid #dee2e6;
 }
 
-
-
-
-
-
 .toggle-buttons {
     margin: 15px 0;
 }
@@ -106,9 +124,6 @@ table.dataTable thead .sorting_desc {
     font-weight: bold;
     border: 2px solid #002f5f;
 }
-
-
-/* Add this CSS to your stylesheet or within a <style> tag in your HTML head */
 
 /* Container for the select elements */
 .select-wrapper {
@@ -175,4 +190,64 @@ table.dataTable thead .sorting_desc {
     .select-wrapper::after {
         right: 12px;
     }
+}
+
+/* Responsive CSS for table and other elements */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.top-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.left-controls, .center-controls, .right-controls {
+    display: flex;
+    align-items: center;
+}
+
+.left-controls {
+    flex: 1;
+    justify-content: flex-start;
+}
+
+.center-controls {
+    flex: 1;
+    justify-content: center;
+}
+
+.right-controls {
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.station-wrapper {
+    flex: 1 1 100%;
+    text-align: center;
+}
+
+.table-container {
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+/* Table styling */
+.table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+/* Freeze the first column */
+.table th:first-child,
+.table td:first-child {
+    position: sticky;
+    left: 0;
+    background-color: #fff; /* Optional: to match the table's background */
+    z-index: 1;
 }

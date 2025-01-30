@@ -1,7 +1,8 @@
 // DataTable configuration
 const DATA_TABLE_CONFIG = {
-    scrollY: "500px",
+    scrollY: false, 
     scrollX: true,
+    scrollCollapse: true, // Make sure this is false
     paging: false,
     searching: false,
     sorting: false,

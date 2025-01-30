@@ -454,6 +454,7 @@ echo "<!DOCTYPE html>\n";
 echo "<html lang='en'>\n";
 echo "<head>\n";
 echo "    <meta charset='UTF-8'>\n";
+echo "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>\n"; // Add viewport meta tag
 echo "    <title>Responsive Data Table</title>\n";
 echo "    <!-- DataTables CSS -->\n";
 echo "    <link rel='stylesheet' href='https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css'>\n";
@@ -474,14 +475,10 @@ echo "    <!-- Dropdowns for Month and Year Selection -->\n";
 echo "    <input hidden type='text' id='station' value='" . htmlspecialchars($station_name) . "'>\n\n";
 
 // Wrap each select in a div for additional styling if needed
-echo "<div class='select-wrapper'>
-        <select id='station-select' class='custom-select' onchange='refreshWithNewParams()'>
-            <option value='' >--Select a station--</option>
-        </select>
-      </div>";
-
-echo "<div class='select-wrapper'>
-        <select id='month' class='custom-select' onchange='refreshWithNewParams()'>\n";
+echo "<div class='top-controls'>\n";
+echo "    <div class='left-controls'>\n";
+echo "        <div class='select-wrapper'>\n";
+echo "            <select id='month' class='custom-select' onchange='refreshWithNewParams()'>\n";
 
 $months = [
     "JAN"=>"January","FEB"=>"February","MAR"=>"March","APR"=>"April","MAY"=>"May","JUN"=>"June",
@@ -491,30 +488,49 @@ $months = [
 foreach($months as $code => $name) {
     echo "<option value='$code'" . ($code === strtoupper($month) ? " selected" : "") . ">$name</option>\n";
 }
-echo "    </select>
-      </div>\n\n";
+echo "            </select>\n";
+echo "        </div>\n";
 
-echo "<div class='select-wrapper'>
-        <select id='year' class='custom-select' onchange='refreshWithNewParams()'>\n";
-echo "        <script>\n";
-echo "            const yearDropdown = document.getElementById('year');\n";
-echo "            const startYear = 2020;\n";
-echo "            const currentYear = new Date().getFullYear();\n";
-echo "            const selectedYear = '" . $year . "';\n";
-echo "            for (let y = currentYear; y >= startYear; y--) {\n";
-echo "                const option = document.createElement('option');\n";
-echo "                option.value = y;\n";
-echo "                option.textContent = y;\n";
-echo "                if (y.toString() === selectedYear) {\n";
-echo "                   option.selected = true;\n";
+echo "        <div class='select-wrapper'>\n";
+echo "            <select id='year' class='custom-select' onchange='refreshWithNewParams()'>\n";
+echo "            <script>\n";
+echo "                const yearDropdown = document.getElementById('year');\n";
+echo "                const startYear = 2020;\n";
+echo "                const currentYear = new Date().getFullYear();\n";
+echo "                const selectedYear = '" . $year . "';\n";
+echo "                for (let y = currentYear; y >= startYear; y--) {\n";
+echo "                    const option = document.createElement('option');\n";
+echo "                    option.value = y;\n";
+echo "                    option.textContent = y;\n";
+echo "                    if (y.toString() === selectedYear) {\n";
+echo "                       option.selected = true;\n";
+echo "                    }\n";
+echo "                    yearDropdown.appendChild(option);\n";
 echo "                }\n";
-echo "                yearDropdown.appendChild(option);\n";
-echo "            }\n";
-echo "        </script>\n";
-echo "    </select>
-      </div>\n\n";
+echo "            </script>\n";
+echo "            </select>\n";
+echo "        </div>\n";
+echo "    </div>\n";
 
-echo "</div>\n\n";
+echo "    <div class='center-controls'>\n";
+echo "        <div class='select-wrapper station-wrapper'>\n";
+echo "            <select id='station-select' class='custom-select' onchange='refreshWithNewParams()'>\n";
+echo "                <option value='' >--Select a station--</option>\n";
+echo "            </select>\n";
+echo "        </div>\n";
+echo "    </div>\n";
+
+echo "    <div class='right-controls'>\n";
+echo "        <div class='toggle-buttons'>\n";
+echo "            <button class='toggle-display active' data-display='basic'>Basic</button>\n";
+echo "            <button class='toggle-display' data-display='other'>Other</button>\n";
+echo "            <button class='toggle-display' data-display='water'>Water</button>\n";
+echo "            <button class='toggle-display' data-display='ag'>Ag Wx</button>\n";
+echo "        </div>\n";
+echo "    </div>\n";
+echo "</div>\n";
+
+echo "<div class='table-container'>\n"; // Add scrollable container for the entire table
 echo "<table id='dataTable' class='display nowrap' style='width:100%'>\n";
 echo "<thead>\n";
 echo "<tr>";
@@ -525,15 +541,8 @@ echo "</tr><tr>";
 foreach ($columns as $colName) {
     echo "<th>" . ($colName === "Date" ? "" : ($uniqueDataTypes[$colName] ?? '')) . "</th>";
 }
-echo "</tr></thead><tbody>\n";
-
-// Display type, month, year, station
-echo "<div class='toggle-buttons'>\n";
-echo "    <button class='toggle-display active' data-display='basic'>Basic</button>\n";
-echo "    <button class='toggle-display' data-display='other'>Other</button>\n";
-echo "    <button class='toggle-display' data-display='water'>Water</button>\n";
-echo "    <button class='toggle-display' data-display='ag'>Ag Wx</button>\n";
-echo "</div>\n";
+echo "</tr></thead>\n";
+echo "<tbody>\n";
 
 // Table data rows
 foreach ($tableData as $row) {
@@ -592,6 +601,9 @@ foreach ($columns as $colName) {
             if ($viewType === 'numeric') {
                 // Filter numeric data
                 $validValues = array_filter($values, 'is_numeric');
+                if (count($validValues) !== count($values)) {
+                    $validValues = null;
+                }
                 if (!empty($validValues)) {
                     // Summation
                     if ($displaySum) {
@@ -670,6 +682,7 @@ echo "</tr>\n";
 
 echo "</tfoot>\n";
 echo "</table>\n";
+echo "</div>\n"; // Close scrollable container
 
 // CSV download link
 echo "<a id='saveCsvButton' href='#'>Save to CSV</a>\n";
