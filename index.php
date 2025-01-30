@@ -32,11 +32,15 @@ if (strpos($date, '_') !== false) {
     die("Date must be in the format 'MMM_YYYY', e.g., 'JUN_2023'.<br>");
 }
 
-$jsonData = file_get_contents($jsonFile);
-$data     = json_decode($jsonData, true);
-if ($data === null) {
-    echo "<p>Error decoding JSON data. Please check the data format.</p>";
-    exit;
+// Fetch JSON data
+$jsonData = @file_get_contents($jsonFile);
+if ($jsonData === false) {
+    $data = null;
+} else {
+    $data = json_decode($jsonData, true);
+    if ($data === null) {
+        $data = [];
+    }
 }
 
 // Metadata array with conditional sum/mean
@@ -449,7 +453,7 @@ echo "<html lang='en'>\n";
 echo "<head>\n";
 echo "    <meta charset='UTF-8'>\n";
 echo "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>\n"; // Add viewport meta tag
-echo "    <title>Responsive Data Table</title>\n";
+echo "    <title>DEOS Monthly Summaries</title>\n";
 echo "    <!-- DataTables CSS -->\n";
 echo "    <link rel='stylesheet' href='https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css'>\n";
 echo "    <link rel='stylesheet' href='https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css'>\n";
@@ -489,7 +493,7 @@ echo "        <div class='select-wrapper'>\n";
 echo "            <select id='year' class='custom-select' onchange='refreshWithNewParams()'>\n";
 echo "            <script>\n";
 echo "                const yearDropdown = document.getElementById('year');\n";
-echo "                const startYear = 2020;\n";
+echo "                const startYear = 2010;\n";
 echo "                const currentYear = new Date().getFullYear();\n";
 echo "                const selectedYear = '" . $year . "';\n";
 echo "                for (let y = currentYear; y >= startYear; y--) {\n";
