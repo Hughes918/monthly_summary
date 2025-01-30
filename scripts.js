@@ -1,8 +1,8 @@
 // DataTable configuration
 const DATA_TABLE_CONFIG = {
-    scrollY: false, 
+    scrollY: false,
     scrollX: true,
-    scrollCollapse: true, // Make sure this is false
+    scrollCollapse: true,
     paging: false,
     searching: false,
     sorting: false,
@@ -142,27 +142,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const headers = [];
         const subHeaders = [];
 
-       // Get headers and sub-headers
-$('#dataTable thead tr').each(function (index, row) {
-    $(row).find('th').each(function (colIndex, col) {
-        if (dataTable.column(colIndex).visible()) {
-            let textVal = $(col).text();
+        // Get headers and sub-headers
+        $('#dataTable thead tr').each(function (index, row) {
+            $(row).find('th').each(function (colIndex, col) {
+                if (dataTable.column(colIndex).visible()) {
+                    let textVal = $(col).text();
 
-              // Fix encoding issues by normalizing and removing unwanted characters
-              textVal = textVal.normalize('NFKC')  // Normalize to standard Unicode form
-              .replace(/\u00C2/g, '') // Remove the specific UTF-8 encoding for "Â"
-              .replace(/Â°/g, '°')    // Fix degree symbol
-              .replace(/[^\x00-\x7F]/g, ''); // Remove non-ASCII characters
+                    // Fix encoding issues by normalizing and removing unwanted characters
+                    textVal = textVal.normalize('NFKC')  // Normalize to standard Unicode form
+                        .replace(/\u00C2/g, '') // Remove the specific UTF-8 encoding for "Â"
+                        .replace(/Â°/g, '°')    // Fix degree symbol
+                        .replace(/[^\x00-\x7F]/g, ''); // Remove non-ASCII characters
 
-
-            if (index === 0) {
-                headers.push(textVal);
-            } else {
-                subHeaders.push(textVal);
-            }
-        }
-    });
-});
+                    if (index === 0) {
+                        headers.push(textVal);
+                    } else {
+                        subHeaders.push(textVal);
+                    }
+                }
+            });
+        });
 
         csvData.push(headers.join(','));
         csvData.push(subHeaders.join(','));

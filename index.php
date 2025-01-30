@@ -20,13 +20,11 @@ if (strpos($date, '_') !== false) {
     $dateObj = DateTime::createFromFormat('M', ucfirst(strtolower($month)));
 
     if ($dateObj && is_numeric($year)) {
-     
         $monthNumber = $dateObj->format('m');
         $start_date  = "$year-$monthNumber-01";
         $end_date    = date("Y-m-t", strtotime($start_date));
         // JSON data URL
         $jsonFile = "http://150.136.239.199/almanac/retrieve.old.php?start=$start_date&end=$end_date&station_name=$station_name";
-       
     } else {
         die("Invalid month or year format provided.<br>");
     }
@@ -41,11 +39,7 @@ if ($data === null) {
     exit;
 }
 
-/**
- * Metadata array with conditional sum/mean
- * Note: Removed second 'Gage Precipitation (Daily)' in 'ag' to avoid duplicating precipitation.
- * Now including Mean Wind Direction's monthly average by setting display_mean => 'Yes'.
- */
+// Metadata array with conditional sum/mean
 $metadata = [
     // BASIC
     [
