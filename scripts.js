@@ -199,7 +199,7 @@ function highlightExtremes() {
     if (rows.length < 3) return;
 
     // Exclude summary rows (last two)
-    const dataRows = rows.slice(0, -2);
+    const dataRows = rows; //rows.slice(0, -2);
     if (dataRows.length === 0) return;
 
     const columnsCount = dataRows[0].children.length;

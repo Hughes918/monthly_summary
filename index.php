@@ -17,10 +17,15 @@ if (!empty($queryString)) {
 // Validate and convert date
 if (strpos($date, '_') !== false) {
     list($month, $year) = explode('_', $date);
-    $dateObj = DateTime::createFromFormat('M', ucfirst(strtolower($month)));
+    $month = strtoupper($month);
+    $months = [
+        "JAN" => "01", "FEB" => "02", "MAR" => "03", "APR" => "04",
+        "MAY" => "05", "JUN" => "06", "JUL" => "07", "AUG" => "08",
+        "SEP" => "09", "OCT" => "10", "NOV" => "11", "DEC" => "12"
+    ];
 
-    if ($dateObj && is_numeric($year)) {
-        $monthNumber = $dateObj->format('m');
+    if (isset($months[$month]) && is_numeric($year)) {
+        $monthNumber = $months[$month];
         $start_date  = "$year-$monthNumber-01";
         $end_date    = date("Y-m-t", strtotime($start_date));
         // JSON data URL
