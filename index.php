@@ -1,5 +1,4 @@
 <?php
-
 header('Content-Type: text/html; charset=UTF-8');
 
 // Retrieve query parameters
@@ -17,19 +16,16 @@ if (!empty($queryString)) {
 // Validate and convert date
 if (strpos($date, '_') !== false) {
     list($month, $year) = explode('_', $date);
-    $month = strtoupper($month);
-    $months = [
-        "JAN" => "01", "FEB" => "02", "MAR" => "03", "APR" => "04",
-        "MAY" => "05", "JUN" => "06", "JUL" => "07", "AUG" => "08",
-        "SEP" => "09", "OCT" => "10", "NOV" => "11", "DEC" => "12"
-    ];
+    $dateObj = DateTime::createFromFormat('M', ucfirst(strtolower($month)));
 
-    if (isset($months[$month]) && is_numeric($year)) {
-        $monthNumber = $months[$month];
+    if ($dateObj && is_numeric($year)) {
+     
+        $monthNumber = $dateObj->format('m');
         $start_date  = "$year-$monthNumber-01";
         $end_date    = date("Y-m-t", strtotime($start_date));
         // JSON data URL
         $jsonFile = "http://150.136.239.199/almanac/retrieve.old.php?start=$start_date&end=$end_date&station_name=$station_name";
+       
     } else {
         die("Invalid month or year format provided.<br>");
     }
@@ -37,18 +33,18 @@ if (strpos($date, '_') !== false) {
     die("Date must be in the format 'MMM_YYYY', e.g., 'JUN_2023'.<br>");
 }
 
-// Fetch JSON data
-$jsonData = @file_get_contents($jsonFile);
-if ($jsonData === false) {
-    $data = null;
-} else {
-    $data = json_decode($jsonData, true);
-    if ($data === null) {
-        $data = [];
-    }
+$jsonData = file_get_contents($jsonFile);
+$data     = json_decode($jsonData, true);
+if ($data === null) {
+    echo "<p>Error decoding JSON data. Please check the data format.</p>";
+    exit;
 }
 
-// Metadata array with conditional sum/mean
+/**
+ * Metadata array with conditional sum/mean
+ * Note: Removed second 'Gage Precipitation (Daily)' in 'ag' to avoid duplicating precipitation.
+ * Now including Mean Wind Direction's monthly average by setting display_mean => 'Yes'.
+ */
 $metadata = [
     // BASIC
     [
@@ -297,16 +293,17 @@ $metadata = [
 function convertToEnglishUnits($value, $conversionType) {
     switch ($conversionType) {
         case 'kelvin_to_fahrenheit':
-            return ($value - 273.15) * 9 / 5 + 32;
+            // Values are already in Fahrenheit; no conversion needed.
+            return $value;
         case 'ms_to_mph':
-            return $value * 2.23694;
+            // Removed conversion: simply return the value unchanged.
+            return $value;
         case 'mm_to_inches':
             return $value * 0.0393701;
         case 'rad_to_degrees':
             return rad2deg($value);
         case 'gdd32F_50F':
-            // GDD(50°F) = max(T - 50, 0).
-            // For T in Kelvin, we'd convert first, but here we simply do max($value - 18, 0).
+            // Adjust as necessary; this example retains similar logic.
             return max($value - 18, 0);
         case 'none':
         default:
@@ -346,9 +343,11 @@ function degreesToWindDirectionAvg($degrees) {
 function getUnitLabel($conversionType, $units) {
     switch ($conversionType) {
         case 'kelvin_to_fahrenheit':
-            return "&deg;F";
+            // Return units unmodified since values are already in °F.
+            return $units;
         case 'ms_to_mph':
-            return "mph";
+            // Optionally, simply return the provided units.
+            return $units;
         case 'mm_to_inches':
             return "in";
         case 'rad_to_degrees':
@@ -420,7 +419,13 @@ if (isset($data['data']) && is_array($data['data'])) {
                                 $row[$dataTypeDisplay] = degreesToWindDirection($convertedValue);
                                 $row[$dataTypeDisplay . '_degrees'] = $convertedValue;
                             } else {
-                                $row[$dataTypeDisplay] = number_format($convertedValue, $precision, '.', '');
+                                // Force 1 decimal point for temperature and wind conversions.
+                                if ($conversionType === 'kelvin_to_fahrenheit' || $conversionType === 'ms_to_mph') {
+                                    $convertedValue = round($convertedValue, 1);
+                                    $row[$dataTypeDisplay] = number_format($convertedValue, 1, '.', '');
+                                } else {
+                                    $row[$dataTypeDisplay] = number_format($convertedValue, $precision, '.', '');
+                                }
                             }
 
                             // Mark climate data if FLAG == '7'
@@ -452,17 +457,22 @@ foreach ($columns as $colName) {
     }
 }
 
+// Include the header, which outputs the DOCTYPE, HTML, head, and opening body tags.
+include('header.php');
+
 // Build HTML table
 echo "<!DOCTYPE html>\n";
 echo "<html lang='en'>\n";
 echo "<head>\n";
 echo "    <meta charset='UTF-8'>\n";
 echo "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>\n"; // Add viewport meta tag
-echo "    <title>DEOS Monthly Summaries</title>\n";
+echo "    <title>Responsive Data Table</title>\n";
 echo "    <!-- DataTables CSS -->\n";
 echo "    <link rel='stylesheet' href='https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css'>\n";
 echo "    <link rel='stylesheet' href='https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css'>\n";
 echo "    <link rel='stylesheet' href='styles.css'>\n\n";
+echo "    <!-- Updated Font Awesome CSS for Save Icon -->\n";
+echo "    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'>\n";
 echo "    <!-- jQuery -->\n";
 echo "    <script src='https://code.jquery.com/jquery-3.5.1.js'></script>\n";
 echo "    <!-- DataTables JS -->\n";
@@ -498,7 +508,7 @@ echo "        <div class='select-wrapper'>\n";
 echo "            <select id='year' class='custom-select' onchange='refreshWithNewParams()'>\n";
 echo "            <script>\n";
 echo "                const yearDropdown = document.getElementById('year');\n";
-echo "                const startYear = 2010;\n";
+echo "                const startYear = 2004;\n";
 echo "                const currentYear = new Date().getFullYear();\n";
 echo "                const selectedYear = '" . $year . "';\n";
 echo "                for (let y = currentYear; y >= startYear; y--) {\n";
@@ -525,10 +535,16 @@ echo "    </div>\n";
 
 echo "    <div class='right-controls'>\n";
 echo "        <div class='toggle-buttons'>\n";
-echo "            <button class='toggle-display active' data-display='basic'>Basic</button>\n";
-echo "            <button class='toggle-display' data-display='other'>Other</button>\n";
-echo "            <button class='toggle-display' data-display='water'>Water</button>\n";
-echo "            <button class='toggle-display' data-display='ag'>Ag Wx</button>\n";
+echo "            <div class='dropdown-view'>\n";
+echo "                <select id='viewSelect' class='custom-select'>\n";
+echo "                    <option value='basic' selected>Basic</option>\n";
+echo "                    <option value='other'>Other</option>\n";
+echo "                    <option value='water'>Water</option>\n";
+echo "                    <option value='ag'>Ag Wx</option>\n";
+echo "                </select>\n";
+echo "                <i class='fa fa-caret-down'></i>\n";
+echo "            </div>\n";
+echo "            <button id='saveCsvButton' class='save-button' title='Save CSV'><i class='fa fa-save'></i></button>\n";
 echo "        </div>\n";
 echo "    </div>\n";
 echo "</div>\n";
@@ -595,7 +611,12 @@ foreach ($columns as $colName) {
     } else {
         $metaInfo     = getMetadataByDisplayName($colName, $metadata);
         if ($metaInfo) {
-            $precision   = getPrecision($metaInfo['precision_type']);
+            // Force precision of 1 if conversion_type is for temperature or wind.
+            if ($metaInfo['conversion_type'] === 'kelvin_to_fahrenheit' || $metaInfo['conversion_type'] === 'ms_to_mph') {
+                $precision = 1;
+            } else {
+                $precision = getPrecision($metaInfo['precision_type']);
+            }
             $viewType    = $metaInfo['view_type'];
             $values      = $columnData[$colName];
             $displaySum  = isset($metaInfo['display_sum'])  && $metaInfo['display_sum']  === 'Yes';
@@ -687,11 +708,10 @@ echo "</tfoot>\n";
 echo "</table>\n";
 echo "</div>\n"; // Close scrollable container
 
-// CSV download link
-echo "<a id='saveCsvButton' href='#'>Save to CSV</a>\n";
-
 // Embed metadata for JavaScript
 echo "<script id='metadata' type='application/json'>" . json_encode($metadata) . "</script>\n";
 
 echo "</body></html>\n";
+
+include('footer.php');
 ?>

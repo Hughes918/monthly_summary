@@ -103,6 +103,7 @@ table.dataTable thead .sorting_desc {
     margin: 15px 0;
     display: flex;
     flex-wrap: wrap;
+    align-items: center; /* Added to center toggle buttons vertically */
 }
 
 .toggle-buttons button {
@@ -127,6 +128,18 @@ table.dataTable thead .sorting_desc {
     color: #ffffff;
     font-weight: bold;
     border: 2px solid #002f5f;
+}
+
+/* Ensure toggle buttons and save button have a fixed height and vertical centering */
+.toggle-buttons button,
+.save-button {
+    height: 40px !important;
+    box-sizing: border-box;
+    padding: 0 16px !important; /* horizontal padding preserved */
+    line-height: 40px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 /* Container for the select elements */
@@ -187,6 +200,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
 }
 
 .top-controls {
@@ -241,4 +255,106 @@ body {
     left: 0;
     background-color: #fff; /* Optional: to match the table's background */
     z-index: 1;
+}
+
+.save-button {
+    width: 40px !important;
+    height: 40px !important;
+    padding: 0 !important;
+    margin-left: 10px;
+    line-height: 40px !important;
+    text-align: center;
+    border: none !important;
+    background: #007BFF !important; /* Use same background as other buttons */
+    color: white !important;         /* Set text color to white */
+    border-radius: 4px !important;    /* Rounded corners like other buttons */
+    display: inline-block !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    vertical-align: middle;      /* Ensure inline-blocks align vertically */
+    margin-top: 10px !important;   /* Further lower the save button */
+}
+
+.save-button:hover {
+    background: #0056b3 !important;
+}
+
+/* New dropdown view styling */
+.dropdown-view {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-view select.custom-select {
+    appearance: none; /* Remove default arrow */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: none;
+    background: #007BFF;
+    color: white;
+    border-radius: 4px;
+    font-size: 14px;
+    padding: 0 30px 0 16px;  /* remove vertical padding */
+    line-height: 40px;  /* ensure text is vertically centered */
+    cursor: pointer;
+    height: 40px;
+}
+
+.dropdown-view i.fa-caret-down {
+    position: absolute;
+    top: 50%;  /* center the icon */
+    right: 10px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: white;
+}
+
+/* Adjust the top margin to lower the button */
+.menu-selection {
+    margin-top: 10px !important;  /* Increase margin to align with other buttons */
+    /* other existing styles */
+}
+
+@media screen and (max-width: 600px) {
+    .top-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        grid-template-areas:
+            "station station"
+            "left right";
+        gap: 10px;
+        align-items: center;
+    }
+    .center-controls {
+        grid-area: station;
+        width: 100%;
+        text-align: center;
+    }
+    .left-controls {
+        grid-area: left;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 10px;
+        justify-content: flex-start;
+    }
+    .right-controls {
+        grid-area: right;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+    /* Ensure month/year select wrappers in left-controls use auto width */
+    .left-controls .select-wrapper {
+        width: auto;
+    }
+}
+
+table.dataTable thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fff;
 }

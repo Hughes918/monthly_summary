@@ -67,6 +67,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const metadata = JSON.parse(document.getElementById('metadata').textContent);
+
+    // Add data_units property to each metadata item
+    const UNIT_MAPPING = {
+        "temperature": "°F",
+        "dew_point": "°F",
+        "wind": "mph",
+        "wind_gust": "mph",
+        "precip": "in",
+        "heat_index": "°F",
+        "wind_chill": "°F"
+    };
+    metadata.forEach(item => {
+        item.data_units = UNIT_MAPPING[item.display_type] || "";
+    });
+
     const basicColumns = [true].concat(metadata.map(m => m.display_type === 'basic'));
 
     const dataTable = table.DataTable({
@@ -138,51 +153,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Save to CSV functionality
     document.getElementById('saveCsvButton').addEventListener('click', function () {
+        const dataTable = $('#dataTable').DataTable();
+        // Get all column indexes as an array
+        const allIndexes = dataTable.columns().indexes().toArray();
+        
         const csvData = [];
         const headers = [];
         const subHeaders = [];
 
-        // Get headers and sub-headers
-        $('#dataTable thead tr').each(function (index, row) {
-            $(row).find('th').each(function (colIndex, col) {
-                if (dataTable.column(colIndex).visible()) {
-                    let textVal = $(col).text();
+        // Build headers (first header row) using all columns
+        $('#dataTable thead tr').eq(0).find('th').each(function (index, col) {
+            if (allIndexes.indexOf(index) !== -1) {
+                let textVal = $(col).text().normalize('NFKC')
+                    .replace(/\u00C2/g, '')
+                    .replace(/Â°/g, '°')
+                    .replace(/[^\x00-\x7F]/g, '');
+                headers.push(textVal);
+            }
+        });
 
-                    // Fix encoding issues by normalizing and removing unwanted characters
-                    textVal = textVal.normalize('NFKC')  // Normalize to standard Unicode form
-                        .replace(/\u00C2/g, '') // Remove the specific UTF-8 encoding for "Â"
-                        .replace(/Â°/g, '°')    // Fix degree symbol
-                        .replace(/[^\x00-\x7F]/g, ''); // Remove non-ASCII characters
-
-                    if (index === 0) {
-                        headers.push(textVal);
-                    } else {
-                        subHeaders.push(textVal);
-                    }
-                }
-            });
+        // Build sub-headers (second header row) using all columns
+        $('#dataTable thead tr').eq(1).find('th').each(function (index, col) {
+            if (allIndexes.indexOf(index) !== -1) {
+                let textVal = $(col).text().normalize('NFKC')
+                    .replace(/\u00C2/g, '')
+                    .replace(/Â°/g, '°')
+                    .replace(/[^\x00-\x7F]/g, '');
+                subHeaders.push(textVal);
+            }
         });
 
         csvData.push(headers.join(','));
         csvData.push(subHeaders.join(','));
 
-        // Get table data
-        $('#dataTable tbody tr').each(function () {
-            const row = [];
-            $(this).find('td').each(function (colIndex, col) {
-                if (dataTable.column(colIndex).visible()) {
-                    row.push($(col).text());
-                }
-            });
-            csvData.push(row.join(','));
+        // Build rows data using all columns
+        dataTable.rows({ search: 'applied' }).every(function (rowIdx) {
+            const rowCells = $('#dataTable tbody tr').eq(rowIdx).find('td').toArray();
+            const rowData = rowCells.map(td => $(td).text().trim());
+            csvData.push(rowData.join(','));
         });
 
         const csvContent = csvData.join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
+        
+        // Build the file name from station, month and year
+        const stationName = document.getElementById('station').value.trim();
+        const month = document.getElementById('month').value.trim();
+        const year = document.getElementById('year').value.trim();
+        const fileName = stationName + '_' + month + '_' + year + '.csv';
+        
         link.setAttribute('href', url);
-        link.setAttribute('download', 'data.csv');
+        link.setAttribute('download', fileName);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -428,3 +451,38 @@ async function populateStationSelect() {
 
 // Call the function when the page loads
 window.addEventListener('DOMContentLoaded', populateStationSelect);
+
+document.addEventListener('DOMContentLoaded', function() {
+    var tableCells = document.querySelectorAll('#dataTable td');
+    var showMessage = Array.from(tableCells).some(function(cell) {
+        return cell.textContent.includes("**");
+    });
+    if (showMessage) {
+        var bottomMessage = document.createElement('div');
+        bottomMessage.className = 'bottom-message';
+        bottomMessage.textContent = '* Blue shading indicates a multiday total.';
+        bottomMessage.style.textAlign = 'center';
+        bottomMessage.style.color = 'red';
+        bottomMessage.style.fontWeight = 'bold';
+        bottomMessage.style.fontStyle = 'italic';
+        bottomMessage.style.fontSize = '1.2em';
+        bottomMessage.style.marginTop = '20px';
+        document.body.appendChild(bottomMessage);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function(){
+    const viewSelect = document.getElementById('viewSelect');
+    viewSelect.addEventListener('change', function(){
+        const selectedType = this.value;
+        const dataTable = $('#dataTable').DataTable();
+        const metadata = JSON.parse(document.getElementById('metadata').textContent);
+        dataTable.columns().every(function(index) {
+            if (index === 0) return; // Always show Date column
+            // Use metadata based on column index
+            const meta = metadata[index - 1];
+            this.visible(meta && meta.display_type === selectedType);
+        });
+        dataTable.columns.adjust().draw();
+    });
+});
