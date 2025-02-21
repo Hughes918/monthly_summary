@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Page Header</title>
+    <title>DEOS Monthly Summary</title>
     <link rel="stylesheet" href="styles.css">
     <!-- You may include any additional CSS/JS needed -->
 </head>
