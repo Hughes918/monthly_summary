@@ -24,7 +24,7 @@ if (strpos($date, '_') !== false) {
         $start_date  = "$year-$monthNumber-01";
         $end_date    = date("Y-m-t", strtotime($start_date));
         // JSON data URL
-        $jsonFile = "http://150.136.239.199/almanac/retrieve.old.php?start=$start_date&end=$end_date&station_name=$station_name";
+        $jsonFile = "http://150.136.239.199/almanac/retrieve.old.php?start=$start_date&end=$end_date&station_name=$station_name&raw_values=Y";
        
     } else {
         die("Invalid month or year format provided.<br>");
@@ -215,7 +215,7 @@ $metadata = [
         "display_type"      => "other",
         "display_sum"       => "No",
         "display_mean"      => "Yes",
-        "display_units"     => "inHg"
+        "display_units"     => "mb" // changed from inHg
     ],
     [
         "data_name_full"    => "Mean Daily RH",
@@ -316,17 +316,14 @@ $metadata = [
 function convertToEnglishUnits($value, $conversionType) {
     switch ($conversionType) {
         case 'kelvin_to_fahrenheit':
-            // Values are already in Fahrenheit; no conversion needed.
-            return $value;
+            return ($value - 273.15) * 9/5 + 32;
         case 'ms_to_mph':
-            // Removed conversion: simply return the value unchanged.
-            return $value;
+            return $value * 2.23694;
         case 'mm_to_inches':
             return $value * 0.0393701;
         case 'rad_to_degrees':
             return rad2deg($value);
         case 'gdd32F_50F':
-            // Adjust as necessary; this example retains similar logic.
             return max($value - 18, 0);
         case 'none':
         default:
