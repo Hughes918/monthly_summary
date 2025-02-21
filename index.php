@@ -178,7 +178,7 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "water",
         "display_sum"       => "No",
-        "display_mean"      => "No",
+        "display_mean"      => "Yes",
         "display_units"     => "°F"
     ],
     [
@@ -189,7 +189,7 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "water",
         "display_sum"       => "No",
-        "display_mean"      => "No",
+        "display_mean"      => "Yes",
         "display_units"     => "°F"
     ],
     [
@@ -202,6 +202,40 @@ $metadata = [
         "display_sum"       => "No",
         "display_mean"      => "Yes",
         "display_units"     => "ft"
+    ],
+    [
+        "data_name_full"    => "Mean Daily Gage Height",
+        "data_name_display" => "Gage Height",
+        "conversion_type"   => "none",
+        "precision_type"    => 2,
+        "view_type"         => "numeric",
+        "display_type"      => "water",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes",
+        "display_units"     => "m"
+    ],
+    [
+        "data_name_full"    => "Max Daily Gage Height.",
+        "data_name_display" => "Max Gage Height",
+        "conversion_type"   => "none",
+        "precision_type"    => 2,
+        "view_type"         => "numeric",
+        "display_type"      => "water",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes",
+        "display_units"     => "m"
+    ],
+
+    [
+        "data_name_full"    => "Min Daily Gage Height.",
+        "data_name_display" => "Min Gage Height",
+        "conversion_type"   => "none",
+        "precision_type"    => 2,
+        "view_type"         => "numeric",
+        "display_type"      => "water",
+        "display_sum"       => "No",
+        "display_mean"      => "Yes",
+        "display_units"     => "m"
     ],
 
     // OTHER
