@@ -206,36 +206,36 @@ $metadata = [
     [
         "data_name_full"    => "Mean Daily Gage Height",
         "data_name_display" => "Gage Height",
-        "conversion_type"   => "none",
+        "conversion_type"   => "m_to_ft", // updated conversion type
         "precision_type"    => 2,
         "view_type"         => "numeric",
         "display_type"      => "water",
         "display_sum"       => "No",
         "display_mean"      => "Yes",
-        "display_units"     => "m"
+        "display_units"     => "ft"
     ],
     [
         "data_name_full"    => "Max Daily Gage Height.",
         "data_name_display" => "Max Gage Height",
-        "conversion_type"   => "none",
+        "conversion_type"   => "m_to_ft", // updated conversion type
         "precision_type"    => 2,
         "view_type"         => "numeric",
         "display_type"      => "water",
         "display_sum"       => "No",
         "display_mean"      => "Yes",
-        "display_units"     => "m"
+        "display_units"     => "ft"
     ],
 
     [
         "data_name_full"    => "Min Daily Gage Height.",
         "data_name_display" => "Min Gage Height",
-        "conversion_type"   => "none",
+        "conversion_type"   => "m_to_ft", // updated conversion type
         "precision_type"    => 2,
         "view_type"         => "numeric",
         "display_type"      => "water",
         "display_sum"       => "No",
         "display_mean"      => "Yes",
-        "display_units"     => "m"
+        "display_units"     => "ft"
     ],
 
     // OTHER
@@ -359,6 +359,8 @@ function convertToEnglishUnits($value, $conversionType) {
             return rad2deg($value);
         case 'gdd32F_50F':
             return max($value - 18, 0);
+        case 'm_to_ft': // new conversion: meters to feet
+            return $value * 3.28084;
         case 'none':
         default:
             return $value;
