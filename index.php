@@ -33,11 +33,11 @@ if (strpos($date, '_') !== false) {
     die("Date must be in the format 'MMM_YYYY', e.g., 'JUN_2023'.<br>");
 }
 
-$jsonData = file_get_contents($jsonFile);
+$jsonData = @file_get_contents($jsonFile);
 $data     = json_decode($jsonData, true);
 if ($data === null) {
-    echo "<p>Error decoding JSON data. Please check the data format.</p>";
-    exit;
+    // Instead of erroring out, set empty data
+    $data = ['data' => []];
 }
 
 /**
@@ -572,169 +572,180 @@ echo "        </div>\n";
 echo "    </div>\n";
 echo "</div>\n";
 
-echo "<div class='table-container'>\n"; // Add scrollable container for the entire table
-echo "<table id='dataTable' class='display nowrap' style='width:100%'>\n";
-echo "<thead>\n";
-echo "<tr>";
-foreach ($columns as $colName) {
-    echo "<th>$colName</th>";
-}
-echo "</tr><tr>";
-foreach ($columns as $colName) {
-    if ($colName === "Date") {
-        echo "<th></th>";
-    } else {
-        $meta = getMetadataByDisplayName($colName, $metadata);
-        $display_units = ($meta && isset($meta['display_units']) && $meta['display_units'] !== "") ? $meta['display_units'] : '';
-        echo "<th>$display_units</th>";
-    }
-}
-echo "</tr></thead>\n";
-echo "<tbody>\n";
-
-// Table data rows
-foreach ($tableData as $row) {
+echo "<div class='table-container'>\n";
+if (empty($tableData)) {
+    echo "<table id='dataTable' class='display nowrap' style='width:100%'>\n";
+    echo "<tr><td style='text-align:center; padding:20px;'>No Data Available</td></tr>\n";
+    echo "</table>\n";
+} else {
+    echo "<table id='dataTable' class='display nowrap' style='width:100%'>\n";
+    echo "<thead>\n";
     echo "<tr>";
     foreach ($columns as $colName) {
-        $cellValue = isset($row[$colName]) ? $row[$colName] : '--';
-        // If climate data flagged, highlight with a CSS class (not bold)
-        $highlightClass = '';
-        if (isset($flaggedData[$row['Date']][$colName]) && $flaggedData[$row['Date']][$colName] === 'CLIMATE') {
-            $highlightClass = 'climate-flag';
-        }
-
-        echo "<td class='$highlightClass'>$cellValue</td>";
-
-        // Store data for summaries
-        if ($colName != 'Date') {
-            $metaInfo = getMetadataByDisplayName($colName, $metadata);
-            if ($metaInfo) {
-                $viewType = $metaInfo['view_type'];
-                if ($viewType === 'numeric') {
-                    $columnData[$colName][] = is_numeric($cellValue) ? $cellValue : '--';
-                } elseif ($viewType === 'text') {
-                    // For wind direction, store numeric degrees if available
-                    $originalDegrees = $row[$colName . '_degrees'] ?? '--';
-                    $columnData[$colName][] = is_numeric($originalDegrees) ? $originalDegrees : '--';
-                }
-            } else {
-                $columnData[$colName][] = '--';
-            }
+        echo "<th>$colName</th>";
+    }
+    echo "</tr><tr>";
+    foreach ($columns as $colName) {
+        if ($colName === "Date") {
+            echo "<th></th>";
+        } else {
+            $meta = getMetadataByDisplayName($colName, $metadata);
+            $display_units = ($meta && isset($meta['display_units']) && $meta['display_units'] !== "") ? $meta['display_units'] : '';
+            echo "<th>$display_units</th>";
         }
     }
-    echo "</tr>";
-}
+    echo "</tr></thead>\n";
+    echo "<tbody>\n";
 
-echo "</tbody>\n";
-
-// Calculate summary rows
-$summarySumRow  = [];
-$summaryMeanRow = [];
-
-// We'll do a final function that helps compute average direction if needed
-foreach ($columns as $colName) {
-    if ($colName == 'Date') {
-        // We'll store the label but wrap in <b> for the final rendering
-        $summarySumRow[$colName]  = 'Total';
-        $summaryMeanRow[$colName] = 'Mean';
+    // If no table data, show the no data message
+    if (empty($tableData)) {
+        echo "<tr><td colspan='" . count($columns) . "' style='text-align:center;'>No Data Available</td></tr>\n";
     } else {
-        $metaInfo     = getMetadataByDisplayName($colName, $metadata);
-        if ($metaInfo) {
-            // Force precision of 1 if conversion_type is for temperature or wind.
-            if ($metaInfo['conversion_type'] === 'kelvin_to_fahrenheit' || $metaInfo['conversion_type'] === 'ms_to_mph') {
-                $precision = 1;
-            } else {
-                $precision = getPrecision($metaInfo['precision_type']);
-            }
-            $viewType    = $metaInfo['view_type'];
-            $values      = $columnData[$colName];
-            $displaySum  = isset($metaInfo['display_sum'])  && $metaInfo['display_sum']  === 'Yes';
-            $displayMean = isset($metaInfo['display_mean']) && $metaInfo['display_mean'] === 'Yes';
-
-            if ($viewType === 'numeric') {
-                // Filter numeric data
-                $validValues = array_filter($values, 'is_numeric');
-                if (count($validValues) !== count($values)) {
-                    $validValues = null;
+        // Table data rows
+        foreach ($tableData as $row) {
+            echo "<tr>";
+            foreach ($columns as $colName) {
+                $cellValue = isset($row[$colName]) ? $row[$colName] : '--';
+                // If climate data flagged, highlight with a CSS class (not bold)
+                $highlightClass = '';
+                if (isset($flaggedData[$row['Date']][$colName]) && $flaggedData[$row['Date']][$colName] === 'CLIMATE') {
+                    $highlightClass = 'climate-flag';
                 }
-                if (!empty($validValues)) {
-                    // Summation
-                    if ($displaySum) {
-                        $summarySumRow[$colName] = number_format(array_sum($validValues), $precision);
+
+                echo "<td class='$highlightClass'>$cellValue</td>";
+
+                // Store data for summaries
+                if ($colName != 'Date') {
+                    $metaInfo = getMetadataByDisplayName($colName, $metadata);
+                    if ($metaInfo) {
+                        $viewType = $metaInfo['view_type'];
+                        if ($viewType === 'numeric') {
+                            $columnData[$colName][] = is_numeric($cellValue) ? $cellValue : '--';
+                        } elseif ($viewType === 'text') {
+                            // For wind direction, store numeric degrees if available
+                            $originalDegrees = $row[$colName . '_degrees'] ?? '--';
+                            $columnData[$colName][] = is_numeric($originalDegrees) ? $originalDegrees : '--';
+                        }
                     } else {
-                        $summarySumRow[$colName] = '--';
+                        $columnData[$colName][] = '--';
                     }
-                    // Mean
+                }
+            }
+            echo "</tr>";
+        }
+    }
+
+    echo "</tbody>\n";
+
+    // Calculate summary rows
+    $summarySumRow  = [];
+    $summaryMeanRow = [];
+
+    // We'll do a final function that helps compute average direction if needed
+    foreach ($columns as $colName) {
+        if ($colName == 'Date') {
+            // We'll store the label but wrap in <b> for the final rendering
+            $summarySumRow[$colName]  = 'Total';
+            $summaryMeanRow[$colName] = 'Mean';
+        } else {
+            $metaInfo     = getMetadataByDisplayName($colName, $metadata);
+            if ($metaInfo) {
+                // Force precision of 1 if conversion_type is for temperature or wind.
+                if ($metaInfo['conversion_type'] === 'kelvin_to_fahrenheit' || $metaInfo['conversion_type'] === 'ms_to_mph') {
+                    $precision = 1;
+                } else {
+                    $precision = getPrecision($metaInfo['precision_type']);
+                }
+                $viewType    = $metaInfo['view_type'];
+                $values      = $columnData[$colName];
+                $displaySum  = isset($metaInfo['display_sum'])  && $metaInfo['display_sum']  === 'Yes';
+                $displayMean = isset($metaInfo['display_mean']) && $metaInfo['display_mean'] === 'Yes';
+
+                if ($viewType === 'numeric') {
+                    // Filter numeric data
+                    $validValues = array_filter($values, 'is_numeric');
+                    if (count($validValues) !== count($values)) {
+                        $validValues = null;
+                    }
+                    if (!empty($validValues)) {
+                        // Summation
+                        if ($displaySum) {
+                            $summarySumRow[$colName] = number_format(array_sum($validValues), $precision);
+                        } else {
+                            $summarySumRow[$colName] = '--';
+                        }
+                        // Mean
+                        if ($displayMean) {
+                            $mean = array_sum($validValues) / count($validValues);
+                            $summaryMeanRow[$colName] = number_format($mean, $precision, '.', '');
+                        } else {
+                            $summaryMeanRow[$colName] = '--';
+                        }
+                    } else {
+                        // No valid numeric entries
+                        $summarySumRow[$colName]  = '--';
+                        $summaryMeanRow[$colName] = '--';
+                    }
+                } elseif ($viewType === 'text') {
+                    // Potentially do mean wind direction if $displayMean is Yes
                     if ($displayMean) {
-                        $mean = array_sum($validValues) / count($validValues);
-                        $summaryMeanRow[$colName] = number_format($mean, $precision, '.', '');
+                        // We have stored numeric degrees in $values if they exist
+                        $validDegrees = array_filter($values, 'is_numeric');
+                        if (!empty($validDegrees)) {
+                            $sumSin = 0;
+                            $sumCos = 0;
+                            foreach ($validDegrees as $deg) {
+                                $rad = deg2rad($deg);
+                                $sumSin += sin($rad);
+                                $sumCos += cos($rad);
+                            }
+                            $avgRad = atan2($sumSin, $sumCos);
+                            $avgDeg = rad2deg($avgRad);
+                            if ($avgDeg < 0) {
+                                $avgDeg += 360;
+                            }
+                            // Convert average angle to cardinal direction
+                            $summaryMeanRow[$colName] = degreesToWindDirectionAvg($avgDeg);
+                        } else {
+                            $summaryMeanRow[$colName] = '--';
+                        }
                     } else {
                         $summaryMeanRow[$colName] = '--';
                     }
+                    // For sum, we do not sum directions
+                    $summarySumRow[$colName] = '--';
                 } else {
-                    // No valid numeric entries
+                    // For any other view type, skip summary
                     $summarySumRow[$colName]  = '--';
                     $summaryMeanRow[$colName] = '--';
                 }
-            } elseif ($viewType === 'text') {
-                // Potentially do mean wind direction if $displayMean is Yes
-                if ($displayMean) {
-                    // We have stored numeric degrees in $values if they exist
-                    $validDegrees = array_filter($values, 'is_numeric');
-                    if (!empty($validDegrees)) {
-                        $sumSin = 0;
-                        $sumCos = 0;
-                        foreach ($validDegrees as $deg) {
-                            $rad = deg2rad($deg);
-                            $sumSin += sin($rad);
-                            $sumCos += cos($rad);
-                        }
-                        $avgRad = atan2($sumSin, $sumCos);
-                        $avgDeg = rad2deg($avgRad);
-                        if ($avgDeg < 0) {
-                            $avgDeg += 360;
-                        }
-                        // Convert average angle to cardinal direction
-                        $summaryMeanRow[$colName] = degreesToWindDirectionAvg($avgDeg);
-                    } else {
-                        $summaryMeanRow[$colName] = '--';
-                    }
-                } else {
-                    $summaryMeanRow[$colName] = '--';
-                }
-                // For sum, we do not sum directions
-                $summarySumRow[$colName] = '--';
             } else {
-                // For any other view type, skip summary
+                // No metadata
                 $summarySumRow[$colName]  = '--';
                 $summaryMeanRow[$colName] = '--';
             }
-        } else {
-            // No metadata
-            $summarySumRow[$colName]  = '--';
-            $summaryMeanRow[$colName] = '--';
         }
     }
+
+    echo "<tfoot>\n";
+
+    // Render the sum row, all bold
+    echo "<tr>";
+    foreach ($columns as $colName) {
+        echo "<td><b>" . $summarySumRow[$colName] . "</b></td>";
+    }
+    echo "</tr>\n";
+
+    // Render the mean row, all bold
+    echo "<tr>";
+    foreach ($columns as $colName) {
+        echo "<td><b>" . $summaryMeanRow[$colName] . "</b></td>";
+    }
+    echo "</tr>\n";
+
+    echo "</tfoot>\n";
+    echo "</table>\n";
 }
-
-echo "<tfoot>\n";
-
-// Render the sum row, all bold
-echo "<tr>";
-foreach ($columns as $colName) {
-    echo "<td><b>" . $summarySumRow[$colName] . "</b></td>";
-}
-echo "</tr>\n";
-
-// Render the mean row, all bold
-echo "<tr>";
-foreach ($columns as $colName) {
-    echo "<td><b>" . $summaryMeanRow[$colName] . "</b></td>";
-}
-echo "</tr>\n";
-
-echo "</tfoot>\n";
-echo "</table>\n";
 echo "</div>\n"; // Close scrollable container
 
 // Embed metadata for JavaScript
