@@ -55,7 +55,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "basic",
         "display_sum"       => "No",
-        "display_mean"      => "Yes"
+        "display_mean"      => "Yes",
+        "display_units"     => "°F"
     ],
     [
         "data_name_full"    => "Max Daily Temp.",
@@ -65,7 +66,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "basic",
         "display_sum"       => "No",
-        "display_mean"      => "Yes"
+        "display_mean"      => "Yes",
+        "display_units"     => "°F"
     ],
     [
         "data_name_full"    => "Min Daily Temp.",
@@ -75,7 +77,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "basic",
         "display_sum"       => "No",
-        "display_mean"      => "Yes"
+        "display_mean"      => "Yes",
+        "display_units"     => "°F"
     ],
     [
         "data_name_full"    => "Mean Wind Speed",
@@ -85,7 +88,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "basic",
         "display_sum"       => "No",
-        "display_mean"      => "Yes"
+        "display_mean"      => "Yes",
+        "display_units"     => "mph"
     ],
     [
         "data_name_full"    => "Mean Wind Direction",
@@ -95,7 +99,8 @@ $metadata = [
         "view_type"         => "text",
         "display_type"      => "basic",
         "display_sum"       => "No",
-        "display_mean"      => "Yes"  // now compute monthly average direction
+        "display_mean"      => "Yes",
+        "display_units"     => ""  // cardinal direction; no unit needed
     ],
     [
         "data_name_full"    => "Peak Wind Gust Speed (Daily)",
@@ -105,7 +110,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "basic",
         "display_sum"       => "No",
-        "display_mean"      => "No"
+        "display_mean"      => "No",
+        "display_units"     => "mph"
     ],
     [
         "data_name_full"    => "Gage Precipitation (Daily)",
@@ -115,7 +121,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "basic",
         "display_sum"       => "Yes",
-        "display_mean"      => "No"
+        "display_mean"      => "No",
+        "display_units"     => "in"
     ],
     [
         "data_name_full"    => "Mean Daily Dew Point",
@@ -125,7 +132,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "basic",
         "display_sum"       => "No",
-        "display_mean"      => "Yes"
+        "display_mean"      => "Yes",
+        "display_units"     => "°F"
     ],
     [
         "data_name_full"    => "Daily Min WC",
@@ -135,7 +143,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "basic",
         "display_sum"       => "No",
-        "display_mean"      => "No"
+        "display_mean"      => "No",
+        "display_units"     => "°F"
     ],
     [
         "data_name_full"    => "Daily Max HI",
@@ -145,7 +154,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "basic",
         "display_sum"       => "No",
-        "display_mean"      => "No"
+        "display_mean"      => "No",
+        "display_units"     => "°F"
     ],
 
     // WATER
@@ -157,7 +167,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "water",
         "display_sum"       => "No",
-        "display_mean"      => "Yes"
+        "display_mean"      => "Yes",
+        "display_units"     => "°F"
     ],
     [
         "data_name_full"    => "Max Daily Water Temp",
@@ -167,7 +178,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "water",
         "display_sum"       => "No",
-        "display_mean"      => "No"
+        "display_mean"      => "No",
+        "display_units"     => "°F"
     ],
     [
         "data_name_full"    => "Min Daily Water Temp",
@@ -177,7 +189,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "water",
         "display_sum"       => "No",
-        "display_mean"      => "No"
+        "display_mean"      => "No",
+        "display_units"     => "°F"
     ],
     [
         "data_name_full"    => "Mean Daily Well Level",
@@ -187,7 +200,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "water",
         "display_sum"       => "No",
-        "display_mean"      => "Yes"
+        "display_mean"      => "Yes",
+        "display_units"     => "ft"
     ],
 
     // OTHER
@@ -200,7 +214,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "other",
         "display_sum"       => "No",
-        "display_mean"      => "Yes"
+        "display_mean"      => "Yes",
+        "display_units"     => "inHg"
     ],
     [
         "data_name_full"    => "Mean Daily RH",
@@ -210,7 +225,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "other",
         "display_sum"       => "No",
-        "display_mean"      => "Yes"
+        "display_mean"      => "Yes",
+        "display_units"     => "%"
     ],
    
     [
@@ -221,7 +237,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "other",
         "display_sum"       => "Yes",
-        "display_mean"      => "No"
+        "display_mean"      => "No",
+        "display_units"     => "°F"
     ],
     [
         "data_name_full"    => "Cooling Degree Days",
@@ -231,7 +248,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "other",
         "display_sum"       => "Yes",
-        "display_mean"      => "No"
+        "display_mean"      => "No",
+        "display_units"     => "°F"
     ],
     [
         "data_name_full"    => "Daily Solar",
@@ -241,7 +259,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "other",
         "display_sum"       => "Yes",
-        "display_mean"      => "No"
+        "display_mean"      => "No",
+        "display_units"     => "kWh/m²"
     ],
     
 
@@ -255,7 +274,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "ag",
         "display_sum"       => "No",
-        "display_mean"      => "Yes"
+        "display_mean"      => "Yes",
+        "display_units"     => "°F"
     ],
     [
         "data_name_full"    => "Daily Avg VWC",
@@ -265,7 +285,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "ag",
         "display_sum"       => "No",
-        "display_mean"      => "Yes"
+        "display_mean"      => "Yes",
+        "display_units"     => "%" // or appropriate unit of volumetric water content
     ],
     [
         "data_name_full"    => "Reference Evapotrans.",
@@ -275,7 +296,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "ag",
         "display_sum"       => "Yes",
-        "display_mean"      => "No"
+        "display_mean"      => "No",
+        "display_units"     => "in"
     ],
     [
         "data_name_full"    => "GDD32F",
@@ -285,7 +307,8 @@ $metadata = [
         "view_type"         => "numeric",
         "display_type"      => "ag",
         "display_sum"       => "Yes",
-        "display_mean"      => "No"
+        "display_mean"      => "No",
+        "display_units"     => "°F"
     ]
 ];
 
@@ -558,7 +581,13 @@ foreach ($columns as $colName) {
 }
 echo "</tr><tr>";
 foreach ($columns as $colName) {
-    echo "<th>" . ($colName === "Date" ? "" : ($uniqueDataTypes[$colName] ?? '')) . "</th>";
+    if ($colName === "Date") {
+        echo "<th></th>";
+    } else {
+        $meta = getMetadataByDisplayName($colName, $metadata);
+        $display_units = ($meta && isset($meta['display_units']) && $meta['display_units'] !== "") ? $meta['display_units'] : '';
+        echo "<th>$display_units</th>";
+    }
 }
 echo "</tr></thead>\n";
 echo "<tbody>\n";

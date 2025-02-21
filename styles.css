@@ -324,8 +324,9 @@ body {
         grid-template-areas:
             "station station"
             "left right";
-        gap: 10px;
-        align-items: center;
+        gap: 0px;  /* minimized gap between rows */
+        margin: 0; /* remove extra margins */
+        padding: 0; /* remove extra padding */
     }
     .center-controls {
         grid-area: station;
@@ -345,10 +346,27 @@ body {
         flex-wrap: nowrap;
         gap: 10px;
         justify-content: flex-end;
+        height: auto;
+        padding: 0;
+        margin: 0;
     }
     /* Ensure month/year select wrappers in left-controls use auto width */
     .left-controls .select-wrapper {
         width: auto;
+    }
+    /* Reduce vertical spacing for menu and table on small screens */
+    .top-controls {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+    .select-wrapper {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+    .table-container {
+        margin-top: 5px;
     }
 }
 
