@@ -110,8 +110,8 @@
         }
 
         @include breakpoint(small only) {
-            font-size:12px;    // new smaller font-size
-            line-height:16px;   // tighter line spacing
+            font-size:8px;    // smaller font-size on mobile
+            line-height:10px;   // adjusted line spacing
             text-align: center;  // center the title
             width: 100%;         // take full width on mobile
             margin-left: 0;      // remove left margin
@@ -162,6 +162,16 @@
                 text-decoration: none;
             }
         }
+    }
+
+    #header-nav .header-nav-option a,
+    #header-nav .header-nav-option a:link,
+    #header-nav .header-nav-option a:visited,
+    #header-nav .header-nav-option a:hover,
+    #header-nav .header-nav-option a:active {
+        color: #818181 !important;
+        text-decoration: none;
+        font-family: 'OpenSans', sans-serif;
     }
 
     @media screen and (max-width: 600px) {

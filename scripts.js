@@ -452,7 +452,7 @@ async function populateStationSelect() {
 // Call the function when the page loads
 window.addEventListener('DOMContentLoaded', populateStationSelect);
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     var tableCells = document.querySelectorAll('#dataTable td');
     var showMessage = Array.from(tableCells).some(function(cell) {
         return cell.textContent.includes("**");
@@ -467,7 +467,13 @@ document.addEventListener('DOMContentLoaded', function() {
         bottomMessage.style.fontStyle = 'italic';
         bottomMessage.style.fontSize = '1.2em';
         bottomMessage.style.marginTop = '20px';
-        document.body.appendChild(bottomMessage);
+        
+        var footer = document.getElementById('deos-footer');
+        if (footer) {
+            footer.parentNode.insertBefore(bottomMessage, footer);
+        } else {
+            document.body.appendChild(bottomMessage);
+        }
     }
 });
 
