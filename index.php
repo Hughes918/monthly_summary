@@ -567,7 +567,7 @@ echo "                    <option value='ag'>Ag Wx</option>\n";
 echo "                </select>\n";
 echo "                <i class='fa fa-caret-down'></i>\n";
 echo "            </div>\n";
-echo "            <button id='saveCsvButton' class='save-button' title='Save CSV'><i class='fa fa-save'></i></button>\n";
+echo "            <button id='saveCsvButton' class='save-button' title='Download CSV'><i class='fa fa-download'></i></button>\n";
 echo "        </div>\n";
 echo "    </div>\n";
 echo "</div>\n";
