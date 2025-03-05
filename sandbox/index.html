@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Monthly Average for DATA_TYPE_ID 44 (DIRL)</title>
+  <title>Daily Values for DATA_TYPES 44 &amp; 45 (DSJR) - 2024</title>
   <style>
     body { font-family: Arial, sans-serif; }
     table { border-collapse: collapse; width: 100%; margin-top: 20px; }
@@ -12,38 +12,40 @@
   </style>
 </head>
 <body>
-  <h1>Monthly Average for DATA_TYPE_ID 44 (DIRL)</h1>
+  <h1>Daily Values for DATA_TYPES 44 &amp; 45 (DSJR) - 2024</h1>
   
   <button id="downloadBtn">Download CSV</button>
   
   <table id="resultsTable">
     <thead>
       <tr>
-         <th>Month</th>
-         <th>Average Value</th>
+         <th>Date</th>
+         <th>Value 44</th>
+         <th>Value 45</th>
       </tr>
     </thead>
     <tbody>
       <!-- Table rows will be populated here -->
     </tbody>
   </table>
-
+  
   <script>
-    // Fetch the monthly averages from process.php and populate the table.
+    // Fetch the daily values from process.php.
     fetch('process.php')
       .then(response => response.json())
       .then(data => {
         const tbody = document.querySelector("#resultsTable tbody");
-        data.forEach(item => {
+        data.results.forEach(item => {
           const tr = document.createElement("tr");
-          
-          const tdMonth = document.createElement("td");
-          tdMonth.textContent = item.month;
-          const tdAverage = document.createElement("td");
-          tdAverage.textContent = item.average;
-          
-          tr.appendChild(tdMonth);
-          tr.appendChild(tdAverage);
+          const tdDate = document.createElement("td");
+          tdDate.textContent = item.date;
+          const tdVal44 = document.createElement("td");
+          tdVal44.textContent = item.value44;
+          const tdVal45 = document.createElement("td");
+          tdVal45.textContent = item.value45;
+          tr.appendChild(tdDate);
+          tr.appendChild(tdVal44);
+          tr.appendChild(tdVal45);
           tbody.appendChild(tr);
         });
       })
@@ -51,48 +53,38 @@
          console.error('Error fetching data:', error);
       });
 
-      
-      // Function to download the table data as a CSV file.
-  function downloadCSV() {
-    let csv = "";
-    
-    // Get the header row from <thead>
-    const headerRow = document.querySelector("table#resultsTable thead tr");
-    if (headerRow) {
-      const headerCols = headerRow.querySelectorAll("th");
-      let headerData = [];
-      headerCols.forEach(col => {
-        headerData.push('"' + col.textContent.replace(/"/g, '""') + '"');
+    // Function to download the table data as a CSV file.
+    function downloadCSV() {
+      let csv = "";
+      const headerRow = document.querySelector("table#resultsTable thead tr");
+      if (headerRow) {
+        const headerCols = headerRow.querySelectorAll("th");
+        let headerData = [];
+        headerCols.forEach(col => {
+          headerData.push('"' + col.textContent.replace(/"/g, '""') + '"');
+        });
+        csv += headerData.join(",") + "\n";
+      }
+      const rows = document.querySelectorAll("table#resultsTable tbody tr");
+      rows.forEach(row => {
+        const cols = row.querySelectorAll("td");
+        let rowData = [];
+        cols.forEach(col => {
+          rowData.push('"' + col.textContent.replace(/"/g, '""') + '"');
+        });
+        csv += rowData.join(",") + "\n";
       });
-      csv += headerData.join(",") + "\n";
+      const BOM = "\ufeff";
+      const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "daily_values.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
-    
-    // Get data rows from <tbody>
-    const rows = document.querySelectorAll("table#resultsTable tbody tr");
-    rows.forEach(row => {
-      const cols = row.querySelectorAll("td");
-      let rowData = [];
-      cols.forEach(col => {
-        rowData.push('"' + col.textContent.replace(/"/g, '""') + '"');
-      });
-      csv += rowData.join(",") + "\n";
-    });
-
-    // Prepend a BOM to ensure correct UTF-8 encoding
-    const BOM = "\ufeff";
-    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "monthly_averages.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
-
-  // Attach the click event to the download button.
-  document.getElementById("downloadBtn").addEventListener("click", downloadCSV);
-    
+    document.getElementById("downloadBtn").addEventListener("click", downloadCSV);
   </script>
 </body>
 </html>

@@ -320,7 +320,7 @@ $metadata = [
         "display_type"      => "ag",
         "display_sum"       => "No",
         "display_mean"      => "Yes",
-        "display_units"     => "%" // or appropriate unit of volumetric water content
+        "display_units"     => "g/g" // or appropriate unit of volumetric water content
     ],
     [
         "data_name_full"    => "Reference Evapotrans.",
@@ -516,6 +516,9 @@ foreach ($columns as $colName) {
 // Include the header, which outputs the DOCTYPE, HTML, head, and opening body tags.
 include('header.php');
 
+// Updated Monthly Summary banner div with enhanced styling (removed bottom border)
+echo "<div class='monthly-summary-div' style='background: #ffffff; padding: 15px; text-align: left; font-size: 32px; font-weight: bold; letter-spacing: 1px; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);'>Monthly Summary</div>\n";
+
 // Build HTML table
 echo "<!DOCTYPE html>\n";
 echo "<html lang='en'>\n";
@@ -601,6 +604,8 @@ echo "                </select>\n";
 echo "                <i class='fa fa-caret-down'></i>\n";
 echo "            </div>\n";
 echo "            <button id='saveCsvButton' class='save-button' title='Download CSV'><i class='fa fa-download'></i></button>\n";
+echo "            <!-- New info button -->\n";
+echo "            <button id='infoButton' class='info-button' title='Information'><i class='fa fa-info-circle'></i></button>\n";
 echo "        </div>\n";
 echo "    </div>\n";
 echo "</div>\n";
@@ -783,6 +788,21 @@ echo "</div>\n"; // Close scrollable container
 
 // Embed metadata for JavaScript
 echo "<script id='metadata' type='application/json'>" . json_encode($metadata) . "</script>\n";
+
+// Add the popup info container (hidden by default) before closing </body>
+echo "<div id='infoPopup' class='info-popup'>\n";
+echo "    <div class='info-popup-content'>\n";
+echo "        <h3>Monthly Summary Key</h3>\n";
+echo "        <ul>\n";
+echo "            <li>Red: Indicates the highest daily value of the month.</li>\n";
+echo "            <li>Blue: Indicates the lowest daily value of the month.</li>\n";
+echo "            <li>Green: Indicates the largest daily sum for the month.</li>\n";
+echo "            <li>Blue Shading: Highlights a multi-day rainfall total. While the daily values within this period may not be individually valid, their combined total is accurate.</li>\n";
+echo "            <li>'--': Denotes a missing value due to an insufficient number of valid readings for that day or for the month overall.</li>\n";
+echo "        </ul>\n";
+echo "        <button id='closeInfoPopup' class='close-popup'>Close</button>\n";
+echo "    </div>\n";
+echo "</div>\n";
 
 echo "</body></html>\n";
 

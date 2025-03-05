@@ -324,9 +324,8 @@ body {
         grid-template-areas:
             "station station"
             "left right";
-        gap: 0px;  /* minimized gap between rows */
-        margin: 0; /* remove extra margins */
-        padding: 0; /* remove extra padding */
+        gap: 10px;
+        align-items: center;
     }
     .center-controls {
         grid-area: station;
@@ -346,27 +345,10 @@ body {
         flex-wrap: nowrap;
         gap: 10px;
         justify-content: flex-end;
-        height: auto;
-        padding: 0;
-        margin: 0;
     }
     /* Ensure month/year select wrappers in left-controls use auto width */
     .left-controls .select-wrapper {
         width: auto;
-    }
-    /* Reduce vertical spacing for menu and table on small screens */
-    .top-controls {
-        margin-top: 5px;
-        margin-bottom: 5px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-    }
-    .select-wrapper {
-        margin-top: 5px;
-        margin-bottom: 5px;
-    }
-    .table-container {
-        margin-top: 5px;
     }
 }
 
@@ -375,4 +357,80 @@ table.dataTable thead {
     top: 0;
     z-index: 10;
     background: #fff;
+}
+
+/* Styles for the info button */
+.info-button {
+    background: none;
+    border: none;
+    font-size: 1.2em;
+    cursor: pointer;
+    margin-left: 10px;
+    margin-top: 10px; /* Changed from 12px to 11px */
+    color: #333;
+}
+
+/* Styles for the popup overlay and box */
+.info-popup {
+    display: none; /* hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.info-popup-content {
+    background-color: #fff;
+    margin: 10% auto; /* Reduced top margin */
+    padding: 20px;
+    border-radius: 5px;
+    max-width: 400px;
+    max-height: 90%;       /* Allow popup content to shrink if needed */
+    overflow-y: auto;      /* Enable vertical scrolling if content overflows */
+}
+
+.info-popup-content h3 {
+    margin-top: 0;
+    font-size: 1.5em;
+}
+
+.info-popup-content ul {
+    list-style-type: disc;
+    margin-left: 20px;
+}
+
+.close-popup {
+    background: #333;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    float: right;
+}
+
+.summary-title {
+    text-align: left;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.summary-title-wrapper {
+    text-align: left;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 20px;
+    background: linear-gradient(to bottom, 
+        #ffffff 0%,       /* top: white */
+        #e6e6e6 50%,      /* half way: light grey */
+        #bfbfbf 75%,      /* 3/4 down: medium grey */
+        #7f7f7f 90%,      /* 90% down: darker grey */
+        #000000 100%);    /* bottom: black */
+    border-bottom: 2px solid #000000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin-bottom: 10px;
 }

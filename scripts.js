@@ -452,6 +452,103 @@ async function populateStationSelect() {
 // Call the function when the page loads
 window.addEventListener('DOMContentLoaded', populateStationSelect);
 
+// Add a global variable to store metadata for station info
+let stationMetadata = null;
+
+// Function to populate station select element
+async function populateStationSelect() {
+    const selectElement = document.getElementById('station-select');
+    const metadataUrl = 'metadata.json'; // Ensure this path is correct relative to your HTML file
+
+    if (!selectElement) {
+        console.error('Select element with ID "station-select" not found in the DOM.');
+        return;
+    }
+
+    try {
+        console.log(`Fetching metadata from: ${metadataUrl}`);
+        const response = await fetch(metadataUrl);
+        console.log(`Fetch response status: ${response.status} ${response.statusText}`);
+        if (!response.ok) {
+            throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+        }
+        // Parse the JSON data and store globally
+        const metadata = await response.json();
+        stationMetadata = metadata;
+        console.log('Metadata successfully parsed:', metadata);
+
+        // Extract only DEOS stations for the select menu
+        const deosStations = [];
+        for (const stationKey in metadata) {
+            if (metadata.hasOwnProperty(stationKey)) {
+                const station = metadata[stationKey];
+                console.log(`Processing station: ${stationKey}, Network_name: ${station.Network_name}`);
+                if (station.Network_name === "DEOS") {
+                    console.log(`Adding DEOS station: ${station.Description} (Name: ${station.Name})`);
+                    deosStations.push({
+                        Name: station.Name,
+                        Description: station.Description
+                    });
+                }
+            }
+        }
+        console.log(`Total DEOS stations found: ${deosStations.length}`);
+        deosStations.sort((a, b) => a.Description.toUpperCase().localeCompare(b.Description.toUpperCase()));
+        console.log('Sorted DEOS stations:', deosStations);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const defaultStation = urlParams.get('station') || '';
+        console.log(`Default station from URL parameter: ${defaultStation}`);
+        let defaultStationExists = false;
+        deosStations.forEach(station => {
+            const option = document.createElement('option');
+            option.value = station.Name;
+            option.textContent = station.Description;
+            if (station.Name === defaultStation) {
+                option.selected = true;
+                defaultStationExists = true;
+                console.log(`Setting default selected station: ${station.Description} (Name: ${station.Name})`);
+            }
+            selectElement.appendChild(option);
+        });
+
+        if (defaultStation && !defaultStationExists) {
+            console.warn(`Default station "${defaultStation}" not found among DEOS stations.`);
+        }
+
+        if (deosStations.length === 0) {
+            console.warn('No DEOS stations available to display.');
+            const noOption = document.createElement('option');
+            noOption.value = "";
+            noOption.textContent = "No DEOS stations available";
+            selectElement.appendChild(noOption);
+        }
+
+        // Set default view based on the fetched station metadata
+        setDefaultViewBasedOnMetadata();
+    } catch (error) {
+        console.error('Error fetching or processing metadata:', error);
+        const errorOption = document.createElement('option');
+        errorOption.value = "";
+        errorOption.textContent = "Error loading stations";
+        selectElement.appendChild(errorOption);
+    }
+}
+
+// New helper to set default view based on station metadata
+function setDefaultViewBasedOnMetadata() {
+    const viewSelect = document.getElementById('viewSelect');
+    const stationSelect = document.getElementById('station-select');
+    if (viewSelect && stationSelect && stationMetadata) {
+        const currentStation = stationMetadata[stationSelect.value];
+        if (currentStation && currentStation.Weather_Station === "N") {
+            viewSelect.value = "water";
+            viewSelect.dispatchEvent(new Event('change'));
+            console.log('Default view set to Water due to Weather_Station == "N"');
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     var tableCells = document.querySelectorAll('#dataTable td');
     var showMessage = Array.from(tableCells).some(function(cell) {
@@ -490,5 +587,25 @@ document.addEventListener('DOMContentLoaded', function(){
             this.visible(meta && meta.display_type === selectedType);
         });
         dataTable.columns.adjust().draw();
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function(){
+    const infoButton = document.getElementById('infoButton');
+    const infoPopup = document.getElementById('infoPopup');
+    const closePopup = document.getElementById('closeInfoPopup');
+
+    infoButton.addEventListener('click', function(){
+        infoPopup.style.display = 'block';
+    });
+    closePopup.addEventListener('click', function(){
+        infoPopup.style.display = 'none';
+    });
+    
+    // Optional: hide popup if click outside the box
+    window.addEventListener('click', function(event) {
+        if (event.target == infoPopup) {
+            infoPopup.style.display = 'none';
+        }
     });
 });
