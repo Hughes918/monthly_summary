@@ -30,6 +30,8 @@ function getQueryParams() {
 
 // Refresh page with new parameters
 function refreshWithNewParams() {
+    // Store current scroll position
+    sessionStorage.setItem("scrollPos", window.scrollY);
     const station = document.getElementById("station-select").value;
     const month = document.getElementById("month").value;
     const year = document.getElementById("year").value;
@@ -45,6 +47,12 @@ function refreshWithNewParams() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Restore scroll position if available
+    const scrollPos = sessionStorage.getItem("scrollPos");
+    if (scrollPos) {
+        window.scrollTo(0, parseInt(scrollPos));
+        sessionStorage.removeItem("scrollPos");
+    }
     const { station, date } = getQueryParams();
 
     // Pre-fill station input

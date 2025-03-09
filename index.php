@@ -531,7 +531,6 @@ echo "        <li>✅ Monthly statistics for DEOS hydrologic parameters</li>\n";
 echo "        <li>✅ Improved quality control of the underlying data</li>\n";
 echo "      </ul>\n";
 echo "      <p>We’re still updating our historical climate stats, so data is currently available from 2015 onward. The full dataset (back to 2004) should be available later this summer.</p>\n";
-echo "      <p>➡️ Explore the new summaries now!</p>\n";
 echo "    </div>\n";
 echo "  </div>\n";
 echo "</div>\n";
