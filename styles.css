@@ -325,7 +325,7 @@ body {
             "station"
             "left"
             "right";
-        gap: 10px;
+        gap: 8px; /* reduced gap between rows */
         align-items: center;
     }
     .center-controls {
@@ -340,6 +340,9 @@ body {
     }
     .left-controls .select-wrapper {
         flex: 1 1 45%;  /* allow both dropdowns to share the row */
+    }
+    .left-controls .select-wrapper:first-child {
+        margin-right: 5px; /* space between month and year dropdowns */
     }
     .right-controls {
         grid-area: right;
