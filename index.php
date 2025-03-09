@@ -9,7 +9,7 @@ if (!empty($queryString)) {
     $station_name = !empty($queryParams['station']) ? htmlspecialchars($queryParams['station']) : 'DAGF';
     $date = !empty($queryParams['date']) ? htmlspecialchars($queryParams['date']) : strtoupper(date('M')) . '_' . date('Y');
 } else {
-    $station_name = 'DAGF';
+    $station_name = '';
     $date = strtoupper(date('M')) . '_' . date('Y');
 }
 
