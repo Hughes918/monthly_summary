@@ -6,11 +6,11 @@ $queryString = $_SERVER['QUERY_STRING'] ?? (isset($_SERVER['REQUEST_URI']) ? par
 
 if (!empty($queryString)) {
     parse_str($queryString, $queryParams);
-    $station_name = !empty($queryParams['station']) ? htmlspecialchars($queryParams['station']) : 'DWWK';
-    $date = !empty($queryParams['date']) ? htmlspecialchars($queryParams['date']) : 'JUN_2023';
+    $station_name = !empty($queryParams['station']) ? htmlspecialchars($queryParams['station']) : 'DAGF';
+    $date = !empty($queryParams['date']) ? htmlspecialchars($queryParams['date']) : strtoupper(date('M')) . '_' . date('Y');
 } else {
-    $station_name = 'DWWK';
-    $date = 'JUN_2023';
+    $station_name = 'DAGF';
+    $date = strtoupper(date('M')) . '_' . date('Y');
 }
 
 // Validate and convert date
