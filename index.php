@@ -294,7 +294,7 @@ $metadata = [
         "display_type"      => "other",
         "display_sum"       => "Yes",
         "display_mean"      => "No",
-        "display_units"     => "kWh/m²"
+        "display_units"     => "MJ"
     ],
     
 

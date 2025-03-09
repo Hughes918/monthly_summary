@@ -319,11 +319,12 @@ body {
 @media screen and (max-width: 600px) {
     .top-controls {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto auto;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
         grid-template-areas:
-            "station station"
-            "left right";
+            "station"
+            "left"
+            "right";
         gap: 10px;
         align-items: center;
     }
@@ -334,21 +335,15 @@ body {
     }
     .left-controls {
         grid-area: left;
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 10px;
-        justify-content: flex-start;
+        justify-content: center;
     }
     .right-controls {
         grid-area: right;
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 10px;
-        justify-content: flex-end;
+        justify-content: center;
     }
-    /* Ensure month/year select wrappers in left-controls use auto width */
-    .left-controls .select-wrapper {
-        width: auto;
+    /* Optional: ensure select wrappers take full width */
+    .select-wrapper {
+        width: 100%;
     }
 }
 
