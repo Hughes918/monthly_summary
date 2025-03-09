@@ -516,8 +516,39 @@ foreach ($columns as $colName) {
 // Include the header, which outputs the DOCTYPE, HTML, head, and opening body tags.
 include('header.php');
 
-// Updated Monthly Summary banner div with enhanced styling (removed bottom border)
-echo "<div class='monthly-summary-div' style='background: #ffffff; padding: 15px; text-align: left; font-size: 32px; font-weight: bold; letter-spacing: 1px; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);'>Monthly Summary</div>\n";
+// Replace the current banner output with:
+echo "<div class='summary-banner-container'>\n";
+echo "  <div class='banner-title'>Monthly Summary</div>\n";
+echo "  <div class='collapsed-banner'>\n";
+echo "    <span>📢 New: DEOS Monthly Summaries! Now with CSV downloads, improved hydrologic stats, and better data quality. </span>\n";
+echo "    <a href='#' id='toggleBanner'>[Click to Learn More]</a>\n";
+echo "    <div class='expanded-banner' style='display:none;'>\n";
+echo "      <p>Welcome to the new DEOS Monthly Summaries page!</p>\n";
+echo "      <p>We’ve made major improvements, including:</p>\n";
+echo "      <ul>\n";
+echo "        <li>✅ CSV downloads for easy data access</li>\n";
+echo "        <li>✅ Monthly statistics for DEOS hydrologic parameters</li>\n";
+echo "        <li>✅ Improved quality control of the underlying data</li>\n";
+echo "      </ul>\n";
+echo "      <p>We’re still updating our historical climate stats, so data is currently available from 2015 onward. The full dataset (back to 2004) should be available later this summer.</p>\n";
+echo "      <p>➡️ Explore the new summaries now!</p>\n";
+echo "    </div>\n";
+echo "  </div>\n";
+echo "</div>\n";
+
+echo "<script>\n";
+echo "document.getElementById('toggleBanner').addEventListener('click', function(e) {\n";
+echo "    e.preventDefault();\n";
+echo "    var expanded = document.querySelector('.expanded-banner');\n";
+echo "    if(expanded.style.display === 'none'){\n";
+echo "         expanded.style.display = 'block';\n";
+echo "         this.textContent = '[Show Less]';\n";
+echo "    } else {\n";
+echo "         expanded.style.display = 'none';\n";
+echo "         this.textContent = '[Click to Learn More]';\n";
+echo "    }\n";
+echo "});\n";
+echo "</script>\n";
 
 // Build HTML table
 echo "<!DOCTYPE html>\n";
