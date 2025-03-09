@@ -336,6 +336,10 @@ body {
     .left-controls {
         grid-area: left;
         justify-content: center;
+        flex-wrap: nowrap; /* ensure left controls do not wrap */
+    }
+    .left-controls .select-wrapper {
+        flex: 1 1 45%;  /* allow both dropdowns to share the row */
     }
     .right-controls {
         grid-area: right;
