@@ -42,15 +42,20 @@ table.dataTable th, table.dataTable td {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 8px;
-    border: 1px solid #ddd;
+    padding: 10px 10px; /* changed from 8px */
+    border: 2px solid #ddd;
 }
 
-/* Remove all spacing and borders between header rows */
+/* Remove border, padding, and margin from all header cells */
 table.dataTable thead th {
     border-bottom: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    padding: 5px !important;
+    margin: 5px !important;
+}
+
+/* Add border-bottom only to cells in the second header row */
+table.dataTable thead tr:nth-child(2) th {
+    border-bottom: 1px solid #ddd !important;
 }
 
 table.dataTable thead tr:nth-child(2) th {
@@ -192,6 +197,17 @@ table.dataTable thead .sorting_desc {
     .custom-select {
         font-size: 14px;
         padding: 8px 12px;
+    }
+
+    /* NEW: Override table container and cell styles for mobile */
+    .table-container {
+        white-space: normal;  /* Allow wrapping on mobile */
+    }
+
+    table.dataTable th, 
+    table.dataTable td {
+        white-space: normal;  /* Allow cells to wrap text */
+        word-break: break-word;  /* Break long words if necessary */
     }
 }
 

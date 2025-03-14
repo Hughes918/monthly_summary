@@ -104,6 +104,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     });
 
+    // NEW: Force column adjustment on initial load after a short delay
+    setTimeout(function() {
+        dataTable.columns.adjust();
+    }, 100);
+
     // Handle consecutive climate-flagged precip
     const precipColumnIndex = $('#dataTable thead tr:first-child th').toArray().findIndex(th =>
         $(th).text().toLowerCase().includes('precip')
@@ -113,30 +118,52 @@ document.addEventListener('DOMContentLoaded', () => {
         const rows = $('#dataTable tbody tr');
         let consecutiveSum = 0;
         let consecutiveStartRow = null;
-
+        let dayCount = 0;
         rows.each(function () {
             const cell = $(this).find('td').eq(precipColumnIndex);
             const cellValue = parseFloat(cell.text());
             const isClimateFlagged = cell.hasClass('climate-flag');
-
+            
             if (isClimateFlagged) {
                 if (consecutiveStartRow === null) {
                     consecutiveStartRow = $(this);
+                    dayCount = 1;
+                    // For a single-day event, leave the cell and later remove blue shading.
+                } else {
+                    dayCount++;
+                    if (dayCount === 2) {
+                        cell.html("<i>Multiday Total</i>");  // updated to show italics
+                    } else {
+                        cell.text('**');
+                    }
                 }
                 if (!isNaN(cellValue)) {
                     consecutiveSum += cellValue;
                 }
-                cell.text('**');
             } else if (consecutiveStartRow !== null) {
-                // Place the total in the start row
-                consecutiveStartRow
-                    .find('td')
-                    .eq(precipColumnIndex)
-                    .text(`${consecutiveSum.toFixed(2)}*`);
+                if (dayCount > 1) {
+                    consecutiveStartRow.find('td').eq(precipColumnIndex)
+                        .text(`${consecutiveSum.toFixed(2)}*`);
+                } else {
+                    // Remove the blue shading for a single-day event.
+                    consecutiveStartRow.find('td').eq(precipColumnIndex)
+                        .removeClass('climate-flag');
+                }
                 consecutiveStartRow = null;
                 consecutiveSum = 0;
+                dayCount = 0;
             }
         });
+        // If the last row(s) are climate flagged:
+        if (consecutiveStartRow !== null) {
+            if (dayCount > 1) {
+                consecutiveStartRow.find('td').eq(precipColumnIndex)
+                    .text(`${consecutiveSum.toFixed(2)}*`);
+            } else {
+                consecutiveStartRow.find('td').eq(precipColumnIndex)
+                    .removeClass('climate-flag');
+            }
+        }
     }
 
     // Column toggle buttons
@@ -219,6 +246,11 @@ document.addEventListener('DOMContentLoaded', () => {
         link.click();
         document.body.removeChild(link);
     });
+
+    // Add window resize handler to force header adjustment
+    window.addEventListener('resize', function() {
+        dataTable.columns.adjust();
+    });
 });
 
 // Highlight extremes based on column type
@@ -261,27 +293,32 @@ function highlightExtremes() {
                 if (val === maxValue) {
                     cell.style.color = "red";
                     cell.style.fontWeight = "bold";
+                    cell.style.fontStyle = "italic";
                 } else if (val === minValue) {
                     cell.style.color = "blue";
                     cell.style.fontWeight = "bold";
+                    cell.style.fontStyle = "italic";
                 }
             } else if (["wind_gust", "wind"].includes(columnType) || columnType === "precip") {
                 const isPartOfMultiDayClog = cell.classList.contains('climate-flag');  // Check if cell has the clog flag
             
                 if (val === maxValue && !isPartOfMultiDayClog) {
-                    cell.style.color = "green";
+                    cell.style.color = "green"; // Changed from orange to green (or use "violet" if preferred)
                     cell.style.fontWeight = "bold";
+                    cell.style.fontStyle = "italic";
                 }
             
             } else if (columnType === "heat_index") {
                 if (val === maxValue) {
                     cell.style.color = "red";
                     cell.style.fontWeight = "bold";
+                    cell.style.fontStyle = "italic";
                 }
             } else if (columnType === "wind_chill") {
                 if (val === minValue) {
                     cell.style.color = "blue";
                     cell.style.fontWeight = "bold";
+                    cell.style.fontStyle = "italic";
                 }
             }
         });
@@ -557,30 +594,7 @@ function setDefaultViewBasedOnMetadata() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    var tableCells = document.querySelectorAll('#dataTable td');
-    var showMessage = Array.from(tableCells).some(function(cell) {
-        return cell.textContent.includes("**");
-    });
-    if (showMessage) {
-        var bottomMessage = document.createElement('div');
-        bottomMessage.className = 'bottom-message';
-        bottomMessage.textContent = '* Blue shading indicates a multiday total.';
-        bottomMessage.style.textAlign = 'center';
-        bottomMessage.style.color = 'red';
-        bottomMessage.style.fontWeight = 'bold';
-        bottomMessage.style.fontStyle = 'italic';
-        bottomMessage.style.fontSize = '1.2em';
-        bottomMessage.style.marginTop = '20px';
-        
-        var footer = document.getElementById('deos-footer');
-        if (footer) {
-            footer.parentNode.insertBefore(bottomMessage, footer);
-        } else {
-            document.body.appendChild(bottomMessage);
-        }
-    }
-});
+
 
 document.addEventListener('DOMContentLoaded', function(){
     const viewSelect = document.getElementById('viewSelect');
