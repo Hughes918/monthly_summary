@@ -554,14 +554,29 @@ echo "<!DOCTYPE html>\n";
 echo "<html lang='en'>\n";
 echo "<head>\n";
 echo "    <meta charset='UTF-8'>\n";
-echo "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>\n"; // Add viewport meta tag
-echo "    <!-- Insert Google Tag Manager snippet here -->\n";
+echo "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>\n";
+// Google Tag Manager / GA snippet
 echo "    <script async src='https://www.googletagmanager.com/gtag/js?id=G-BTMTESR1DZ'></script>\n";
 echo "    <script>\n";
 echo "        window.dataLayer = window.dataLayer || [];\n";
 echo "        function gtag(){dataLayer.push(arguments);}\n";
 echo "        gtag('js', new Date());\n";
 echo "        gtag('config', 'G-BTMTESR1DZ');\n";
+echo "    </script>\n";
+// Script to read URL parameters and optionally track them
+echo "    <script>\n";
+echo "        // Create a URLSearchParams object from the current URL's query string\n";
+echo "        const params = new URLSearchParams(window.location.search);\n";
+echo "        // Log all query parameters to the console\n";
+echo "\n";
+echo "        // Example: Track the 'station' parameter as a custom event if it exists\n";
+echo "        const station = params.get('station');\n";
+echo "        if (station) {\n";
+echo "            gtag('event', 'station_parameter_detected', {\n";
+echo "                'event_category': 'URL Parameters',\n";
+echo "                'event_label': station\n";
+echo "            });\n";
+echo "        }\n";
 echo "    </script>\n";
 echo "    <title>Responsive Data Table</title>\n";
 echo "    <!-- DataTables CSS -->\n";
