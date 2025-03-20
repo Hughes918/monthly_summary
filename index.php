@@ -555,6 +555,14 @@ echo "<html lang='en'>\n";
 echo "<head>\n";
 echo "    <meta charset='UTF-8'>\n";
 echo "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>\n"; // Add viewport meta tag
+echo "    <!-- Insert Google Tag Manager snippet here -->\n";
+echo "    <script async src='https://www.googletagmanager.com/gtag/js?id=G-BTMTESR1DZ'></script>\n";
+echo "    <script>\n";
+echo "        window.dataLayer = window.dataLayer || [];\n";
+echo "        function gtag(){dataLayer.push(arguments);}\n";
+echo "        gtag('js', new Date());\n";
+echo "        gtag('config', 'G-BTMTESR1DZ');\n";
+echo "    </script>\n";
 echo "    <title>Responsive Data Table</title>\n";
 echo "    <!-- DataTables CSS -->\n";
 echo "    <link rel='stylesheet' href='https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css'>\n";
