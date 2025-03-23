@@ -20,6 +20,7 @@ table.dataTable tfoot td:first-child {
 .table-container {
     overflow-x: auto;
     white-space: nowrap;
+    padding: 10px; /* added buffer on edges */
 }
 
 /* Remove unnecessary scrollbars */
@@ -202,6 +203,7 @@ table.dataTable thead .sorting_desc {
     /* NEW: Override table container and cell styles for mobile */
     .table-container {
         white-space: normal;  /* Allow wrapping on mobile */
+        padding: 0;           /* remove buffer in mobile */
     }
 
     table.dataTable th, 
@@ -256,6 +258,7 @@ body {
 .table-container {
     overflow-x: auto;
     white-space: nowrap;
+    padding: 10px; /* added buffer on edges */
 }
 
 /* Table styling */

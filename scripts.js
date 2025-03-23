@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // Function to populate the selection menu
 async function populateStationSelect() {
     const selectElement = document.getElementById('station-select');
-    const metadataUrl = 'metadata.json'; // Ensure this path is correct relative to your HTML file
+    const metadataUrl = 'metadata_new.json'; // Ensure this path is correct relative to your HTML file
 
     // Verify that the select element exists
     if (!selectElement) {
@@ -396,27 +396,42 @@ async function populateStationSelect() {
         }
 
         // Parse the JSON data
-        const metadata = await response.json();
-        console.log('Metadata successfully parsed:', metadata);
+        let metadata = await response.json();
+        // Ensure metadata is array-based regardless of original structure
+        let stations = [];
+        if (Array.isArray(metadata)) {
+            stations = metadata;
+        } else {
+            for (const stationKey in metadata) {
+                if (metadata.hasOwnProperty(stationKey)) {
+                    let stationObj = metadata[stationKey];
+                    // If the station has no name property, use the key itself.
+                    if (!stationObj.name && !stationObj.Name) {
+                        stationObj.Name = stationKey;
+                    }
+                    // If no description is provided, fallback to station name.
+                    if (!stationObj.description && !stationObj.Description) {
+                        stationObj.Description = stationObj.Name;
+                    }
+                    stations.push(stationObj);
+                }
+            }
+        }
+        console.log('Metadata successfully parsed:', stations);
 
         // Extract DEOS stations
         const deosStations = [];
 
-        for (const stationKey in metadata) {
-            if (metadata.hasOwnProperty(stationKey)) {
-                const station = metadata[stationKey];
-                console.log(`Processing station: ${stationKey}, Network_name: ${station.Network_name}`);
-
-                // Check if Network_name is "DEOS"
-                if (station.Network_name === "DEOS") {
-                    console.log(`Adding DEOS station: ${station.Description} (Name: ${station.Name})`);
-                    deosStations.push({
-                        Name: station.Name,
-                        Description: station.Description
-                    });
-                }
-            }
-        }
+        stations.forEach(station => {
+            let stationName = station.name || station.Name;
+            let stationDescription = station.description || station.Description;
+            console.log(`Processing station: ${stationName}`);  
+            // Always add the station
+            deosStations.push({
+                Name: stationName,
+                Description: stationDescription || stationName
+            });
+        });
 
         console.log(`Total DEOS stations found: ${deosStations.length}`);
 
@@ -500,10 +515,13 @@ window.addEventListener('DOMContentLoaded', populateStationSelect);
 // Add a global variable to store metadata for station info
 let stationMetadata = null;
 
+// Add global variable for object lookup by station name
+let stationMetadataObj = {};
+
 // Function to populate station select element
 async function populateStationSelect() {
     const selectElement = document.getElementById('station-select');
-    const metadataUrl = 'metadata.json'; // Ensure this path is correct relative to your HTML file
+    const metadataUrl = 'metadata_new.json'; // Ensure this path is correct relative to your HTML file
 
     if (!selectElement) {
         console.error('Select element with ID "station-select" not found in the DOM.');
@@ -518,34 +536,99 @@ async function populateStationSelect() {
             throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
         }
         // Parse the JSON data and store globally
-        const metadata = await response.json();
+        let metadata = await response.json();
         stationMetadata = metadata;
         console.log('Metadata successfully parsed:', metadata);
 
-        // Extract only DEOS stations for the select menu
-        const deosStations = [];
-        for (const stationKey in metadata) {
-            if (metadata.hasOwnProperty(stationKey)) {
-                const station = metadata[stationKey];
-                console.log(`Processing station: ${stationKey}, Network_name: ${station.Network_name}`);
-                if (station.Network_name === "DEOS") {
-                    console.log(`Adding DEOS station: ${station.Description} (Name: ${station.Name})`);
-                    deosStations.push({
-                        Name: station.Name,
-                        Description: station.Description
-                    });
+        // Ensure metadata is array-based regardless of original structure
+        let stations = [];
+        if (Array.isArray(metadata)) {
+            stations = metadata;
+            // Convert array to an object keyed by station Name
+            stationMetadataObj = {};
+            stations.forEach(function(station) {
+                stationMetadataObj[station.Name] = station;
+            });
+        } else {
+            for (const stationKey in metadata) {
+                if (metadata.hasOwnProperty(stationKey)) {
+                    let stationObj = metadata[stationKey];
+                    // If the station has no name property, use the key itself.
+                    if (!stationObj.name && !stationObj.Name) {
+                        stationObj.Name = stationKey;
+                    }
+                    // If no description is provided, fallback to station name.
+                    if (!stationObj.description && !stationObj.Description) {
+                        stationObj.Description = stationObj.Name;
+                    }
+                    stations.push(stationObj);
                 }
             }
+            // Use the original object (assumed keyed by station codes) directly
+            stationMetadataObj = metadata;
         }
-        console.log(`Total DEOS stations found: ${deosStations.length}`);
-        deosStations.sort((a, b) => a.Description.toUpperCase().localeCompare(b.Description.toUpperCase()));
-        console.log('Sorted DEOS stations:', deosStations);
 
+        // NEW: Get the selected year and month from the dropdowns.
+        const selectedYear = parseInt(document.getElementById('year').value);
+        const selectedMonthCode = document.getElementById('month').value.toUpperCase();
+        const monthMapping = { "JAN":0, "FEB":1, "MAR":2, "APR":3, "MAY":4, "JUN":5, "JUL":6, "AUG":7, "SEP":8, "OCT":9, "NOV":10, "DEC":11 };
+        const selectedMonth = monthMapping[selectedMonthCode] !== undefined ? monthMapping[selectedMonthCode] : 0;
+
+        // Extract DEOS stations with grouping into two arrays.
+        let pondStations = [];
+        let otherStations = [];
+        stations.forEach(station => {
+            let stationName = station.name || station.Name;
+            let stationDescription = station.description || station.Description || stationName;
+            // NEW: Check if station's first_observation is available, and compare both year and month.
+            let hasData = false;
+            if (station.first_observation) {
+                let dt = new Date(station.first_observation);
+                let fo_year = dt.getFullYear();
+                let fo_month = dt.getMonth(); // 0-indexed
+                if (!isNaN(fo_year)) {
+                    if (fo_year < selectedYear) {
+                        hasData = true;
+                    } else if (fo_year === selectedYear && fo_month <= selectedMonth) {
+                        hasData = true;
+                    }
+                }
+            }
+            // Append a no-data icon if not valid.
+            if (!hasData) {
+                stationDescription += " 🚫";
+            }
+            console.log(`Processing station: ${stationName} -> ${stationDescription}`);
+            // Updated grouping: include stations with 'pond' OR 'lake' in the description.
+            if (stationDescription.toLowerCase().includes("pond") || stationDescription.toLowerCase().includes("lake")) {
+                pondStations.push({ Name: stationName, Description: stationDescription });
+            } else {
+                otherStations.push({ Name: stationName, Description: stationDescription });
+            }
+        });
+        otherStations.sort((a, b) => a.Description.toUpperCase().localeCompare(b.Description.toUpperCase()));
+        pondStations.sort((a, b) => a.Description.toUpperCase().localeCompare(b.Description.toUpperCase()));
+        
+        // Read the default station from URL
         const urlParams = new URLSearchParams(window.location.search);
         const defaultStation = urlParams.get('station') || '';
         console.log(`Default station from URL parameter: ${defaultStation}`);
         let defaultStationExists = false;
-        deosStations.forEach(station => {
+        
+        // Instead of optgroups, create header rows as disabled options
+        
+        // Create header for Meteorological
+        const headerMeteorological = document.createElement('option');
+        headerMeteorological.textContent = "Meteorological";
+        headerMeteorological.disabled = true;
+        headerMeteorological.style.fontWeight = "bold";
+        headerMeteorological.style.color = "red";
+        headerMeteorological.style.backgroundColor = "#d3e0ea"; // light blue
+        headerMeteorological.style.padding = "5px 0";
+        selectElement.appendChild(headerMeteorological);
+        
+        // Append options for non-"pond" stations
+        otherStations.forEach(station => {
             const option = document.createElement('option');
             option.value = station.Name;
             option.textContent = station.Description;
@@ -556,12 +639,35 @@ async function populateStationSelect() {
             }
             selectElement.appendChild(option);
         });
-
+        
+        // Create header for Hydrological/Pond
+        const headerHydro = document.createElement('option');
+        headerHydro.textContent = "Hydrological/Pond";
+        headerHydro.disabled = true;
+        headerHydro.style.fontWeight = "bold";
+        headerHydro.style.color = "red";
+        headerHydro.style.backgroundColor = "#f2d7d5"; // light red
+        headerHydro.style.padding = "5px 0";
+        selectElement.appendChild(headerHydro);
+        
+        // Append options for "pond" stations
+        pondStations.forEach(station => {
+            const option = document.createElement('option');
+            option.value = station.Name;
+            option.textContent = station.Description;
+            if (station.Name === defaultStation) {
+                option.selected = true;
+                defaultStationExists = true;
+                console.log(`Setting default selected station: ${station.Description} (Name: ${station.Name})`);
+            }
+            selectElement.appendChild(option);
+        });
+        
         if (defaultStation && !defaultStationExists) {
             console.warn(`Default station "${defaultStation}" not found among DEOS stations.`);
         }
-
-        if (deosStations.length === 0) {
+        
+        if (otherStations.length + pondStations.length === 0) {
             console.warn('No DEOS stations available to display.');
             const noOption = document.createElement('option');
             noOption.value = "";
@@ -584,17 +690,20 @@ async function populateStationSelect() {
 function setDefaultViewBasedOnMetadata() {
     const viewSelect = document.getElementById('viewSelect');
     const stationSelect = document.getElementById('station-select');
-    if (viewSelect && stationSelect && stationMetadata) {
-        const currentStation = stationMetadata[stationSelect.value];
-        if (currentStation && currentStation.Weather_Station === "N") {
+    if (viewSelect && stationSelect) {
+        // Convert options to an array and locate the "Hydrological/Pond" header index.
+        const optionsArray = Array.from(stationSelect.options);
+        const pondHeaderIndex = optionsArray.findIndex(opt => opt.disabled && opt.textContent.trim() === "Hydrological/Pond");
+        // If the selected option appears after the pond header (and pond header exists), set view to water.
+        if (pondHeaderIndex !== -1 && stationSelect.selectedIndex > pondHeaderIndex) {
             viewSelect.value = "water";
-            viewSelect.dispatchEvent(new Event('change'));
-            console.log('Default view set to Water due to Weather_Station == "N"');
+        } else {
+            viewSelect.value = "basic";
         }
+        viewSelect.dispatchEvent(new Event('change'));
+        console.log(`Default view set to ${viewSelect.value} (selected index: ${stationSelect.selectedIndex})`);
     }
 }
-
-
 
 document.addEventListener('DOMContentLoaded', function(){
     const viewSelect = document.getElementById('viewSelect');

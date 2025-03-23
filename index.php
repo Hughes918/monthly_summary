@@ -19,13 +19,11 @@ if (strpos($date, '_') !== false) {
     $dateObj = DateTime::createFromFormat('M', ucfirst(strtolower($month)));
 
     if ($dateObj && is_numeric($year)) {
-     
         $monthNumber = $dateObj->format('m');
         $start_date  = "$year-$monthNumber-01";
         $end_date    = date("Y-m-t", strtotime($start_date));
         // JSON data URL
         $jsonFile = "http://150.136.239.199/almanac/retrieve.old.php?start=$start_date&end=$end_date&station_name=$station_name&raw_values=Y";
-       
     } else {
         die("Invalid month or year format provided.<br>");
     }
@@ -41,7 +39,7 @@ if ($data === null) {
 }
 
 /**
- * Metadata array with conditional sum/mean
+ * Metadata array with conditional sum/mean.
  * Note: Removed second 'Gage Precipitation (Daily)' in 'ag' to avoid duplicating precipitation.
  * Now including Mean Wind Direction's monthly average by setting display_mean => 'Yes'.
  */
@@ -157,7 +155,6 @@ $metadata = [
         "display_mean"      => "No",
         "display_units"     => "°F"
     ],
-
     // WATER
     [
         "data_name_full"    => "Mean Water Temp",
@@ -206,7 +203,7 @@ $metadata = [
     [
         "data_name_full"    => "Mean Daily Gage Height",
         "data_name_display" => "Gage Height",
-        "conversion_type"   => "m_to_ft", // updated conversion type
+        "conversion_type"   => "m_to_ft",
         "precision_type"    => 2,
         "view_type"         => "numeric",
         "display_type"      => "water",
@@ -217,7 +214,7 @@ $metadata = [
     [
         "data_name_full"    => "Max Daily Gage Height.",
         "data_name_display" => "Max Gage Height",
-        "conversion_type"   => "m_to_ft", // updated conversion type
+        "conversion_type"   => "m_to_ft",
         "precision_type"    => 2,
         "view_type"         => "numeric",
         "display_type"      => "water",
@@ -225,11 +222,10 @@ $metadata = [
         "display_mean"      => "Yes",
         "display_units"     => "ft"
     ],
-
     [
         "data_name_full"    => "Min Daily Gage Height.",
         "data_name_display" => "Min Gage Height",
-        "conversion_type"   => "m_to_ft", // updated conversion type
+        "conversion_type"   => "m_to_ft",
         "precision_type"    => 2,
         "view_type"         => "numeric",
         "display_type"      => "water",
@@ -237,9 +233,7 @@ $metadata = [
         "display_mean"      => "Yes",
         "display_units"     => "ft"
     ],
-
     // OTHER
-  
     [
         "data_name_full"    => "Mean Daily Barometric Pressure",
         "data_name_display" => "Pressure",
@@ -249,7 +243,7 @@ $metadata = [
         "display_type"      => "other",
         "display_sum"       => "No",
         "display_mean"      => "Yes",
-        "display_units"     => "mb" // changed from inHg
+        "display_units"     => "mb"
     ],
     [
         "data_name_full"    => "Mean Daily RH",
@@ -262,7 +256,6 @@ $metadata = [
         "display_mean"      => "Yes",
         "display_units"     => "%"
     ],
-   
     [
         "data_name_full"    => "Heating Degree Days",
         "data_name_display" => "HDD",
@@ -296,10 +289,7 @@ $metadata = [
         "display_mean"      => "No",
         "display_units"     => "MJ"
     ],
-    
-
     // AG
-    // Note: removed second 'Gage Precipitation (Daily)' for 'ag' to avoid duplicating precipitation
     [
         "data_name_full"    => "Daily Avg ST",
         "data_name_display" => "Avg ST",
@@ -320,7 +310,7 @@ $metadata = [
         "display_type"      => "ag",
         "display_sum"       => "No",
         "display_mean"      => "Yes",
-        "display_units"     => "g/g" // or appropriate unit of volumetric water content
+        "display_units"     => "g/g"
     ],
     [
         "data_name_full"    => "Reference Evapotrans.",
@@ -335,7 +325,7 @@ $metadata = [
     ],
     [
         "data_name_full"    => "GDD32F",
-        "data_name_display" => "GDD (50°F)", //data converted to 50°F base
+        "data_name_display" => "GDD (50°F)",
         "conversion_type"   => "gdd32F_50F",
         "precision_type"    => 0,
         "view_type"         => "numeric",
@@ -346,7 +336,7 @@ $metadata = [
     ]
 ];
 
-// Conversion function
+// Conversion functions
 function convertToEnglishUnits($value, $conversionType) {
     switch ($conversionType) {
         case 'kelvin_to_fahrenheit':
@@ -359,7 +349,7 @@ function convertToEnglishUnits($value, $conversionType) {
             return rad2deg($value);
         case 'gdd32F_50F':
             return max($value - 18, 0);
-        case 'm_to_ft': // new conversion: meters to feet
+        case 'm_to_ft':
             return $value * 3.28084;
         case 'none':
         default:
@@ -367,12 +357,10 @@ function convertToEnglishUnits($value, $conversionType) {
     }
 }
 
-// Precision function
 function getPrecision($precisionType) {
     return $precisionType;
 }
 
-// Convert degrees to wind direction
 function degreesToWindDirection($degrees) {
     $degrees = fmod($degrees, 360.0);
     if ($degrees < 0) {
@@ -383,26 +371,19 @@ function degreesToWindDirection($degrees) {
         $shiftedDegrees -= 360.0;
     }
     $index = (int) floor($shiftedDegrees / 22.5);
-    $directions = [
-        'N','NNE','NE','ENE','E','ESE','SE','SSE',
-        'S','SSW','SW','WSW','W','WNW','NW','NNW'
-    ];
+    $directions = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
     return $directions[$index];
 }
 
-// We'll convert a final average angle to a cardinal direction
 function degreesToWindDirectionAvg($degrees) {
     return degreesToWindDirection($degrees);
 }
 
-// Return label for units
 function getUnitLabel($conversionType, $units) {
     switch ($conversionType) {
         case 'kelvin_to_fahrenheit':
-            // Return units unmodified since values are already in °F.
             return $units;
         case 'ms_to_mph':
-            // Optionally, simply return the provided units.
             return $units;
         case 'mm_to_inches':
             return "in";
@@ -443,7 +424,7 @@ $columnData      = [];
 $columnPrecision = [];
 $flaggedData     = [];
 
-// Process data from JSON
+// Process JSON data
 if (isset($data['data']) && is_array($data['data'])) {
     foreach ($data['data'] as $dates) {
         foreach ($dates as $date => $metrics) {
@@ -458,24 +439,18 @@ if (isset($data['data']) && is_array($data['data'])) {
                         $precisionType   = $metaInfo['precision_type'];
                         $viewType        = $metaInfo['view_type'];
                         $units           = $info['UNITS'];
-
                         $unitLabel = getUnitLabel($conversionType, $units);
                         $uniqueDataTypes[$dataTypeDisplay] = $unitLabel;
-
                         $value     = $info['VALUE'];
                         $precision = getPrecision($precisionType);
                         $columnPrecision[$dataTypeDisplay] = $precision;
 
-                        // Check flags
                         if ($info['FLAG'] == '1' || $info['FLAG'] == '7') {
                             $convertedValue = convertToEnglishUnits($value, $conversionType);
-
                             if ($viewType === 'text') {
-                                // Convert numeric angle to cardinal direction
                                 $row[$dataTypeDisplay] = degreesToWindDirection($convertedValue);
                                 $row[$dataTypeDisplay . '_degrees'] = $convertedValue;
                             } else {
-                                // Force 1 decimal point for temperature and wind conversions.
                                 if ($conversionType === 'kelvin_to_fahrenheit' || $conversionType === 'ms_to_mph') {
                                     $convertedValue = round($convertedValue, 1);
                                     $row[$dataTypeDisplay] = number_format($convertedValue, 1, '.', '');
@@ -483,17 +458,13 @@ if (isset($data['data']) && is_array($data['data'])) {
                                     $row[$dataTypeDisplay] = number_format($convertedValue, $precision, '.', '');
                                 }
                             }
-
-                            // Mark climate data if FLAG == '7'
                             if ($info['FLAG'] == '7') {
                                 $flaggedData[$formattedDate][$dataTypeDisplay] = 'CLIMATE';
                             }
                         } else {
-                            // For non-1/7 flags, no data
                             $row[$dataTypeDisplay] = '--';
                         }
                     } else {
-                        // No metadata for this data_type
                         $row[$info['DATA_TYPE']] = '--';
                     }
                 }
@@ -503,7 +474,7 @@ if (isset($data['data']) && is_array($data['data'])) {
     }
 }
 
-// Columns
+// Columns array
 $columns = array_merge(['Date'], $initialColumns);
 
 // Initialize columnData for summary calculations
@@ -513,351 +484,296 @@ foreach ($columns as $colName) {
     }
 }
 
-// Include the header, which outputs the DOCTYPE, HTML, head, and opening body tags.
 include('header.php');
-
-// Replace the current banner output with:
-echo "<div class='summary-banner-container'>\n";
-echo "  <div class='banner-title'>Monthly Summary</div>\n";
-echo "  <div class='collapsed-banner'>\n";
-echo "    <span>📢 New: DEOS Monthly Summaries! Now with CSV downloads, improved hydrologic stats, and better data quality. </span>\n";
-echo "    <a href='#' id='toggleBanner'>[Click to Learn More]</a>\n";
-echo "    <div class='expanded-banner' style='display:none;'>\n";
-echo "      <p>Welcome to the new DEOS Monthly Summaries page!</p>\n";
-echo "      <p>We’ve made major improvements, including:</p>\n";
-echo "      <ul>\n";
-echo "        <li>✅ CSV downloads for easy data access</li>\n";
-echo "        <li>✅ Monthly statistics for DEOS hydrologic parameters</li>\n";
-echo "        <li>✅ Improved quality control of the underlying data</li>\n";
-echo "      </ul>\n";
-echo "      <p>We’re still updating our historical climate stats, so data is currently available from 2015 onward. The full dataset (back to 2004) should be available later this summer.</p>\n";
-echo "    </div>\n";
-echo "  </div>\n";
-echo "</div>\n";
-
-echo "<script>\n";
-echo "document.getElementById('toggleBanner').addEventListener('click', function(e) {\n";
-echo "    e.preventDefault();\n";
-echo "    var expanded = document.querySelector('.expanded-banner');\n";
-echo "    if(expanded.style.display === 'none'){\n";
-echo "         expanded.style.display = 'block';\n";
-echo "         this.textContent = '[Show Less]';\n";
-echo "    } else {\n";
-echo "         expanded.style.display = 'none';\n";
-echo "         this.textContent = '[Click to Learn More]';\n";
-echo "    }\n";
-echo "});\n";
-echo "</script>\n";
-
-// Build HTML table
-echo "<!DOCTYPE html>\n";
-echo "<html lang='en'>\n";
-echo "<head>\n";
-echo "    <meta charset='UTF-8'>\n";
-echo "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>\n";
-// Google Tag Manager / GA snippet
-echo "    <script async src='https://www.googletagmanager.com/gtag/js?id=G-BTMTESR1DZ'></script>\n";
-echo "    <script>\n";
-echo "        window.dataLayer = window.dataLayer || [];\n";
-echo "        function gtag(){dataLayer.push(arguments);}\n";
-echo "        gtag('js', new Date());\n";
-echo "        gtag('config', 'G-BTMTESR1DZ');\n";
-echo "    </script>\n";
-// Script to read URL parameters and optionally track them
-echo "    <script>\n";
-echo "        // Create a URLSearchParams object from the current URL's query string\n";
-echo "        const params = new URLSearchParams(window.location.search);\n";
-echo "        // Log all query parameters to the console\n";
-echo "\n";
-echo "        // Example: Track the 'station' parameter as a custom event if it exists\n";
-echo "        const station = params.get('station');\n";
-echo "        if (station) {\n";
-echo "            gtag('event', 'station_parameter_detected', {\n";
-echo "                'event_category': 'URL Parameters',\n";
-echo "                'event_label': station\n";
-echo "            });\n";
-echo "        }\n";
-echo "    </script>\n";
-echo "    <title>Responsive Data Table</title>\n";
-echo "    <!-- DataTables CSS -->\n";
-echo "    <link rel='stylesheet' href='https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css'>\n";
-echo "    <link rel='stylesheet' href='https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css'>\n";
-echo "    <link rel='stylesheet' href='styles.css'>\n\n";
-echo "    <!-- Updated Font Awesome CSS for Save Icon -->\n";
-echo "    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'>\n";
-echo "    <!-- jQuery -->\n";
-echo "    <script src='https://code.jquery.com/jquery-3.5.1.js'></script>\n";
-echo "    <!-- DataTables JS -->\n";
-echo "    <script src='https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js'></script>\n";
-echo "    <script src='https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js'></script>\n";
-echo "    <script src='https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js'></script>\n";
-echo "    <script src='https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js'></script>\n";
-echo "    <script src='scripts.js'></script>\n";
-echo "</head>\n";
-echo "<body>\n";
-
-echo "    <!-- Dropdowns for Month and Year Selection -->\n";
-echo "    <input hidden type='text' id='station' value='" . htmlspecialchars($station_name) . "'>\n\n";
-
-// Wrap each select in a div for additional styling if needed
-echo "<div class='top-controls'>\n";
-echo "    <div class='left-controls'>\n";
-echo "        <div class='select-wrapper'>\n";
-echo "            <select id='month' class='custom-select' onchange='refreshWithNewParams()'>\n";
-
-$months = [
-    "JAN"=>"January","FEB"=>"February","MAR"=>"March","APR"=>"April","MAY"=>"May","JUN"=>"June",
-    "JUL"=>"July","AUG"=>"August","SEP"=>"September","OCT"=>"October","NOV"=>"November","DEC"=>"December"
-];
-
-foreach($months as $code => $name) {
-    echo "<option value='$code'" . ($code === strtoupper($month) ? " selected" : "") . ">$name</option>\n";
-}
-echo "            </select>\n";
-echo "        </div>\n";
-
-echo "        <div class='select-wrapper'>\n";
-echo "            <select id='year' class='custom-select' onchange='refreshWithNewParams()'>\n";
-echo "            <script>\n";
-echo "                const yearDropdown = document.getElementById('year');\n";
-echo "                const startYear = 2004;\n";
-echo "                const currentYear = new Date().getFullYear();\n";
-echo "                const selectedYear = '" . $year . "';\n";
-echo "                for (let y = currentYear; y >= startYear; y--) {\n";
-echo "                    const option = document.createElement('option');\n";
-echo "                    option.value = y;\n";
-echo "                    option.textContent = y;\n";
-echo "                    if (y.toString() === selectedYear) {\n";
-echo "                       option.selected = true;\n";
-echo "                    }\n";
-echo "                    yearDropdown.appendChild(option);\n";
-echo "                }\n";
-echo "            </script>\n";
-echo "            </select>\n";
-echo "        </div>\n";
-echo "    </div>\n";
-
-echo "    <div class='center-controls'>\n";
-echo "        <div class='select-wrapper station-wrapper'>\n";
-echo "            <select id='station-select' class='custom-select' onchange='refreshWithNewParams()'>\n";
-echo "                <option value='' >--Select a station--</option>\n";
-echo "            </select>\n";
-echo "        </div>\n";
-echo "    </div>\n";
-
-echo "    <div class='right-controls'>\n";
-echo "        <div class='toggle-buttons'>\n";
-echo "            <div class='dropdown-view'>\n";
-echo "                <select id='viewSelect' class='custom-select'>\n";
-echo "                    <option value='basic' selected>Basic</option>\n";
-echo "                    <option value='other'>Other</option>\n";
-echo "                    <option value='water'>Water</option>\n";
-echo "                    <option value='ag'>Ag Wx</option>\n";
-echo "                </select>\n";
-echo "                <i class='fa fa-caret-down'></i>\n";
-echo "            </div>\n";
-echo "            <button id='saveCsvButton' class='save-button' title='Download CSV'><i class='fa fa-download'></i></button>\n";
-echo "            <!-- New info button -->\n";
-echo "            <button id='infoButton' class='info-button' title='Information'><i class='fa fa-info-circle'></i></button>\n";
-echo "        </div>\n";
-echo "    </div>\n";
-echo "</div>\n";
-
-echo "<div class='table-container'>\n";
-if (empty($tableData)) {
-    echo "<table id='dataTable' class='display nowrap' style='width:100%'>\n";
-    echo "<tr><td style='text-align:center; padding:20px;'>No Data Available</td></tr>\n";
-    echo "</table>\n";
-} else {
-    echo "<table id='dataTable' class='display nowrap' style='width:100%'>\n";
-    echo "<thead>\n";
-    echo "<tr>";
-    foreach ($columns as $colName) {
-        echo "<th>$colName</th>";
-    }
-    echo "</tr><tr>";
-    foreach ($columns as $colName) {
-        if ($colName === "Date") {
-            echo "<th></th>";
-        } else {
-            $meta = getMetadataByDisplayName($colName, $metadata);
-            $display_units = ($meta && isset($meta['display_units']) && $meta['display_units'] !== "") ? $meta['display_units'] : '';
-            echo "<th>$display_units</th>";
-        }
-    }
-    echo "</tr></thead>\n";
-    echo "<tbody>\n";
-
-    // If no table data, show the no data message
-    if (empty($tableData)) {
-        echo "<tr><td colspan='" . count($columns) . "' style='text-align:center;'>No Data Available</td></tr>\n";
-    } else {
-        // Table data rows
-        foreach ($tableData as $row) {
-            echo "<tr>";
-            foreach ($columns as $colName) {
-                $cellValue = isset($row[$colName]) ? $row[$colName] : '--';
-                // If climate data flagged, highlight with a CSS class (not bold)
-                $highlightClass = '';
-                if (isset($flaggedData[$row['Date']][$colName]) && $flaggedData[$row['Date']][$colName] === 'CLIMATE') {
-                    $highlightClass = 'climate-flag';
-                }
-
-                echo "<td class='$highlightClass'>$cellValue</td>";
-
-                // Store data for summaries
-                if ($colName != 'Date') {
-                    $metaInfo = getMetadataByDisplayName($colName, $metadata);
-                    if ($metaInfo) {
-                        $viewType = $metaInfo['view_type'];
-                        if ($viewType === 'numeric') {
-                            $columnData[$colName][] = is_numeric($cellValue) ? $cellValue : '--';
-                        } elseif ($viewType === 'text') {
-                            // For wind direction, store numeric degrees if available
-                            $originalDegrees = $row[$colName . '_degrees'] ?? '--';
-                            $columnData[$colName][] = is_numeric($originalDegrees) ? $originalDegrees : '--';
-                        }
-                    } else {
-                        $columnData[$colName][] = '--';
-                    }
-                }
-            }
-            echo "</tr>";
-        }
-    }
-
-    echo "</tbody>\n";
-
-    // Calculate summary rows
-    $summarySumRow  = [];
-    $summaryMeanRow = [];
-
-    // We'll do a final function that helps compute average direction if needed
-    foreach ($columns as $colName) {
-        if ($colName == 'Date') {
-            // We'll store the label but wrap in <b> for the final rendering
-            $summarySumRow[$colName]  = 'Total';
-            $summaryMeanRow[$colName] = 'Mean';
-        } else {
-            $metaInfo     = getMetadataByDisplayName($colName, $metadata);
-            if ($metaInfo) {
-                // Force precision of 1 if conversion_type is for temperature or wind.
-                if ($metaInfo['conversion_type'] === 'kelvin_to_fahrenheit' || $metaInfo['conversion_type'] === 'ms_to_mph') {
-                    $precision = 1;
-                } else {
-                    $precision = getPrecision($metaInfo['precision_type']);
-                }
-                $viewType    = $metaInfo['view_type'];
-                $values      = $columnData[$colName];
-                $displaySum  = isset($metaInfo['display_sum'])  && $metaInfo['display_sum']  === 'Yes';
-                $displayMean = isset($metaInfo['display_mean']) && $metaInfo['display_mean'] === 'Yes';
-
-                if ($viewType === 'numeric') {
-                    // Filter numeric data
-                    $validValues = array_filter($values, 'is_numeric');
-                    if (count($validValues) !== count($values)) {
-                        $validValues = null;
-                    }
-                    if (!empty($validValues)) {
-                        // Summation
-                        if ($displaySum) {
-                            $summarySumRow[$colName] = number_format(array_sum($validValues), $precision);
-                        } else {
-                            $summarySumRow[$colName] = '--';
-                        }
-                        // Mean
-                        if ($displayMean) {
-                            $mean = array_sum($validValues) / count($validValues);
-                            $summaryMeanRow[$colName] = number_format($mean, $precision, '.', '');
-                        } else {
-                            $summaryMeanRow[$colName] = '--';
-                        }
-                    } else {
-                        // No valid numeric entries
-                        $summarySumRow[$colName]  = '--';
-                        $summaryMeanRow[$colName] = '--';
-                    }
-                } elseif ($viewType === 'text') {
-                    // Potentially do mean wind direction if $displayMean is Yes
-                    if ($displayMean) {
-                        // We have stored numeric degrees in $values if they exist
-                        $validDegrees = array_filter($values, 'is_numeric');
-                        if (!empty($validDegrees)) {
-                            $sumSin = 0;
-                            $sumCos = 0;
-                            foreach ($validDegrees as $deg) {
-                                $rad = deg2rad($deg);
-                                $sumSin += sin($rad);
-                                $sumCos += cos($rad);
-                            }
-                            $avgRad = atan2($sumSin, $sumCos);
-                            $avgDeg = rad2deg($avgRad);
-                            if ($avgDeg < 0) {
-                                $avgDeg += 360;
-                            }
-                            // Convert average angle to cardinal direction
-                            $summaryMeanRow[$colName] = degreesToWindDirectionAvg($avgDeg);
-                        } else {
-                            $summaryMeanRow[$colName] = '--';
-                        }
-                    } else {
-                        $summaryMeanRow[$colName] = '--';
-                    }
-                    // For sum, we do not sum directions
-                    $summarySumRow[$colName] = '--';
-                } else {
-                    // For any other view type, skip summary
-                    $summarySumRow[$colName]  = '--';
-                    $summaryMeanRow[$colName] = '--';
-                }
-            } else {
-                // No metadata
-                $summarySumRow[$colName]  = '--';
-                $summaryMeanRow[$colName] = '--';
-            }
-        }
-    }
-
-    echo "<tfoot>\n";
-
-    // Render the sum row, all bold
-    echo "<tr>";
-    foreach ($columns as $colName) {
-        echo "<td><b>" . $summarySumRow[$colName] . "</b></td>";
-    }
-    echo "</tr>\n";
-
-    // Render the mean row, all bold
-    echo "<tr>";
-    foreach ($columns as $colName) {
-        echo "<td><b>" . $summaryMeanRow[$colName] . "</b></td>";
-    }
-    echo "</tr>\n";
-
-    echo "</tfoot>\n";
-    echo "</table>\n";
-}
-echo "</div>\n"; // Close scrollable container
-
-// Embed metadata for JavaScript
-echo "<script id='metadata' type='application/json'>" . json_encode($metadata) . "</script>\n";
-
-// Add the popup info container (hidden by default) before closing </body>
-echo "<div id='infoPopup' class='info-popup'>\n";
-echo "    <div class='info-popup-content'>\n";
-echo "        <h3>Monthly Summary Key</h3>\n";
-echo "        <ul>\n";
-echo "            <li><span style='color:red;'>Red</span>: Indicates the highest daily value of the month.</li>\n";
-echo "            <li><span style='color:blue;'>Blue</span>: Indicates the lowest daily value of the month.</li>\n";
-echo "            <li><span style='color:green;'>Green</span>: Indicates the largest daily sum or value for the month.</li>\n";
-echo "            <li><span style='background-color: lightblue;'>Blue Shading</span>: Highlights a multi-day rainfall total. While the daily values within this period may not be individually valid, their combined total is accurate.</li>\n";
-echo "            <li><b>'--'</b>: Denotes a missing value due to an insufficient number of valid readings for that day or for the month overall.</li>\n";
-echo "        </ul>\n";
-echo "        <button id='closeInfoPopup' class='close-popup'>Close</button>\n";
-echo "    </div>\n";
-echo "</div>\n";
-
-echo "</body></html>\n";
-
-include('footer.php');
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Tag Manager / GA snippet -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BTMTESR1DZ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-BTMTESR1DZ');
+    </script>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jQuery and DataTables scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+    <script src="scripts.js"></script>
+    <title>Responsive Data Table</title>
+</head>
+<body>
+    <!-- Banner -->
+    <div class="summary-banner-container">
+        <div class="banner-title">Monthly Summary</div>
+        <div class="collapsed-banner">
+            <span>📢 New: DEOS Monthly Summaries! Now with CSV downloads, improved hydrologic stats, and better data quality. </span>
+            <a href="#" id="toggleBanner">[Click to Learn More]</a>
+            <div class="expanded-banner" style="display:none;">
+                <p>Welcome to the new DEOS Monthly Summaries page!</p>
+                <p>We’ve made major improvements, including:</p>
+                <ul>
+                    <li>✅ CSV downloads for easy data access</li>
+                    <li>✅ Monthly statistics for DEOS hydrologic parameters</li>
+                    <li>✅ Improved quality control of the underlying data</li>
+                </ul>
+                <p>We’re still updating our historical climate stats, so data is currently available from 2015 onward. The full dataset (back to 2004) should be available later this summer.</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('toggleBanner').addEventListener('click', function(e) {
+            e.preventDefault();
+            var expanded = document.querySelector('.expanded-banner');
+            if(expanded.style.display === 'none'){
+                expanded.style.display = 'block';
+                this.textContent = '[Show Less]';
+            } else {
+                expanded.style.display = 'none';
+                this.textContent = '[Click to Learn More]';
+            }
+        });
+    </script>
+
+    <!-- Top Controls -->
+    <input hidden type="text" id="station" value="<?php echo htmlspecialchars($station_name); ?>">
+    <div class="top-controls">
+        <div class="left-controls">
+            <div class="select-wrapper">
+                <select id="month" class="custom-select" onchange="refreshWithNewParams()">
+                    <?php
+                    $months = [
+                        "JAN" => "January", "FEB" => "February", "MAR" => "March", "APR" => "April",
+                        "MAY" => "May", "JUN" => "June", "JUL" => "July", "AUG" => "August",
+                        "SEP" => "September", "OCT" => "October", "NOV" => "November", "DEC" => "December"
+                    ];
+                    foreach($months as $code => $name) {
+                        $selected = ($code === strtoupper($month)) ? " selected" : "";
+                        echo "<option value='$code'$selected>$name</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+            <div class="select-wrapper">
+                <select id="year" class="custom-select" onchange="refreshWithNewParams()"></select>
+                <script>
+                    const yearDropdown = document.getElementById('year');
+                    const startYear = 2004;
+                    const currentYear = new Date().getFullYear();
+                    const selectedYear = '<?php echo $year; ?>';
+                    for (let y = currentYear; y >= startYear; y--) {
+                        const option = document.createElement('option');
+                        option.value = y;
+                        option.textContent = y;
+                        if (y.toString() === selectedYear) {
+                            option.selected = true;
+                        }
+                        yearDropdown.appendChild(option);
+                    }
+                </script>
+            </div>
+        </div>
+        <div class="center-controls">
+            <div class="select-wrapper station-wrapper">
+                <select id="station-select" class="custom-select" onchange="refreshWithNewParams()">
+                    <option value="">--Select a station--</option>
+                </select>
+            </div>
+        </div>
+        <div class="right-controls">
+            <div class="toggle-buttons">
+                <div class="dropdown-view">
+                    <select id="viewSelect" class="custom-select">
+                        <option value="basic" selected>Basic</option>
+                        <option value="other">Other</option>
+                        <option value="water">Water</option>
+                        <option value="ag">Ag Wx</option>
+                    </select>
+                    <i class="fa fa-caret-down"></i>
+                </div>
+                <button id="saveCsvButton" class="save-button" title="Download CSV"><i class="fa fa-download"></i></button>
+                <button id="infoButton" class="info-button" title="Information"><i class="fa fa-info-circle"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-container">
+        <?php if (empty($tableData)): ?>
+            <table id="dataTable" class="display nowrap" style="width:100%">
+                <tr>
+                    <td style="text-align:center; padding:20px;">No Data Available</td>
+                </tr>
+            </table>
+        <?php else: ?>
+            <table id="dataTable" class="display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <?php foreach ($columns as $colName): ?>
+                            <th><?php echo $colName; ?></th>
+                        <?php endforeach; ?>
+                    </tr>
+                    <tr>
+                        <?php foreach ($columns as $colName): ?>
+                            <?php if ($colName === "Date"): ?>
+                                <th></th>
+                            <?php else: 
+                                $meta = getMetadataByDisplayName($colName, $metadata);
+                                $display_units = ($meta && isset($meta['display_units']) && $meta['display_units'] !== "") ? $meta['display_units'] : '';
+                            ?>
+                                <th><?php echo $display_units; ?></th>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($tableData)): ?>
+                        <tr>
+                            <td colspan="<?php echo count($columns); ?>" style="text-align:center;">No Data Available</td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($tableData as $row): ?>
+                            <tr>
+                                <?php foreach ($columns as $colName): ?>
+                                    <?php 
+                                        $cellValue = isset($row[$colName]) ? $row[$colName] : '--';
+                                        $highlightClass = '';
+                                        if (isset($flaggedData[$row['Date']][$colName]) && $flaggedData[$row['Date']][$colName] === 'CLIMATE') {
+                                            $highlightClass = 'climate-flag';
+                                        }
+                                    ?>
+                                    <td class="<?php echo $highlightClass; ?>"><?php echo $cellValue; ?></td>
+                                    <?php
+                                        if ($colName != 'Date') {
+                                            $metaInfo = getMetadataByDisplayName($colName, $metadata);
+                                            if ($metaInfo) {
+                                                $viewType = $metaInfo['view_type'];
+                                                if ($viewType === 'numeric') {
+                                                    $columnData[$colName][] = is_numeric($cellValue) ? $cellValue : '--';
+                                                } elseif ($viewType === 'text') {
+                                                    $originalDegrees = $row[$colName . '_degrees'] ?? '--';
+                                                    $columnData[$colName][] = is_numeric($originalDegrees) ? $originalDegrees : '--';
+                                                }
+                                            } else {
+                                                $columnData[$colName][] = '--';
+                                            }
+                                        }
+                                    ?>
+                                <?php endforeach; ?>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+                <?php
+                // Calculate summary rows
+                $summarySumRow  = [];
+                $summaryMeanRow = [];
+                foreach ($columns as $colName) {
+                    if ($colName == 'Date') {
+                        $summarySumRow[$colName]  = 'Total';
+                        $summaryMeanRow[$colName] = 'Mean';
+                    } else {
+                        $metaInfo     = getMetadataByDisplayName($colName, $metadata);
+                        if ($metaInfo) {
+                            $precision = ($metaInfo['conversion_type'] === 'kelvin_to_fahrenheit' || $metaInfo['conversion_type'] === 'ms_to_mph')
+                                         ? 1 : getPrecision($metaInfo['precision_type']);
+                            $viewType    = $metaInfo['view_type'];
+                            $values      = $columnData[$colName];
+                            $displaySum  = isset($metaInfo['display_sum']) && $metaInfo['display_sum'] === 'Yes';
+                            $displayMean = isset($metaInfo['display_mean']) && $metaInfo['display_mean'] === 'Yes';
+                            if ($viewType === 'numeric') {
+                                $validValues = array_filter($values, 'is_numeric');
+                                if (count($validValues) !== count($values)) {
+                                    $validValues = null;
+                                }
+                                if (!empty($validValues)) {
+                                    $summarySumRow[$colName] = $displaySum ? number_format(array_sum($validValues), $precision) : '--';
+                                    $mean = array_sum($validValues) / count($validValues);
+                                    $summaryMeanRow[$colName] = $displayMean ? number_format($mean, $precision, '.', '') : '--';
+                                } else {
+                                    $summarySumRow[$colName]  = '--';
+                                    $summaryMeanRow[$colName] = '--';
+                                }
+                            } elseif ($viewType === 'text') {
+                                if ($displayMean) {
+                                    $validDegrees = array_filter($values, 'is_numeric');
+                                    if (!empty($validDegrees)) {
+                                        $sumSin = 0;
+                                        $sumCos = 0;
+                                        foreach ($validDegrees as $deg) {
+                                            $rad = deg2rad($deg);
+                                            $sumSin += sin($rad);
+                                            $sumCos += cos($rad);
+                                        }
+                                        $avgRad = atan2($sumSin, $sumCos);
+                                        $avgDeg = rad2deg($avgRad);
+                                        if ($avgDeg < 0) {
+                                            $avgDeg += 360;
+                                        }
+                                        $summaryMeanRow[$colName] = degreesToWindDirectionAvg($avgDeg);
+                                    } else {
+                                        $summaryMeanRow[$colName] = '--';
+                                    }
+                                } else {
+                                    $summaryMeanRow[$colName] = '--';
+                                }
+                                $summarySumRow[$colName] = '--';
+                            } else {
+                                $summarySumRow[$colName]  = '--';
+                                $summaryMeanRow[$colName] = '--';
+                            }
+                        } else {
+                            $summarySumRow[$colName]  = '--';
+                            $summaryMeanRow[$colName] = '--';
+                        }
+                    }
+                }
+                ?>
+                <tfoot>
+                    <tr>
+                        <?php foreach ($columns as $colName): ?>
+                            <td><b><?php echo $summarySumRow[$colName]; ?></b></td>
+                        <?php endforeach; ?>
+                    </tr>
+                    <tr>
+                        <?php foreach ($columns as $colName): ?>
+                            <td><b><?php echo $summaryMeanRow[$colName]; ?></b></td>
+                        <?php endforeach; ?>
+                    </tr>
+                </tfoot>
+            </table>
+        <?php endif; ?>
+    </div>
+
+    <!-- Embed metadata for JavaScript -->
+    <script id="metadata" type="application/json"><?php echo json_encode($metadata); ?></script>
+
+    <!-- Info Popup -->
+    <div id="infoPopup" class="info-popup">
+        <div class="info-popup-content">
+            <h3>Monthly Summary Key</h3>
+            <ul>
+                <li><span style="color:red;">Red</span>: Indicates the highest daily value of the month.</li>
+                <li><span style="color:blue;">Blue</span>: Indicates the lowest daily value of the month.</li>
+                <li><span style="color:green;">Green</span>: Indicates the largest daily sum or value for the month.</li>
+                <li><span style="background-color: lightblue;">Blue Shading</span>: Highlights a multi-day rainfall total. While the daily values within this period may not be individually valid, their combined total is accurate.</li>
+                <li><b>'--'</b>: Denotes a missing value due to an insufficient number of valid readings for that day or for the month overall.</li>
+                <li>🚫: The station was installed after the selected time.</li>
+            </ul>
+            <button id="closeInfoPopup" class="close-popup">Close</button>
+        </div>
+    </div>
+</body>
+</html>
+<?php include('footer.php'); ?>
