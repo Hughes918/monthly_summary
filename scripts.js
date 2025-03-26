@@ -352,7 +352,12 @@ async function populateStationSelect() {
         // Create header and options for Meteorological group
         const headerMeteorological = document.createElement('option');
         headerMeteorological.textContent = "Meteorological";
-        headerMeteorological.disabled = true;
+        if (window.innerWidth > 600) {
+            headerMeteorological.disabled = true;
+        } else {
+            headerMeteorological.classList.add('header-option');
+            headerMeteorological.setAttribute('data-readonly', 'true');
+        }
         headerMeteorological.style.fontWeight = "bold";
         headerMeteorological.style.color = "red";
         headerMeteorological.style.backgroundColor = "#d3e0ea";
@@ -370,7 +375,12 @@ async function populateStationSelect() {
         // Create header and options for Hydrological/Pond group
         const headerHydro = document.createElement('option');
         headerHydro.textContent = "Hydrological/Pond";
-        headerHydro.disabled = true;
+        if (window.innerWidth > 600) {
+            headerHydro.disabled = true;
+        } else {
+            headerHydro.classList.add('header-option');
+            headerHydro.setAttribute('data-readonly', 'true');
+        }
         headerHydro.style.fontWeight = "bold";
         headerHydro.style.color = "red";
         headerHydro.style.backgroundColor = "#f2d7d5";

@@ -211,6 +211,20 @@ table.dataTable thead .sorting_desc {
     }
 }
 
+/* Mobile adjustments for header option elements in select */
+@media (max-width: 600px) {
+    select.custom-select option.header-option {
+        font-weight: bold;
+        pointer-events: none;
+        /* Inherit background and color so it looks like a header */
+        background: inherit;
+        color: inherit;
+        /* Remove default appearance if supported */
+        -webkit-appearance: none;
+        appearance: none;
+    }
+}
+
 /* Global layout */
 body {
     font-family: Arial, sans-serif;
