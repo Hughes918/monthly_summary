@@ -195,6 +195,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        
+        // Added GA tracking for Download button
+        gtag('event', 'click', {
+            'event_category': 'Download Button',
+            'event_label': 'Download CSV Button Pressed'
+        });
     });
     
     window.addEventListener('resize', () => dataTable.columns.adjust());
@@ -329,7 +335,8 @@ async function populateStationSelect() {
                 }
             }
             if (!hasData) desc += " 🚫";
-            if (desc.toLowerCase().includes("pond") || desc.toLowerCase().includes("lake")) {
+            // New grouping based on the station metadata: if Weather_Station is "N"
+            if (String(station.weather_station).toUpperCase() === "N") {
                 pondStations.push({ Name: name, Description: desc });
             } else {
                 otherStations.push({ Name: name, Description: desc });
@@ -433,9 +440,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoButton = document.getElementById('infoButton');
     const infoPopup = document.getElementById('infoPopup');
     const closePopup = document.getElementById('closeInfoPopup');
-    infoButton.addEventListener('click', () => { infoPopup.style.display = 'block'; });
+    infoButton.addEventListener('click', () => { 
+        infoPopup.style.display = 'block'; 
+        // Added GA tracking for Info button
+        gtag('event', 'click', {
+            'event_category': 'Info Button',
+            'event_label': 'Info Button Pressed'
+        });
+    });
     closePopup.addEventListener('click', () => { infoPopup.style.display = 'none'; });
     window.addEventListener('click', event => { if (event.target == infoPopup) infoPopup.style.display = 'none'; });
 });
 
-// ...existing code (if any additional functions)...
