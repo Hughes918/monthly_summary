@@ -349,20 +349,10 @@ async function populateStationSelect() {
         const defaultStation = urlParams.get('station') || '';
         let defaultStationExists = false;
         
-        // Create header and options for Meteorological group
-        const headerMeteorological = document.createElement('option');
-        headerMeteorological.textContent = "Meteorological";
-        if(window.innerWidth <= 600) {
-            headerMeteorological.disabled = false;
-            headerMeteorological.style.pointerEvents = "none";
-            headerMeteorological.style.fontWeight = "bold";
-        } else {
-            headerMeteorological.disabled = true;
-        }
-        headerMeteorological.style.color = "red";
-        headerMeteorological.style.backgroundColor = "#d3e0ea";
-        headerMeteorological.style.padding = "5px 0";
-        selectElement.appendChild(headerMeteorological);
+        // Create optgroup for Meteorological group
+        const meteorologicalGroup = document.createElement('optgroup');
+        meteorologicalGroup.label = "Meteorological";
+        selectElement.appendChild(meteorologicalGroup);
     
         otherStations.forEach(station => {
             const opt = document.createElement('option');
@@ -372,23 +362,13 @@ async function populateStationSelect() {
                 opt.selected = true; 
                 defaultStationExists = true; 
             }
-            selectElement.appendChild(opt);
+            meteorologicalGroup.appendChild(opt);
         });
     
-        // Create header and options for Hydrological/Pond group
-        const headerHydro = document.createElement('option');
-        headerHydro.textContent = "Hydrological/Pond";
-        if(window.innerWidth <= 600) {
-            headerHydro.disabled = false;
-            headerHydro.style.pointerEvents = "none";
-            headerHydro.style.fontWeight = "bold";
-        } else {
-            headerHydro.disabled = true;
-        }
-        headerHydro.style.color = "red";
-        headerHydro.style.backgroundColor = "#f2d7d5";
-        headerHydro.style.padding = "5px 0";
-        selectElement.appendChild(headerHydro);
+        // Create optgroup for Hydrological/Pond group
+        const hydrologicalGroup = document.createElement('optgroup');
+        hydrologicalGroup.label = "Hydrological/Pond";
+        selectElement.appendChild(hydrologicalGroup);
     
         pondStations.forEach(station => {
             const opt = document.createElement('option');
@@ -398,7 +378,7 @@ async function populateStationSelect() {
                 opt.selected = true; 
                 defaultStationExists = true; 
             }
-            selectElement.appendChild(opt);
+            hydrologicalGroup.appendChild(opt);
         });
     
         if (defaultStation && !defaultStationExists) {
