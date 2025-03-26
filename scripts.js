@@ -352,8 +352,13 @@ async function populateStationSelect() {
         // Create header and options for Meteorological group
         const headerMeteorological = document.createElement('option');
         headerMeteorological.textContent = "Meteorological";
-        headerMeteorological.disabled = true;
-        headerMeteorological.style.fontWeight = "bold";
+        if(window.innerWidth <= 600) {
+            headerMeteorological.disabled = false;
+            headerMeteorological.style.pointerEvents = "none";
+            headerMeteorological.style.fontWeight = "bold";
+        } else {
+            headerMeteorological.disabled = true;
+        }
         headerMeteorological.style.color = "red";
         headerMeteorological.style.backgroundColor = "#d3e0ea";
         headerMeteorological.style.padding = "5px 0";
@@ -363,15 +368,23 @@ async function populateStationSelect() {
             const opt = document.createElement('option');
             opt.value = station.Name;
             opt.textContent = station.Description;
-            if (station.Name === defaultStation) { opt.selected = true; defaultStationExists = true; }
+            if (station.Name === defaultStation) { 
+                opt.selected = true; 
+                defaultStationExists = true; 
+            }
             selectElement.appendChild(opt);
         });
     
         // Create header and options for Hydrological/Pond group
         const headerHydro = document.createElement('option');
         headerHydro.textContent = "Hydrological/Pond";
-        headerHydro.disabled = true;
-        headerHydro.style.fontWeight = "bold";
+        if(window.innerWidth <= 600) {
+            headerHydro.disabled = false;
+            headerHydro.style.pointerEvents = "none";
+            headerHydro.style.fontWeight = "bold";
+        } else {
+            headerHydro.disabled = true;
+        }
         headerHydro.style.color = "red";
         headerHydro.style.backgroundColor = "#f2d7d5";
         headerHydro.style.padding = "5px 0";
@@ -381,7 +394,10 @@ async function populateStationSelect() {
             const opt = document.createElement('option');
             opt.value = station.Name;
             opt.textContent = station.Description;
-            if (station.Name === defaultStation) { opt.selected = true; defaultStationExists = true; }
+            if (station.Name === defaultStation) { 
+                opt.selected = true; 
+                defaultStationExists = true; 
+            }
             selectElement.appendChild(opt);
         });
     
