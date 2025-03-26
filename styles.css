@@ -475,3 +475,10 @@ table.dataTable thead {
         padding: 0;
     }
 }
+
+/* Mobile adjustments for optgroup headers */
+@media (max-width: 600px) {
+    select.custom-select optgroup {
+        font-weight: bold;
+    }
+}
