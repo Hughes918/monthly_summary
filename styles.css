@@ -464,3 +464,14 @@ table.dataTable thead {
         margin-bottom: 10px;
     }
 }
+
+/* Mobile adjustments for disabled header options */
+@media (max-width: 600px) {
+    select.custom-select option:disabled {
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+}
