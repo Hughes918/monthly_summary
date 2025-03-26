@@ -351,7 +351,7 @@ async function populateStationSelect() {
         
         // Create optgroup for Meteorological group
         const meteorologicalGroup = document.createElement('optgroup');
-        meteorologicalGroup.label = "Meteorological";
+        meteorologicalGroup.label = "--------Meteorological--------";
         selectElement.appendChild(meteorologicalGroup);
     
         otherStations.forEach(station => {
@@ -367,7 +367,7 @@ async function populateStationSelect() {
     
         // Create optgroup for Hydrological/Pond group
         const hydrologicalGroup = document.createElement('optgroup');
-        hydrologicalGroup.label = "Hydrological/Pond";
+        hydrologicalGroup.label = "--------Hydrological/Pond--------";
         selectElement.appendChild(hydrologicalGroup);
     
         pondStations.forEach(station => {
