@@ -199,32 +199,6 @@ table.dataTable thead .sorting_desc {
     }
 }
 
-/* Mobile adjustments for disabled <option> elements */
-@media (max-width: 600px) {
-    select.custom-select option:disabled {
-        /* Make the text bold and remove greyed-out appearance */
-        font-weight: bold;
-        color: #000; /* override grey default */
-        opacity: 1;  /* ensure full opacity */
-        -webkit-appearance: none;
-        appearance: none;
-    }
-}
-
-/* Mobile adjustments for header option elements in select */
-@media (max-width: 600px) {
-    select.custom-select option.header-option {
-        font-weight: bold;
-        pointer-events: none;
-        /* Inherit background and color so it looks like a header */
-        background: inherit;
-        color: inherit;
-        /* Remove default appearance if supported */
-        -webkit-appearance: none;
-        appearance: none;
-    }
-}
-
 /* Global layout */
 body {
     font-family: Arial, sans-serif;
