@@ -516,33 +516,51 @@ include('header.php');
 <body>
     <!-- Banner -->
     <div class="summary-banner-container">
-        <div class="banner-title">Monthly Summary</div>
-        <div class="collapsed-banner">
-            <span>📢 New: DEOS Monthly Summaries! Now with CSV downloads, improved hydrologic stats, and better data quality. </span>
-            <a href="#" id="toggleBanner">[Click to Learn More]</a>
-            <div class="expanded-banner" style="display:none;">
-                <p>Welcome to the new DEOS Monthly Summaries page!</p>
-                <p>We’ve made major improvements, including:</p>
-                <ul>
-                    <li>✅ CSV downloads for easy data access</li>
-                    <li>✅ Monthly statistics for DEOS hydrologic parameters</li>
-                    <li>✅ Improved quality control of the underlying data</li>
-                </ul>
-                <p>We’re still updating our historical climate stats, so data is currently available from 2015 onward. The full dataset (back to 2004) should be available later this summer.</p>
+        <div class="banner-top" style="display: flex; align-items: center; justify-content: space-between;">
+            <div class="banner-message">
+                📢 New: DEOS Monthly Summaries! 
             </div>
+            <!-- Added margin-left for spacing -->
+            <div class="learn-more-container" style="margin-left: 10px;">
+                <a href="#" id="learnMoreLink">[Click to Learn More]</a>
+            </div>
+        </div>
+        <div class="banner-title">Monthly Summary</div>
+    </div>
+
+    <!-- Learn More Popup -->
+    <div id="learnMorePopup" class="info-popup">
+        <div class="info-popup-content">
+            <h3>Learn More</h3>
+            <p>Welcome to the new DEOS Monthly Summaries page!</p>
+            <p>We’ve made major improvements, including:</p>
+            <ul>
+                <li>✅ CSV downloads for easy data access</li>
+                <li>✅ Monthly statistics for DEOS hydrologic parameters</li>
+                <li>✅ Improved quality control of the underlying data</li>
+            </ul>
+            <p>We’re still updating our historical climate stats, so data is currently available from 2015 onward. The full dataset (back to 2004) will be available later this year.</p>
+            <button id="closeLearnMorePopup" class="close-popup">Close</button>
         </div>
     </div>
     <script>
-        document.getElementById('toggleBanner').addEventListener('click', function(e) {
+        // Remove the old toggleBanner listener if present
+        // New Learn More popup handling, similar to the Info popup
+        document.getElementById('learnMoreLink').addEventListener('click', function(e) {
             e.preventDefault();
-            var expanded = document.querySelector('.expanded-banner');
-            if(expanded.style.display === 'none'){
-                expanded.style.display = 'block';
-                this.textContent = '[Show Less]';
-            } else {
-                expanded.style.display = 'none';
-                this.textContent = '[Click to Learn More]';
-            }
+            document.getElementById('learnMorePopup').style.display = 'block';
+            // (Optional) GA tracking for Learn More link
+            gtag('event', 'click', {
+                'event_category': 'Learn More',
+                'event_label': 'Learn More Link Pressed'
+            });
+        });
+        document.getElementById('closeLearnMorePopup').addEventListener('click', function() {
+            document.getElementById('learnMorePopup').style.display = 'none';
+        });
+        window.addEventListener('click', function(event) {
+            const popup = document.getElementById('learnMorePopup');
+            if (event.target == popup) popup.style.display = 'none';
         });
     </script>
 
@@ -569,7 +587,7 @@ include('header.php');
                 <select id="year" class="custom-select" onchange="refreshWithNewParams()"></select>
                 <script>
                     const yearDropdown = document.getElementById('year');
-                    const startYear = 2004;
+                    const startYear = 2015;
                     const currentYear = new Date().getFullYear();
                     const selectedYear = '<?php echo $year; ?>';
                     for (let y = currentYear; y >= startYear; y--) {
@@ -771,6 +789,7 @@ include('header.php');
                 <li><b>'--'</b>: Denotes a missing value due to an insufficient number of valid readings for that day or for the month overall.</li>
                 <li>🚫: The station was installed after the selected time.</li>
             </ul>
+            <p><strong>* Data are preliminary and subject to further validation.</strong></p>
             <button id="closeInfoPopup" class="close-popup">Close</button>
         </div>
     </div>

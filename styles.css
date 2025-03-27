@@ -430,19 +430,20 @@ table.dataTable thead {
 
 /* Banner container styling */
 .summary-banner-container {
-    background: #ffffff;
+    /* Change layout to vertical stacking */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
     padding: 15px;
     margin-bottom: 15px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
+    /* Remove flex-wrap if present */
 }
+/* Add a bit of padding between the top row and the banner title */
 .banner-title {
-    font-size: 32px;
-    font-weight: bold;
-    letter-spacing: 1px;
+    margin-top: 10px;
+    font-size: 32px; /* increased size */
 }
 .collapsed-banner {
     font-size: 16px;
