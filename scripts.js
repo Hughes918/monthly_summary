@@ -296,7 +296,8 @@ document.addEventListener("DOMContentLoaded", () => {
 // Consolidated populateStationSelect (only one copy)
 async function populateStationSelect() {
     const selectElement = document.getElementById('station-select');
-    const metadataUrl = 'metadata_new.json';
+    const metadataUrl = 'metadata_new2.json';
+    //const metadataUrl = 'station_metadata_deos.json';                 
     if (!selectElement) return console.error('Select element "station-select" not found.');
     try {
         const response = await fetch(metadataUrl);
@@ -408,9 +409,14 @@ function setDefaultViewBasedOnMetadata() {
     const viewSelect = document.getElementById('viewSelect');
     const stationSelect = document.getElementById('station-select');
     if (viewSelect && stationSelect) {
-        const options = Array.from(stationSelect.options);
-        const pondHeaderIndex = options.findIndex(opt => opt.disabled && opt.textContent.trim() === "Hydrological/Pond");
-        viewSelect.value = (pondHeaderIndex !== -1 && stationSelect.selectedIndex > pondHeaderIndex) ? "water" : "basic";
+        const selectedOption = stationSelect.options[stationSelect.selectedIndex];
+        if (selectedOption && selectedOption.parentElement 
+            && selectedOption.parentElement.label 
+            && selectedOption.parentElement.label.includes("Hydrological/Pond")) {
+            viewSelect.value = "water";
+        } else {
+            viewSelect.value = "basic";
+        }
         viewSelect.dispatchEvent(new Event('change'));
     }
 }

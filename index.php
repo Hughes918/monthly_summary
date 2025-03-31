@@ -16,12 +16,11 @@ if (!empty($queryString)) {
 // Validate and convert date
 if (strpos($date, '_') !== false) {
     list($month, $year) = explode('_', $date);
-    $dateObj = DateTime::createFromFormat('M', ucfirst(strtolower($month)));
-
+    // Use both month and year in the format string to ensure proper interpretation.
+    $dateObj = DateTime::createFromFormat('!M Y', ucfirst(strtolower($month)) . ' ' . $year);
     if ($dateObj && is_numeric($year)) {
-        $monthNumber = $dateObj->format('m');
-        $start_date  = "$year-$monthNumber-01";
-        $end_date    = date("Y-m-t", strtotime($start_date));
+        $start_date = $dateObj->format('Y-m-01');
+        $end_date   = $dateObj->format('Y-m-t');
         // JSON data URL
         $jsonFile = "http://150.136.239.199/almanac/retrieve.old.php?start=$start_date&end=$end_date&station_name=$station_name&raw_values=Y";
     } else {

@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Daily Values for DATA_TYPES 44 &amp; 45 (DSJR) - 2024</title>
+  <title>Daily Values for DATA_TYPES 51 (DGES) - 2024</title>
   <style>
     body { font-family: Arial, sans-serif; }
     table { border-collapse: collapse; width: 100%; margin-top: 20px; }
@@ -12,7 +12,7 @@
   </style>
 </head>
 <body>
-  <h1>Daily Values for DATA_TYPES 44 &amp; 45 (DSJR) - 2024</h1>
+  <h1>Daily Values for DATA_TYPES 51 (DGES) - 2024</h1>
   
   <button id="downloadBtn">Download CSV</button>
   
@@ -20,8 +20,7 @@
     <thead>
       <tr>
          <th>Date</th>
-         <th>Value 44</th>
-         <th>Value 45</th>
+         <th>Value 51</th>
       </tr>
     </thead>
     <tbody>
@@ -30,7 +29,7 @@
   </table>
   
   <script>
-    // Fetch the daily values from process.php.
+    // Fetch the daily values from process.php.x
     fetch('process.php')
       .then(response => response.json())
       .then(data => {
@@ -39,13 +38,10 @@
           const tr = document.createElement("tr");
           const tdDate = document.createElement("td");
           tdDate.textContent = item.date;
-          const tdVal44 = document.createElement("td");
-          tdVal44.textContent = item.value44;
-          const tdVal45 = document.createElement("td");
-          tdVal45.textContent = item.value45;
+          const tdVal51 = document.createElement("td");
+          tdVal51.textContent = item.value51;
           tr.appendChild(tdDate);
-          tr.appendChild(tdVal44);
-          tr.appendChild(tdVal45);
+          tr.appendChild(tdVal51);
           tbody.appendChild(tr);
         });
       })
