@@ -56,8 +56,23 @@ function refreshWithNewParams() {
     window.location.href = `${window.location.origin}${window.location.pathname}?station=${station}&date=${date}`;
 }
 
+// GLOBAL GA COUNTERS
+let infoButtonCount = 0;
+let downloadButtonCount = 0;
+let viewChangeCount = 0;
+const pageLoadTime = Date.now(); // for time spent on site tracking
+
 // --- DOMContentLoaded setup --- 
 document.addEventListener('DOMContentLoaded', () => {
+    // Immediately track page load with selected station, month, and year.
+    const stationVal = document.getElementById('station').value || 'Unknown Station';
+    const monthVal = document.getElementById('month').value || 'Unknown Month';
+    const yearVal = document.getElementById('year').value || 'Unknown Year';
+    gtag('event', 'page_load', {
+        event_category: 'Page Load',
+        event_label: `Page loaded with Station: ${stationVal}, Month: ${monthVal}, Year: ${yearVal}`
+    });
+    
     // Restore scroll position if available
     const scrollPos = sessionStorage.getItem("scrollPos");
     if (scrollPos) {
@@ -169,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Save to CSV functionality
     document.getElementById('saveCsvButton').addEventListener('click', function () {
+        downloadButtonCount++;
         const dataTable = $('#dataTable').DataTable();
         const allIndexes = dataTable.columns().indexes().toArray();
         let csvData = [], headers = [], subHeaders = [];
@@ -209,21 +225,37 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(link);
         
         // Added GA tracking for Download button
-        gtag('event', 'click', {
-            'event_category': 'Download Button',
-            'event_label': 'Download CSV Button Pressed'
+        gtag('event', 'download_click', {
+            event_category: 'Download Button',
+            event_label: `Download CSV pressed. Click count: ${downloadButtonCount}`
         });
     });
     
     window.addEventListener('resize', () => dataTable.columns.adjust());
     
-    // Time on Page tracking (Idea 7: after 30 seconds)
-    setTimeout(() => {
+    // Time on Page tracking (enhanced description)
+    window.addEventListener('beforeunload', () => {
+        const timeOnPage = Math.round((Date.now() - pageLoadTime) / 1000); // seconds
         gtag('event', 'time_on_page', {
             event_category: 'Engagement',
-            event_label: '30 seconds'
+            event_label: `User spent ${timeOnPage} seconds on this page`
         });
-    }, 30000);
+    });
+    
+    // Info popup events with counter update
+    const infoButton = document.getElementById('infoButton');
+    const infoPopup = document.getElementById('infoPopup');
+    const closePopup = document.getElementById('closeInfoPopup');
+    infoButton.addEventListener('click', () => { 
+        infoButtonCount++;
+        infoPopup.style.display = 'block'; 
+        gtag('event', 'info_click', {
+            event_category: 'Info Button',
+            event_label: `Info Button Pressed. Click count: ${infoButtonCount}`
+        });
+    });
+    closePopup.addEventListener('click', () => { infoPopup.style.display = 'none'; });
+    window.addEventListener('click', event => { if (event.target == infoPopup) infoPopup.style.display = 'none'; });
 });
 
 // Highlight extremes based on column type
@@ -445,6 +477,7 @@ function setDefaultViewBasedOnMetadata() {
 document.addEventListener('DOMContentLoaded', () => {
     const viewSelect = document.getElementById('viewSelect');
     viewSelect.addEventListener('change', function(){
+        viewChangeCount++;
         const selectedType = this.value;
         const dataTable = $('#dataTable').DataTable();
         const metadata = JSON.parse(document.getElementById('metadata').textContent);
@@ -455,9 +488,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         dataTable.columns.adjust().draw();
         // GA tracking for view toggle (Idea 8)
-        gtag('event', 'view_toggle', {
+        gtag('event', 'view_change', {
             event_category: 'View Toggle',
-            event_label: selectedType
+            event_label: `View changed to: ${selectedType}. Total changes: ${viewChangeCount}`
         });
     });
 });
@@ -514,11 +547,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoPopup = document.getElementById('infoPopup');
     const closePopup = document.getElementById('closeInfoPopup');
     infoButton.addEventListener('click', () => { 
+        infoButtonCount++;
         infoPopup.style.display = 'block'; 
         // Added GA tracking for Info button
-        gtag('event', 'click', {
-            'event_category': 'Info Button',
-            'event_label': 'Info Button Pressed'
+        gtag('event', 'info_click', {
+            event_category: 'Info Button',
+            event_label: `Info Button Pressed. Click count: ${infoButtonCount}`
         });
     });
     closePopup.addEventListener('click', () => { infoPopup.style.display = 'none'; });
