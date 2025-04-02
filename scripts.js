@@ -464,16 +464,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Additional GA tracking for station select and date filter changes (Ideas 1, 2, 9, and 10)
 document.addEventListener('DOMContentLoaded', () => {
-    // Station select change tracking (Ideas 1 & 9)
+    // Station select change tracking updated to include descriptive text instead of just numbers
     const stationSelect = document.getElementById('station-select');
     if (stationSelect) {
         stationSelect.addEventListener('change', function() {
             const selectedOption = stationSelect.options[stationSelect.selectedIndex];
-            const stationGroup = selectedOption.parentElement ? selectedOption.parentElement.label : 'Unknown Group';
+            // Use the option's parent label instead of a numeric value.
+            const stationGroupText = selectedOption.parentElement ? selectedOption.parentElement.label : 'Unknown Group';
             const station = stationSelect.value;
             gtag('event', 'station_filter_selection', {
                 event_category: 'Station Filter',
-                event_label: `Station: ${station}, Group: ${stationGroup}`
+                event_label: `Station: ${station} (${stationGroupText})`
             });
         });
     }
