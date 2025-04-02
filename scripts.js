@@ -10,18 +10,6 @@ const DATA_TABLE_CONFIG = {
     autoWidth: true
 };
 
-// Set custom dimensions for user properties (Idea 10: Device type)
-(function() {
-    var deviceType = /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
-    gtag('set', {'custom_dimension_device_type': deviceType});
-})();
-
-// Set custom dimension for Monthly Summaries
-gtag('set', {'custom_dimension_monthly_summaries': 'Monthly Summary'});
-
-// Set custom dimension for this page's classification
-gtag('set', {'custom_dimension_page_classification': 'Monthly Summary'});
-
 // Helper to set dropdown value
 function setDropdownValue(dropdownId, value) {
     const dropdown = document.getElementById(dropdownId);
@@ -52,33 +40,22 @@ function refreshWithNewParams() {
         alert("Please provide both station and date values.");
         return;
     }
-    
-    // GA tracking for selectors (existing)
-    gtag('event', 'filter_change', {
-        'event_category': 'Selector Change',
-        'event_label': `Station: ${station}, Month: ${month}, Year: ${year}`
-    });
 
     window.location.href = `${window.location.origin}${window.location.pathname}?station=${station}&date=${date}`;
 }
 
-// GLOBAL GA COUNTERS
-let infoButtonCount = 0;
-let downloadButtonCount = 0;
-let viewChangeCount = 0;
-const pageLoadTime = Date.now(); // for time spent on site tracking
-
-// --- DOMContentLoaded setup --- 
+// --- DOMContentLoaded setup ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Immediately track page load with selected station, month, and year.
+    // Track page load event with URL, station, month, and year
     const stationVal = document.getElementById('station').value || 'Unknown Station';
     const monthVal = document.getElementById('month').value || 'Unknown Month';
     const yearVal = document.getElementById('year').value || 'Unknown Year';
+    const currentUrl = window.location.href;
     gtag('event', 'page_load', {
         event_category: 'Page Load',
-        event_label: `Page loaded with Station: ${stationVal}, Month: ${monthVal}, Year: ${yearVal}`
+        event_label: `URL: ${currentUrl}, Station: ${stationVal}, Month: ${monthVal}, Year: ${yearVal}`
     });
-    
+
     // Restore scroll position if available
     const scrollPos = sessionStorage.getItem("scrollPos");
     if (scrollPos) {
@@ -190,7 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Save to CSV functionality
     document.getElementById('saveCsvButton').addEventListener('click', function () {
-        downloadButtonCount++;
         const dataTable = $('#dataTable').DataTable();
         const allIndexes = dataTable.columns().indexes().toArray();
         let csvData = [], headers = [], subHeaders = [];
@@ -231,37 +207,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(link);
         
         // Added GA tracking for Download button
-        gtag('event', 'download_click', {
-            event_category: 'Download Button',
-            event_label: `Download CSV pressed. Click count: ${downloadButtonCount}`
+        gtag('event', 'click', {
+            'event_category': 'Download Button',
+            'event_label': 'Download CSV Button Pressed'
         });
     });
     
     window.addEventListener('resize', () => dataTable.columns.adjust());
-    
-    // Time on Page tracking (enhanced description)
-    window.addEventListener('beforeunload', () => {
-        const timeOnPage = Math.round((Date.now() - pageLoadTime) / 1000); // seconds
-        gtag('event', 'time_on_page', {
-            event_category: 'Engagement',
-            event_label: `User spent ${timeOnPage} seconds on this page`
-        });
-    });
-    
-    // Info popup events with counter update
-    const infoButton = document.getElementById('infoButton');
-    const infoPopup = document.getElementById('infoPopup');
-    const closePopup = document.getElementById('closeInfoPopup');
-    infoButton.addEventListener('click', () => { 
-        infoButtonCount++;
-        infoPopup.style.display = 'block'; 
-        gtag('event', 'info_click', {
-            event_category: 'Info Button',
-            event_label: `Info Button Pressed. Click count: ${infoButtonCount}`
-        });
-    });
-    closePopup.addEventListener('click', () => { infoPopup.style.display = 'none'; });
-    window.addEventListener('click', event => { if (event.target == infoPopup) infoPopup.style.display = 'none'; });
 });
 
 // Highlight extremes based on column type
@@ -479,11 +431,10 @@ function setDefaultViewBasedOnMetadata() {
     }
 }
 
-// View toggle event listener with GA tracking (Idea 8)
+// View toggle event listener
 document.addEventListener('DOMContentLoaded', () => {
     const viewSelect = document.getElementById('viewSelect');
     viewSelect.addEventListener('change', function(){
-        viewChangeCount++;
         const selectedType = this.value;
         const dataTable = $('#dataTable').DataTable();
         const metadata = JSON.parse(document.getElementById('metadata').textContent);
@@ -493,58 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.visible(meta && meta.display_type === selectedType);
         });
         dataTable.columns.adjust().draw();
-        // GA tracking for view toggle (Idea 8)
-        gtag('event', 'view_change', {
-            event_category: 'View Toggle',
-            event_label: `View changed to: ${selectedType}. Total changes: ${viewChangeCount}`
-        });
     });
-});
-
-// Additional GA tracking for station select and date filter changes (Ideas 1, 2, 9, and 10)
-document.addEventListener('DOMContentLoaded', () => {
-    // Station select change tracking updated to include descriptive text instead of just numbers
-    const stationSelect = document.getElementById('station-select');
-    if (stationSelect) {
-        stationSelect.addEventListener('change', function() {
-            const selectedOption = stationSelect.options[stationSelect.selectedIndex];
-            // Use the option's parent label instead of a numeric value.
-            const stationGroupText = selectedOption.parentElement ? selectedOption.parentElement.label : 'Unknown Group';
-            const station = stationSelect.value;
-            gtag('event', 'station_filter_selection', {
-                event_category: 'Station Filter',
-                event_label: `Station: ${station} (${stationGroupText})`
-            });
-        });
-    }
-    
-    // Date filter change tracking (Idea 2)
-    const monthSelect = document.getElementById('month');
-    const yearSelect = document.getElementById('year');
-    if (monthSelect) {
-        monthSelect.addEventListener('change', function() {
-            gtag('event', 'date_filter_change', {
-                event_category: 'Date Filter',
-                event_label: `Month: ${this.value}`
-            });
-        });
-    }
-    if (yearSelect) {
-        yearSelect.addEventListener('change', function() {
-            gtag('event', 'date_filter_change', {
-                event_category: 'Date Filter',
-                event_label: `Year: ${this.value}`
-            });
-        });
-    }
-    
-    // Example of setting a custom dimension for station group on page load (Idea 10)
-    const stationSelectElement = document.getElementById('station-select');
-    if (stationSelectElement && stationSelectElement.value) {
-        const selectedOption = stationSelectElement.options[stationSelectElement.selectedIndex];
-        const stationGroup = selectedOption.parentElement ? selectedOption.parentElement.label : 'Unknown Group';
-        gtag('set', {'custom_dimension_station_group': stationGroup});
-    }
 });
 
 // Info popup events
@@ -553,14 +453,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoPopup = document.getElementById('infoPopup');
     const closePopup = document.getElementById('closeInfoPopup');
     infoButton.addEventListener('click', () => { 
-        infoButtonCount++;
         infoPopup.style.display = 'block'; 
         // Added GA tracking for Info button
-        gtag('event', 'info_click', {
-            event_category: 'Info Button',
-            event_label: `Info Button Pressed. Click count: ${infoButtonCount}`
+        gtag('event', 'click', {
+            'event_category': 'Info Button',
+            'event_label': 'Info Button Pressed'
         });
     });
     closePopup.addEventListener('click', () => { infoPopup.style.display = 'none'; });
     window.addEventListener('click', event => { if (event.target == infoPopup) infoPopup.style.display = 'none'; });
 });
+
