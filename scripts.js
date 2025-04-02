@@ -52,9 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const yearVal = document.getElementById('year').value || 'Unknown Year';
     const currentUrl = window.location.href;
     gtag('event', 'page_load', {
-        event_category: 'Page Load',
-        event_label: `URL: ${currentUrl}, Station: ${stationVal}, Month: ${monthVal}, Year: ${yearVal}`
-    });
+        event_category: 'Monthly Summary',
+        event_label: `Station: ${stationVal}, Month: ${monthVal}, Year: ${yearVal}`,
+        station: stationVal,
+        month: monthVal,
+        year: yearVal
+      });
 
     // Restore scroll position if available
     const scrollPos = sessionStorage.getItem("scrollPos");
@@ -208,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Added GA tracking for Download button
         gtag('event', 'click', {
-            'event_category': 'Download Button',
+            'event_category': 'Monthly Summary',
             'event_label': 'Download CSV Button Pressed'
         });
     });
@@ -456,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
         infoPopup.style.display = 'block'; 
         // Added GA tracking for Info button
         gtag('event', 'click', {
-            'event_category': 'Info Button',
+            'event_category': 'Monthly Summary',
             'event_label': 'Info Button Pressed'
         });
     });
