@@ -16,6 +16,12 @@ const DATA_TABLE_CONFIG = {
     gtag('set', {'custom_dimension_device_type': deviceType});
 })();
 
+// Set custom dimension for Monthly Summaries
+gtag('set', {'custom_dimension_monthly_summaries': 'Monthly Summary'});
+
+// Set custom dimension for this page's classification
+gtag('set', {'custom_dimension_page_classification': 'Monthly Summary'});
+
 // Helper to set dropdown value
 function setDropdownValue(dropdownId, value) {
     const dropdown = document.getElementById(dropdownId);
