@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const monthVal = document.getElementById('month').value || 'Unknown Month';
     const yearVal = document.getElementById('year').value || 'Unknown Year';
     const currentUrl = window.location.href;
-    gtag('event', 'page_load', {
+    gtag('event', 'monthly_summary_page_load', {
         event_category: 'Monthly Summary',
         event_label: `Monthly Summary Page Load`,
         station: stationVal,
@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(link);
         
         // Added GA tracking for Download button
-        gtag('event', 'click', {
+        gtag('event', 'monthly_summary_download', {
             'event_category': 'Monthly Summary',
             'event_label': 'Monthly Summary Download Button'
         });
@@ -458,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
     infoButton.addEventListener('click', () => { 
         infoPopup.style.display = 'block'; 
         // Added GA tracking for Info button
-        gtag('event', 'click', {
+        gtag('event', 'monthly_summary_info', {
             'event_category': 'Monthly Summary',
             'event_label': 'Monthly Summary Info Button'
         });
