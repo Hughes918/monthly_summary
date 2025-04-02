@@ -16,9 +16,6 @@ const DATA_TABLE_CONFIG = {
     gtag('set', {'custom_dimension_device_type': deviceType});
 })();
 
-// Set custom dimension for Monthly Summaries
-gtag('set', {'custom_dimension_monthly_summaries': 'Monthly Summary'});
-
 // Helper to set dropdown value
 function setDropdownValue(dropdownId, value) {
     const dropdown = document.getElementById(dropdownId);
