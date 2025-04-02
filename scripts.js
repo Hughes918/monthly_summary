@@ -10,6 +10,12 @@ const DATA_TABLE_CONFIG = {
     autoWidth: true
 };
 
+// Set custom dimensions for user properties (Idea 10: Device type)
+(function() {
+    var deviceType = /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+    gtag('set', {'custom_dimension_device_type': deviceType});
+})();
+
 // Helper to set dropdown value
 function setDropdownValue(dropdownId, value) {
     const dropdown = document.getElementById(dropdownId);
@@ -40,11 +46,17 @@ function refreshWithNewParams() {
         alert("Please provide both station and date values.");
         return;
     }
+    
+    // GA tracking for selectors (existing)
+    gtag('event', 'filter_change', {
+        'event_category': 'Selector Change',
+        'event_label': `Station: ${station}, Month: ${month}, Year: ${year}`
+    });
 
     window.location.href = `${window.location.origin}${window.location.pathname}?station=${station}&date=${date}`;
 }
 
-// --- DOMContentLoaded setup ---
+// --- DOMContentLoaded setup --- 
 document.addEventListener('DOMContentLoaded', () => {
     // Restore scroll position if available
     const scrollPos = sessionStorage.getItem("scrollPos");
@@ -204,6 +216,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     window.addEventListener('resize', () => dataTable.columns.adjust());
+    
+    // Time on Page tracking (Idea 7: after 30 seconds)
+    setTimeout(() => {
+        gtag('event', 'time_on_page', {
+            event_category: 'Engagement',
+            event_label: '30 seconds'
+        });
+    }, 30000);
 });
 
 // Highlight extremes based on column type
@@ -421,7 +441,7 @@ function setDefaultViewBasedOnMetadata() {
     }
 }
 
-// View toggle event listener
+// View toggle event listener with GA tracking (Idea 8)
 document.addEventListener('DOMContentLoaded', () => {
     const viewSelect = document.getElementById('viewSelect');
     viewSelect.addEventListener('change', function(){
@@ -434,7 +454,57 @@ document.addEventListener('DOMContentLoaded', () => {
             this.visible(meta && meta.display_type === selectedType);
         });
         dataTable.columns.adjust().draw();
+        // GA tracking for view toggle (Idea 8)
+        gtag('event', 'view_toggle', {
+            event_category: 'View Toggle',
+            event_label: selectedType
+        });
     });
+});
+
+// Additional GA tracking for station select and date filter changes (Ideas 1, 2, 9, and 10)
+document.addEventListener('DOMContentLoaded', () => {
+    // Station select change tracking (Ideas 1 & 9)
+    const stationSelect = document.getElementById('station-select');
+    if (stationSelect) {
+        stationSelect.addEventListener('change', function() {
+            const selectedOption = stationSelect.options[stationSelect.selectedIndex];
+            const stationGroup = selectedOption.parentElement ? selectedOption.parentElement.label : 'Unknown Group';
+            const station = stationSelect.value;
+            gtag('event', 'station_filter_selection', {
+                event_category: 'Station Filter',
+                event_label: `Station: ${station}, Group: ${stationGroup}`
+            });
+        });
+    }
+    
+    // Date filter change tracking (Idea 2)
+    const monthSelect = document.getElementById('month');
+    const yearSelect = document.getElementById('year');
+    if (monthSelect) {
+        monthSelect.addEventListener('change', function() {
+            gtag('event', 'date_filter_change', {
+                event_category: 'Date Filter',
+                event_label: `Month: ${this.value}`
+            });
+        });
+    }
+    if (yearSelect) {
+        yearSelect.addEventListener('change', function() {
+            gtag('event', 'date_filter_change', {
+                event_category: 'Date Filter',
+                event_label: `Year: ${this.value}`
+            });
+        });
+    }
+    
+    // Example of setting a custom dimension for station group on page load (Idea 10)
+    const stationSelectElement = document.getElementById('station-select');
+    if (stationSelectElement && stationSelectElement.value) {
+        const selectedOption = stationSelectElement.options[stationSelectElement.selectedIndex];
+        const stationGroup = selectedOption.parentElement ? selectedOption.parentElement.label : 'Unknown Group';
+        gtag('set', {'custom_dimension_station_group': stationGroup});
+    }
 });
 
 // Info popup events
@@ -453,4 +523,3 @@ document.addEventListener('DOMContentLoaded', () => {
     closePopup.addEventListener('click', () => { infoPopup.style.display = 'none'; });
     window.addEventListener('click', event => { if (event.target == infoPopup) infoPopup.style.display = 'none'; });
 });
-
