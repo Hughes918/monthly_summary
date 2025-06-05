@@ -29,16 +29,21 @@
   </table>
   
   <script>
-    const stationName = "DSEA"; // Declare station name in one place
-    const dataType = "51";   //70    // Declare data type in one place
-    const startYear = 2015;
-    const endYear = 2019;
+    const stationName = "DDFS"; // Declare station name in one place
+    const dataType = "50";   //70    // Declare data type in one place
+    const startYear = 2024;
+    const endYear = 2025;
 
     // Optionally update the table header dynamically
     document.addEventListener("DOMContentLoaded", () => {
       const th = document.querySelector("table#resultsTable thead tr th:nth-child(2)");
       if (th) {
-         th.textContent = `Value ${dataType}`;
+        // Use descriptive header for data type 50
+        if (dataType === "50") {
+          th.textContent = "Value (mph)";
+        } else {
+          th.textContent = `Value ${dataType}`;
+        }
       }
     });
 

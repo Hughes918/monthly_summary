@@ -191,7 +191,7 @@ $metadata = [
     [
         "data_name_full"    => "Mean Daily Well Level",
         "data_name_display" => "Well Level",
-        "conversion_type"   => "none",
+        "conversion_type"   => "m_to_ft",
         "precision_type"    => 2,
         "view_type"         => "numeric",
         "display_type"      => "water",
