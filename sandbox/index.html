@@ -2,85 +2,187 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Data Request</title>
+  <title>Monthly Summary Sandbox</title>
   <style>
     body { font-family: Arial, sans-serif; }
     table { border-collapse: collapse; width: 100%; margin-top: 20px; }
     th, td { border: 1px solid #333; padding: 8px; text-align: left; }
     th { background-color: #f0f0f0; }
     #downloadBtn { margin-top: 20px; padding: 10px 20px; font-size: 1em; }
+    .error { color: red; margin-top: 20px; }
+    .controls { margin-bottom: 20px; }
+    .controls input { margin-right: 10px; }
   </style>
 </head>
 <body>
-  <h1>Data Request</h1>
-  
-  <button id="downloadBtn">Download CSV</button>
-  
+  <h1>Monthly Summary Sandbox</h1>
+  <div class="controls">
+    <label for="station">Station:</label>
+    <input type="text" id="station" value="DDAG" placeholder="Enter station (e.g. DDAG)">
+    <label for="startYear">Start Year:</label>
+    <input type="text" id="startYear" value="2023" placeholder="Start year">
+    <label for="endYear">End Year:</label>
+    <input type="text" id="endYear" value="2023" placeholder="End year">
+    <span id="paramContainer">
+      <label for="dataType1">Data Type:</label>
+      <input type="text" id="dataType1" value="43" placeholder="Enter data type (e.g. 43)">
+    </span>
+    <button id="addParamBtn">Add Parameter</button>
+    <button id="fetchBtn">Fetch Data</button>
+    <button id="downloadBtn">Download CSV</button>
+  </div>
+  <div id="errorMsg" class="error"></div>
   <table id="resultsTable">
     <thead>
       <tr>
          <th>Date</th>
-         <th>Value</th>
+         <!-- Data type headers will be inserted here -->
       </tr>
     </thead>
     <tbody>
       <!-- Table rows will be populated here -->
     </tbody>
   </table>
-  
   <script>
-    const stationName = "DDFS"; // Declare station name in one place
-    const dataType = "50";   //70    // Declare data type in one place
-    const startYear = 2024;
-    const endYear = 2025;
-
-    // Optionally update the table header dynamically
-    document.addEventListener("DOMContentLoaded", () => {
-      const th = document.querySelector("table#resultsTable thead tr th:nth-child(2)");
-      if (th) {
-        // Use descriptive header for data type 50
-        if (dataType === "50") {
-          th.textContent = "Value (mph)";
-        } else {
-          th.textContent = `Value ${dataType}`;
-        }
-      }
+    // Add unlimited parameter fields
+    let paramCount = 1;
+    document.getElementById("addParamBtn").addEventListener("click", function() {
+      paramCount++;
+      const paramContainer = document.getElementById("paramContainer");
+      const label = document.createElement("label");
+      label.htmlFor = `dataType${paramCount}`;
+      label.textContent = `Data Type ${paramCount}:`;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.id = `dataType${paramCount}`;
+      input.placeholder = `Enter data type (e.g. 51)`;
+      input.style.marginRight = "10px";
+      paramContainer.appendChild(label);
+      paramContainer.appendChild(input);
     });
 
-    // Pass parameters to process.php via a query string
-    const urlParams = `process.php?station=${stationName}&dataType=${dataType}&startYear=${startYear}&endYear=${endYear}`;
+    function buildProcessUrl(station, dataType, year, month) {
+      return `process.php?station=${station}&dataType=${dataType}&startYear=${year}&endYear=${year}&month=${month}`;
+    }
 
-    // Fetch the daily values using response.text() and try/catch JSON parse
-    fetch(urlParams)
-      .then(response => response.text())
-      .then(text => {
-         let data;
-         try {
-            data = text ? JSON.parse(text) : { results: [] };
-         } catch (e) {
-            console.error('Error parsing JSON, skipping bad data', e);
-            data = { results: [] };
-         }
-         return data;
-      })
-      .then(data => {
-          const tbody = document.querySelector("#resultsTable tbody");
-          data.results.forEach(item => {
-            const tr = document.createElement("tr");
-            const tdDate = document.createElement("td");
-            tdDate.textContent = item.date;
-            const tdVal = document.createElement("td");
-            tdVal.textContent = item.value;
-            tr.appendChild(tdDate);
-            tr.appendChild(tdVal);
-            tbody.appendChild(tr);
-          });
-      })
-      .catch(error => {
-         console.error('Error fetching data:', error);
+    function fetchAndDisplayData() {
+      // Clear table immediately
+      const tbody = document.querySelector("#resultsTable tbody");
+      tbody.innerHTML = "";
+      const theadRow = document.querySelector("#resultsTable thead tr");
+      // Remove all data type headers except Date
+      while (theadRow.children.length > 1) {
+        theadRow.removeChild(theadRow.lastChild);
+      }
+
+      const station = document.getElementById("station").value.trim();
+      const startYear = parseInt(document.getElementById("startYear").value.trim(), 10);
+      const endYear = parseInt(document.getElementById("endYear").value.trim(), 10);
+      const errorMsg = document.getElementById("errorMsg");
+      errorMsg.textContent = "";
+
+      // Collect all data type inputs
+      const dataTypes = [];
+      for (let i = 1; i <= paramCount; i++) {
+        const input = document.getElementById(`dataType${i}`);
+        if (input && input.value.trim()) {
+          dataTypes.push(input.value.trim());
+        }
+      }
+      // Add headers for each data type
+      dataTypes.forEach(dt => {
+        const th = document.createElement("th");
+        th.textContent = `Value (${dt})`;
+        theadRow.appendChild(th);
       });
 
-    // Function to download the table data as a CSV file.
+      // Validate years
+      if (isNaN(startYear) || isNaN(endYear) || startYear > endYear) {
+        errorMsg.textContent = "Invalid year range.";
+        return;
+      }
+      if (dataTypes.length === 0) {
+        errorMsg.textContent = "Please enter at least one data type.";
+        return;
+      }
+
+      let allResultsMap = {}; // date => {date, value1, value2, ...}
+      let totalFetches = (endYear - startYear + 1) * 12 * dataTypes.length;
+      let completedFetches = 0;
+
+      for (let year = startYear; year <= endYear; year++) {
+        for (let m = 1; m <= 12; m++) {
+          const monthStr = m.toString().padStart(2, '0');
+          dataTypes.forEach((dt, idx) => {
+            const url = buildProcessUrl(station, dt, year, monthStr);
+            fetch(url)
+              .then(response => response.text())
+              .then(text => {
+                let data;
+                try {
+                  data = text ? JSON.parse(text) : { results: [] };
+                } catch (e) {
+                  errorMsg.textContent = "Error parsing JSON: " + e.message;
+                  completedFetches++;
+                  return;
+                }
+                if (data.error) {
+                  errorMsg.textContent = data.error;
+                  completedFetches++;
+                  return;
+                }
+                if (data.results && data.results.length > 0) {
+                  data.results.forEach(item => {
+                    if (!allResultsMap[item.date]) {
+                      allResultsMap[item.date] = { date: item.date };
+                    }
+                    allResultsMap[item.date][`value${idx+1}`] = item.value;
+                  });
+                }
+                completedFetches++;
+                if (completedFetches === totalFetches) {
+                  renderTable(allResultsMap, dataTypes.length);
+                }
+              })
+              .catch(error => {
+                errorMsg.textContent = "Error fetching data: " + error;
+                completedFetches++;
+              });
+          });
+        }
+      }
+    }
+
+    function renderTable(allResultsMap, paramCount) {
+      const tbody = document.querySelector("#resultsTable tbody");
+      tbody.innerHTML = "";
+      const allResults = Object.values(allResultsMap);
+      if (allResults.length === 0) {
+        document.getElementById("errorMsg").textContent = "No data found for this selection.";
+        return;
+      }
+      // Sort by date
+      allResults.sort((a, b) => a.date.localeCompare(b.date));
+      allResults.forEach(item => {
+        const tr = document.createElement("tr");
+        const tdDate = document.createElement("td");
+        tdDate.textContent = item.date;
+        tr.appendChild(tdDate);
+        for (let i = 1; i <= paramCount; i++) {
+          const tdVal = document.createElement("td");
+          tdVal.textContent = item[`value${i}`] !== undefined ? item[`value${i}`] : "--";
+          tr.appendChild(tdVal);
+        }
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById("fetchBtn").addEventListener("click", fetchAndDisplayData);
+
+    // Do NOT fetch data on page load
+    // document.addEventListener("DOMContentLoaded", fetchAndDisplayData);
+
+    // CSV download
     function downloadCSV() {
       let csv = "";
       const headerRow = document.querySelector("table#resultsTable thead tr");
@@ -106,8 +208,19 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      // Build the filename dynamically using dataType
-      a.download = `${stationName}_${dataType}_${startYear}_${endYear}.csv`;
+      // Build the filename dynamically using all data types
+      const station = document.getElementById("station").value.trim();
+      const startYear = document.getElementById("startYear").value.trim();
+      const endYear = document.getElementById("endYear").value.trim();
+      let filename = station;
+      for (let i = 1; i <= paramCount; i++) {
+        const input = document.getElementById(`dataType${i}`);
+        if (input && input.value.trim()) {
+          filename += `_${input.value.trim()}`;
+        }
+      }
+      filename += `_${startYear}_${endYear}.csv`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -116,3 +229,4 @@
   </script>
 </body>
 </html>
+ 

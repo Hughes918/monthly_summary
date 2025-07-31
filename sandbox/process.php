@@ -10,15 +10,18 @@ $station   = isset($_GET['station']) ? $_GET['station'] : '';
 $dataType  = isset($_GET['dataType']) ? $_GET['dataType'] : '';
 $startYear = isset($_GET['startYear']) ? intval($_GET['startYear']) : 0;
 $endYear   = isset($_GET['endYear']) ? intval($_GET['endYear']) : 0;
-$years     = range($startYear, $endYear);
+$month     = isset($_GET['month']) ? intval($_GET['month']) : 0;
 
 // Conversion lookup: conversion functions for each data type.
 $conversions = [
     '51' => function($v) { return round($v / 25.4, 2); },              // mm to in
     '43'  => function($v) { return round((($v - 273.15) * 9/5) + 32, 2); }, // Kelvin to Fahrenheit
+    '44'  => function($v) { return round((($v - 273.15) * 9/5) + 32, 2); }, // Kelvin to Fahrenheit
+    '45'  => function($v) { return round((($v - 273.15) * 9/5) + 32, 2); }, // Kelvin to Fahrenheit
     '70' => function($v) { return round($v * 3.28084, 2); },              // m to ft
     // New conversion: m/s to mph (1 m/s ≈ 2.23694 mph)
-    '50' => function($v) { return round($v * 2.23694, 1); }
+    '50' => function($v) { return round($v * 2.23694, 1); },
+     '184'  => function($v) { return round((($v - 273.15) * 9/5) + 32, 2); }, // Kelvin to Fahrenheit
 ];
 
 /**
@@ -28,8 +31,8 @@ function fetchMonthData($year, $month, $station) {
     $month_str = sprintf("%02d", $month);
     $start_date = date("Y-m-01", strtotime("$year-$month_str-01"));
     $end_date   = date("Y-m-t", strtotime("$year-$month_str-01"));
-    $url = "https://150.136.239.199/almanac/retrieve.old.php?raw_values=y&start={$start_date}&end={$end_date}&station_name={$station}";
-    $json_data = file_get_contents($url);
+    $url = "http://150.136.239.199/almanac/retrieve.old.php?start={$start_date}&end={$end_date}&station_name={$station}&raw_values=Y";
+    $json_data = @file_get_contents($url);
     if ($json_data === false) {
         return false;
     }
@@ -43,24 +46,21 @@ function fetchMonthData($year, $month, $station) {
 
 $results = [];
 
-foreach ($years as $year) {
-    $endMonth = ($year == 2025) ? 3 : 12;
-    foreach (range(1, $endMonth) as $month) {
-        $result = fetchMonthData($year, $month, $station);
-        if ($result === false) {
-            continue;
-        }
+if ($month) {
+    // Single month
+    $result = fetchMonthData($startYear, $month, $station);
+    if ($result !== false) {
         $data = $result['decoded'];
         if (isset($data['data']) && is_array($data['data'])) {
             foreach ($data['data'] as $stationId => $stationData) {
                 if (is_array($stationData)) {
                     foreach ($stationData as $datetime => $records) {
                         $date = substr($datetime, 0, 11);
-                        if (isset($records[$GLOBALS['dataType']])) {
-                            if ($records[$GLOBALS['dataType']]['FLAG'] === "1") {
-                                $rawValue = floatval($records[$GLOBALS['dataType']]['VALUE']);
-                                $value = isset($GLOBALS['conversions'][$GLOBALS['dataType']])
-                                    ? $GLOBALS['conversions'][$GLOBALS['dataType']]($rawValue)
+                        if (isset($records[$dataType])) {
+                            if ($records[$dataType]['FLAG'] === "1") {
+                                $rawValue = floatval($records[$dataType]['VALUE']);
+                                $value = isset($conversions[$dataType])
+                                    ? $conversions[$dataType]($rawValue)
                                     : $rawValue;
                             } else {
                                 $value = "--";
@@ -69,6 +69,38 @@ foreach ($years as $year) {
                             $value = "--";
                         }
                         $results[] = ['date' => $date, 'value' => $value];
+                    }
+                }
+            }
+        }
+    }
+} else {
+    // All months in the year range
+    for ($year = $startYear; $year <= $endYear; $year++) {
+        for ($m = 1; $m <= 12; $m++) {
+            $result = fetchMonthData($year, $m, $station);
+            if ($result !== false) {
+                $data = $result['decoded'];
+                if (isset($data['data']) && is_array($data['data'])) {
+                    foreach ($data['data'] as $stationId => $stationData) {
+                        if (is_array($stationData)) {
+                            foreach ($stationData as $datetime => $records) {
+                                $date = substr($datetime, 0, 11);
+                                if (isset($records[$dataType])) {
+                                    if ($records[$dataType]['FLAG'] === "1") {
+                                        $rawValue = floatval($records[$dataType]['VALUE']);
+                                        $value = isset($conversions[$dataType])
+                                            ? $conversions[$dataType]($rawValue)
+                                            : $rawValue;
+                                    } else {
+                                        $value = "--";
+                                    }
+                                } else {
+                                    $value = "--";
+                                }
+                                $results[] = ['date' => $date, 'value' => $value];
+                            }
+                        }
                     }
                 }
             }

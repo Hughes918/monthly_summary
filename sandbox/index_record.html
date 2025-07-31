@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Monthly Summary Records</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .record-section { margin-top: 30px; }
+    .record-title { font-weight: bold; font-size: 1.2em; margin-bottom: 10px; }
+    .record-table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
+    .record-table th, .record-table td { border: 1px solid #333; padding: 8px; text-align: left; }
+    .record-table th { background-color: #f0f0f0; }
+    .error { color: red; margin-top: 20px; }
+    .controls { margin-bottom: 20px; }
+    .controls input, .controls select { margin-right: 10px; }
+    .options { margin-bottom: 20px; }
+    #downloadBtn { padding: 10px 20px; font-size: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Monthly Summary Records</h1>
+  <div class="controls">
+    <label for="station">Station:</label>
+    <input type="text" id="station" value="DDAG" placeholder="Enter station (e.g. DDAG)">
+    <label for="startYear">Start Year:</label>
+    <input type="text" id="startYear" value="2023" placeholder="Start year">
+    <label for="endYear">End Year:</label>
+    <input type="text" id="endYear" value="2023" placeholder="End year">
+    <span id="paramContainer">
+      <label for="dataType1">Data Type:</label>
+      <input type="text" id="dataType1" value="43" placeholder="Enter data type (e.g. 43)">
+    </span>
+    <button id="addParamBtn">Add Parameter</button>
+    <div class="options">
+      <label><input type="checkbox" id="showMax" checked> Show Highest</label>
+      <label><input type="checkbox" id="showMin" checked> Show Lowest</label>
+      <label for="numRecords">Records to show:</label>
+      <input type="number" id="numRecords" value="3" min="1" style="width: 60px;">
+      <button id="fetchBtn">Fetch Data</button>
+      <button id="downloadBtn">Download CSV</button>
+    </div>
+  </div>
+  <div id="errorMsg" class="error"></div>
+  <div id="recordsContainer"></div>
+  <script>
+    // Add unlimited parameter fields
+    let paramCount = 1;
+    document.getElementById("addParamBtn").addEventListener("click", function() {
+      paramCount++;
+      const paramContainer = document.getElementById("paramContainer");
+      const label = document.createElement("label");
+      label.htmlFor = `dataType${paramCount}`;
+      label.textContent = `Data Type ${paramCount}:`;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.id = `dataType${paramCount}`;
+      input.placeholder = `Enter data type (e.g. 51)`;
+      input.style.marginRight = "10px";
+      paramContainer.appendChild(label);
+      paramContainer.appendChild(input);
+    });
+
+    function buildProcessUrl(station, dataType, year, month) {
+      return `process.php?station=${station}&dataType=${dataType}&startYear=${year}&endYear=${year}&month=${month}`;
+    }
+
+    function fetchAndDisplayRecords() {
+      // Clear previous results
+      document.getElementById("recordsContainer").innerHTML = "";
+      const errorMsg = document.getElementById("errorMsg");
+      errorMsg.textContent = "";
+
+      const station = document.getElementById("station").value.trim();
+      const startYear = parseInt(document.getElementById("startYear").value.trim(), 10);
+      const endYear = parseInt(document.getElementById("endYear").value.trim(), 10);
+
+      // Collect all data type inputs
+      const dataTypes = [];
+      for (let i = 1; i <= paramCount; i++) {
+        const input = document.getElementById(`dataType${i}`);
+        if (input && input.value.trim()) {
+          dataTypes.push(input.value.trim());
+        }
+      }
+
+      // Validate years
+      if (isNaN(startYear) || isNaN(endYear) || startYear > endYear) {
+        errorMsg.textContent = "Invalid year range.";
+        return;
+      }
+      if (dataTypes.length === 0) {
+        errorMsg.textContent = "Please enter at least one data type.";
+        return;
+      }
+
+      // Get options
+      const showMax = document.getElementById("showMax").checked;
+      const showMin = document.getElementById("showMin").checked;
+      let numRecords = parseInt(document.getElementById("numRecords").value, 10);
+      if (isNaN(numRecords) || numRecords < 1) numRecords = 3;
+
+      // For each year, for each dataType, fetch all months and collect values
+      let fetchPlan = [];
+      for (let year = startYear; year <= endYear; year++) {
+        for (let dtIdx = 0; dtIdx < dataTypes.length; dtIdx++) {
+          for (let m = 1; m <= 12; m++) {
+            fetchPlan.push({
+              year,
+              dataType: dataTypes[dtIdx],
+              dtIdx,
+              month: m
+            });
+          }
+        }
+      }
+
+      // Structure: records[year][dataTypeIdx] = [{date, value}]
+      let records = {};
+      let totalFetches = fetchPlan.length;
+      let completedFetches = 0;
+
+      fetchPlan.forEach(plan => {
+        const url = buildProcessUrl(station, plan.dataType, plan.year, plan.month.toString().padStart(2, '0'));
+        fetch(url)
+          .then(response => response.text())
+          .then(text => {
+            let data;
+            try {
+              data = text ? JSON.parse(text) : { results: [] };
+            } catch (e) {
+              errorMsg.textContent = "Error parsing JSON: " + e.message;
+              completedFetches++;
+              return;
+            }
+            if (data.error) {
+              errorMsg.textContent = data.error;
+              completedFetches++;
+              return;
+            }
+            if (!records[plan.year]) records[plan.year] = {};
+            if (!records[plan.year][plan.dtIdx]) records[plan.year][plan.dtIdx] = [];
+            if (data.results && data.results.length > 0) {
+              data.results.forEach(item => {
+                // Only consider numeric values
+                if (item.value !== "--" && !isNaN(item.value)) {
+                  records[plan.year][plan.dtIdx].push({
+                    date: item.date,
+                    value: parseFloat(item.value)
+                  });
+                }
+              });
+            }
+            completedFetches++;
+            if (completedFetches === totalFetches) {
+              renderRecords(records, dataTypes, showMax, showMin, numRecords);
+            }
+          })
+          .catch(error => {
+            errorMsg.textContent = "Error fetching data: " + error;
+            completedFetches++;
+          });
+      });
+    }
+
+    function renderRecords(records, dataTypes, showMax, showMin, numRecords) {
+      const container = document.getElementById("recordsContainer");
+      container.innerHTML = "";
+      if (!records || Object.keys(records).length === 0) {
+        document.getElementById("errorMsg").textContent = "No data found for this selection.";
+        return;
+      }
+      // For CSV download
+      let csvRows = [];
+      // For each year
+      Object.keys(records).sort().forEach(year => {
+        const section = document.createElement("div");
+        section.className = "record-section";
+        const title = document.createElement("div");
+        title.className = "record-title";
+        title.textContent = `Year: ${year}`;
+        section.appendChild(title);
+
+        // For each data type
+        dataTypes.forEach((dt, dtIdx) => {
+          const dtRecords = records[year][dtIdx] || [];
+          // Sort ascending and descending
+          const sortedAsc = [...dtRecords].sort((a, b) => a.value - b.value);
+          const sortedDesc = [...dtRecords].sort((a, b) => b.value - a.value);
+
+          // Get N lowest and N highest (may have less than N)
+          const lowest = sortedAsc.slice(0, numRecords);
+          const highest = sortedDesc.slice(0, numRecords);
+
+          // Table for this data type
+          const table = document.createElement("table");
+          table.className = "record-table";
+          const thead = document.createElement("thead");
+          const trh = document.createElement("tr");
+          const th = document.createElement("th");
+          th.colSpan = 3;
+          th.textContent = `Data Type: ${dt}`;
+          trh.appendChild(th);
+          thead.appendChild(trh);
+          table.appendChild(thead);
+
+          const tbody = document.createElement("tbody");
+
+          // Highest
+          if (showMax) {
+            const trHigh = document.createElement("tr");
+            const tdHighLabel = document.createElement("td");
+            tdHighLabel.textContent = "Highest";
+            tdHighLabel.rowSpan = highest.length || 1;
+            trHigh.appendChild(tdHighLabel);
+            if (highest.length > 0) {
+              const tdHighVal = document.createElement("td");
+              tdHighVal.textContent = highest[0].value;
+              const tdHighDate = document.createElement("td");
+              tdHighDate.textContent = highest[0].date;
+              trHigh.appendChild(tdHighVal);
+              trHigh.appendChild(tdHighDate);
+              tbody.appendChild(trHigh);
+              // CSV row
+              csvRows.push([year, dt, "Highest", highest[0].value, highest[0].date]);
+              for (let i = 1; i < highest.length; i++) {
+                const tr = document.createElement("tr");
+                const tdVal = document.createElement("td");
+                tdVal.textContent = highest[i].value;
+                const tdDate = document.createElement("td");
+                tdDate.textContent = highest[i].date;
+                tr.appendChild(tdVal);
+                tr.appendChild(tdDate);
+                tbody.appendChild(tr);
+                csvRows.push([year, dt, "Highest", highest[i].value, highest[i].date]);
+              }
+            } else {
+              const tdEmpty = document.createElement("td");
+              tdEmpty.colSpan = 2;
+              tdEmpty.textContent = "No data";
+              trHigh.appendChild(tdEmpty);
+              tbody.appendChild(trHigh);
+              csvRows.push([year, dt, "Highest", "No data", ""]);
+            }
+          }
+
+          // Lowest
+          if (showMin) {
+            const trLow = document.createElement("tr");
+            const tdLowLabel = document.createElement("td");
+            tdLowLabel.textContent = "Lowest";
+            tdLowLabel.rowSpan = lowest.length || 1;
+            trLow.appendChild(tdLowLabel);
+            if (lowest.length > 0) {
+              const tdLowVal = document.createElement("td");
+              tdLowVal.textContent = lowest[0].value;
+              const tdLowDate = document.createElement("td");
+              tdLowDate.textContent = lowest[0].date;
+              trLow.appendChild(tdLowVal);
+              trLow.appendChild(tdLowDate);
+              tbody.appendChild(trLow);
+              csvRows.push([year, dt, "Lowest", lowest[0].value, lowest[0].date]);
+              for (let i = 1; i < lowest.length; i++) {
+                const tr = document.createElement("tr");
+                const tdVal = document.createElement("td");
+                tdVal.textContent = lowest[i].value;
+                const tdDate = document.createElement("td");
+                tdDate.textContent = lowest[i].date;
+                tr.appendChild(tdVal);
+                tr.appendChild(tdDate);
+                tbody.appendChild(tr);
+                csvRows.push([year, dt, "Lowest", lowest[i].value, lowest[i].date]);
+              }
+            } else {
+              const tdEmpty = document.createElement("td");
+              tdEmpty.colSpan = 2;
+              tdEmpty.textContent = "No data";
+              trLow.appendChild(tdEmpty);
+              tbody.appendChild(trLow);
+              csvRows.push([year, dt, "Lowest", "No data", ""]);
+            }
+          }
+
+          table.appendChild(tbody);
+          section.appendChild(table);
+        });
+
+        container.appendChild(section);
+      });
+
+      // Save for CSV download
+      window._recordCsvRows = csvRows;
+    }
+
+    function downloadCSV() {
+      const csvRows = window._recordCsvRows || [];
+      let csv = '"Year","Data Type","Type","Value","Date"\n';
+      csvRows.forEach(row => {
+        csv += row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",") + "\n";
+      });
+      const BOM = "\ufeff";
+      const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      // Build the filename dynamically using all data types
+      const station = document.getElementById("station").value.trim();
+      const startYear = document.getElementById("startYear").value.trim();
+      const endYear = document.getElementById("endYear").value.trim();
+      let filename = station;
+      for (let i = 1; i <= paramCount; i++) {
+        const input = document.getElementById(`dataType${i}`);
+        if (input && input.value.trim()) {
+          filename += `_${input.value.trim()}`;
+        }
+      }
+      filename += `_${startYear}_${endYear}_records.csv`;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    document.getElementById("fetchBtn").addEventListener("click", fetchAndDisplayRecords);
+    document.getElementById("downloadBtn").addEventListener("click", downloadCSV);
+  </script>
+</body>
+</html>
+

@@ -309,8 +309,8 @@ document.addEventListener("DOMContentLoaded", () => {
 // Consolidated populateStationSelect (only one copy)
 async function populateStationSelect() {
     const selectElement = document.getElementById('station-select');
-    const metadataUrl = 'metadata_new2.json';
-    //const metadataUrl = 'station_metadata_deos.json';                 
+    //const metadataUrl = 'metadata_new.json';
+    const metadataUrl = 'https://deos.udel.edu/deos_json/station_metadata_deos.json';                 
     if (!selectElement) return console.error('Select element "station-select" not found.');
     try {
         const response = await fetch(metadataUrl);
