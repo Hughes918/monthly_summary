@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Monthly Summary Counts</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .count-section { margin-top: 30px; }
+    .count-title { font-weight: bold; font-size: 1.2em; margin-bottom: 10px; }
+    .count-table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
+    .count-table th, .count-table td { border: 1px solid #333; padding: 8px; text-align: left; }
+    .count-table th { background-color: #f0f0f0; }
+    .error { color: red; margin-top: 20px; }
+    .controls { margin-bottom: 20px; }
+    .controls input, .controls select { margin-right: 10px; }
+    #downloadBtn { padding: 10px 20px; font-size: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Monthly Summary Counts</h1>
+  <div class="controls">
+    <label for="station">Station:</label>
+    <input type="text" id="station" value="DDAG" placeholder="Enter station (e.g. DDAG)">
+    <label for="startYear">Start Year:</label>
+    <input type="text" id="startYear" value="2023" placeholder="Start year">
+    <label for="endYear">End Year:</label>
+    <input type="text" id="endYear" value="2023" placeholder="End year">
+    <span id="paramContainer">
+      <label for="dataType1">Data Type:</label>
+      <select id="dataType1"></select>
+    </span>
+    <button id="addParamBtn">Add Parameter</button>
+    <button id="fetchBtn">Fetch Data</button>
+    <button id="downloadBtn">Download CSV</button>
+  </div>
+  <div id="errorMsg" class="error"></div>
+  <div id="countsContainer"></div>
+  <script>
+    // Add unlimited parameter fields
+    let paramCount = 1;
+    let paramOptions = [];
+
+    // Load parameter options from parameters.json and populate the first dropdown
+    fetch('parameters.json')
+      .then(r => r.json())
+      .then(paramsList => {
+        paramOptions = paramsList.map(p => ({
+          id: String(p.data_type_id),
+          name: p.display_name,
+          units: p.display_units
+        }));
+        populateDataTypeSelect(document.getElementById('dataType1'), paramOptions, '43');
+      });
+
+    function populateDataTypeSelect(selectElem, options, defaultId) {
+      selectElem.innerHTML = '';
+      options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt.id;
+        option.textContent = opt.name + (opt.units ? ` (${opt.units})` : '');
+        if (defaultId && opt.id === defaultId) option.selected = true;
+        selectElem.appendChild(option);
+      });
+    }
+
+    document.getElementById("addParamBtn").addEventListener("click", function() {
+      paramCount++;
+      const paramContainer = document.getElementById("paramContainer");
+      const label = document.createElement("label");
+      label.htmlFor = `dataType${paramCount}`;
+      label.textContent = `Data Type ${paramCount}:`;
+      const select = document.createElement("select");
+      select.id = `dataType${paramCount}`;
+      select.style.marginRight = "10px";
+      // Populate options (if loaded)
+      if (paramOptions.length > 0) {
+        populateDataTypeSelect(select, paramOptions);
+      } else {
+        // If not loaded yet, add a placeholder
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Loading...';
+        select.appendChild(option);
+      }
+      paramContainer.appendChild(label);
+      paramContainer.appendChild(select);
+    });
+
+    function buildProcessUrl(station, dataType, year, month) {
+      return `process.php?station=${station}&dataType=${dataType}&startYear=${year}&endYear=${year}&month=${month}`;
+    }
+
+    function fetchAndDisplayCounts() {
+      document.getElementById("countsContainer").innerHTML = "";
+      const errorMsg = document.getElementById("errorMsg");
+      errorMsg.textContent = "";
+
+      const station = document.getElementById("station").value.trim();
+      const startYear = parseInt(document.getElementById("startYear").value.trim(), 10);
+      const endYear = parseInt(document.getElementById("endYear").value.trim(), 10);
+
+      // Collect all data type inputs
+      const dataTypes = [];
+      for (let i = 1; i <= paramCount; i++) {
+        const select = document.getElementById(`dataType${i}`);
+        if (select && select.value) {
+          dataTypes.push(select.value);
+        }
+      }
+
+      // Validate years
+      if (isNaN(startYear) || isNaN(endYear) || startYear > endYear) {
+        errorMsg.textContent = "Invalid year range.";
+        return;
+      }
+      if (dataTypes.length === 0) {
+        errorMsg.textContent = "Please enter at least one data type.";
+        return;
+      }
+
+      // For each year, for each dataType, fetch all months and count valid readings
+      let fetchPlan = [];
+      for (let year = startYear; year <= endYear; year++) {
+        for (let dtIdx = 0; dtIdx < dataTypes.length; dtIdx++) {
+          for (let m = 1; m <= 12; m++) {
+            fetchPlan.push({
+              year,
+              dataType: dataTypes[dtIdx],
+              dtIdx,
+              month: m
+            });
+          }
+        }
+      }
+
+      // Structure: counts[year][dataTypeIdx] = count
+      let counts = {};
+      let totalFetches = fetchPlan.length;
+      let completedFetches = 0;
+
+      fetchPlan.forEach(plan => {
+        const url = buildProcessUrl(station, plan.dataType, plan.year, plan.month.toString().padStart(2, '0'));
+        fetch(url)
+          .then(response => response.text())
+          .then(text => {
+            let data;
+            try {
+              data = text ? JSON.parse(text) : { results: [] };
+            } catch (e) {
+              errorMsg.textContent = "Error parsing JSON: " + e.message;
+              completedFetches++;
+              return;
+            }
+            if (data.error) {
+              errorMsg.textContent = data.error;
+              completedFetches++;
+              return;
+            }
+            if (!counts[plan.year]) counts[plan.year] = {};
+            if (!counts[plan.year][plan.dtIdx]) counts[plan.year][plan.dtIdx] = 0;
+            if (data.results && data.results.length > 0) {
+              data.results.forEach(item => {
+                if (item.value !== "--" && !isNaN(item.value)) {
+                  counts[plan.year][plan.dtIdx]++;
+                }
+              });
+            }
+            completedFetches++;
+            if (completedFetches === totalFetches) {
+              renderCounts(counts, dataTypes);
+            }
+          })
+          .catch(error => {
+            errorMsg.textContent = "Error fetching data: " + error;
+            completedFetches++;
+          });
+      });
+    }
+
+    function renderCounts(counts, dataTypes) {
+      const container = document.getElementById("countsContainer");
+      container.innerHTML = "";
+      if (!counts || Object.keys(counts).length === 0) {
+        document.getElementById("errorMsg").textContent = "No data found for this selection.";
+        return;
+      }
+      // For CSV download
+      let csvRows = [];
+      // For each year
+      Object.keys(counts).sort().forEach(year => {
+        const section = document.createElement("div");
+        section.className = "count-section";
+        const title = document.createElement("div");
+        title.className = "count-title";
+        title.textContent = `Year: ${year}`;
+        section.appendChild(title);
+
+        // Table for this year
+        const table = document.createElement("table");
+        table.className = "count-table";
+        const thead = document.createElement("thead");
+        const trh = document.createElement("tr");
+        const th1 = document.createElement("th");
+        th1.textContent = "Data Type";
+        const th2 = document.createElement("th");
+        th2.textContent = "Valid Reading Count";
+        trh.appendChild(th1);
+        trh.appendChild(th2);
+        thead.appendChild(trh);
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+        dataTypes.forEach((dt, dtIdx) => {
+          const tr = document.createElement("tr");
+          const tdType = document.createElement("td");
+          // Show display name/unit if available
+          let display = dt;
+          if (paramOptions.length > 0) {
+            const found = paramOptions.find(p => p.id === dt);
+            if (found) display = found.name + (found.units ? ` (${found.units})` : '');
+          }
+          tdType.textContent = display;
+          const tdCount = document.createElement("td");
+          const count = counts[year][dtIdx] || 0;
+          tdCount.textContent = count;
+          tr.appendChild(tdType);
+          tr.appendChild(tdCount);
+          tbody.appendChild(tr);
+          csvRows.push([year, dt, count]);
+        });
+        table.appendChild(tbody);
+        section.appendChild(table);
+        container.appendChild(section);
+      });
+      window._countCsvRows = csvRows;
+    }
+
+    function downloadCSV() {
+      const csvRows = window._countCsvRows || [];
+      let csv = '"Year","Data Type","Valid Reading Count"\n';
+      csvRows.forEach(row => {
+        csv += row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",") + "\n";
+      });
+      const BOM = "\ufeff";
+      const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      // Build the filename dynamically using all data types
+      const station = document.getElementById("station").value.trim();
+      const startYear = document.getElementById("startYear").value.trim();
+      const endYear = document.getElementById("endYear").value.trim();
+      let filename = station;
+      for (let i = 1; i <= paramCount; i++) {
+        const input = document.getElementById(`dataType${i}`);
+        if (input && input.value.trim()) {
+          filename += `_${input.value.trim()}`;
+        }
+      }
+      filename += `_${startYear}_${endYear}_counts.csv`;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    document.getElementById("fetchBtn").addEventListener("click", fetchAndDisplayCounts);
+    document.getElementById("downloadBtn").addEventListener("click", downloadCSV);
+  </script>
+</body>
+</html>
+
+
+

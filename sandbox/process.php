@@ -12,17 +12,36 @@ $startYear = isset($_GET['startYear']) ? intval($_GET['startYear']) : 0;
 $endYear   = isset($_GET['endYear']) ? intval($_GET['endYear']) : 0;
 $month     = isset($_GET['month']) ? intval($_GET['month']) : 0;
 
-// Conversion lookup: conversion functions for each data type.
-$conversions = [
-    '51' => function($v) { return round($v / 25.4, 2); },              // mm to in
-    '43'  => function($v) { return round((($v - 273.15) * 9/5) + 32, 2); }, // Kelvin to Fahrenheit
-    '44'  => function($v) { return round((($v - 273.15) * 9/5) + 32, 2); }, // Kelvin to Fahrenheit
-    '45'  => function($v) { return round((($v - 273.15) * 9/5) + 32, 2); }, // Kelvin to Fahrenheit
-    '70' => function($v) { return round($v * 3.28084, 2); },              // m to ft
-    // New conversion: m/s to mph (1 m/s ≈ 2.23694 mph)
-    '50' => function($v) { return round($v * 2.23694, 1); },
-     '184'  => function($v) { return round((($v - 273.15) * 9/5) + 32, 2); }, // Kelvin to Fahrenheit
-];
+// Load parameters.json and build conversions dynamically
+$param_json = file_get_contents(__DIR__ . '/parameters.json');
+$param_list = json_decode($param_json, true);
+
+// Build conversions and precision lookup
+$conversions = [];
+$precisions = [];
+foreach ($param_list as $param) {
+    $id = (string)$param['data_type_id'];
+    $db_units = isset($param['db_units']) ? $param['db_units'] : '';
+    $display_units = isset($param['display_units']) ? $param['display_units'] : '';
+    $precision = isset($param['precision']) ? intval($param['precision']) : null;
+    $precisions[$id] = $precision;
+    // Conversion logic
+    if ($db_units === $display_units || $db_units === '' || $display_units === '') {
+        $conversions[$id] = function($v) { return $v; };
+    } elseif ($db_units === '°C' && $display_units === '°F') {
+        $conversions[$id] = function($v) { return ($v * 9/5) + 32; };
+    } elseif ($db_units === 'K' && $display_units === '°F') {
+        $conversions[$id] = function($v) { return (($v - 273.15) * 9/5) + 32; };
+    } elseif ($db_units === 'mm' && $display_units === 'in') {
+        $conversions[$id] = function($v) { return $v / 25.4; };
+    } elseif ($db_units === 'm' && $display_units === 'ft') {
+        $conversions[$id] = function($v) { return $v * 3.28084; };
+    } elseif ($db_units === 'm/s' && $display_units === 'mph') {
+        $conversions[$id] = function($v) { return $v * 2.23694; };
+    } else {
+        $conversions[$id] = function($v) { return $v; };
+    }
+}
 
 /**
  * Fetch JSON data for a given month and station.
@@ -62,6 +81,10 @@ if ($month) {
                                 $value = isset($conversions[$dataType])
                                     ? $conversions[$dataType]($rawValue)
                                     : $rawValue;
+                                // Apply precision if available
+                                if (isset($precisions[$dataType]) && is_numeric($value)) {
+                                    $value = round($value, $precisions[$dataType]);
+                                }
                             } else {
                                 $value = "--";
                             }
@@ -92,6 +115,10 @@ if ($month) {
                                         $value = isset($conversions[$dataType])
                                             ? $conversions[$dataType]($rawValue)
                                             : $rawValue;
+                                        // Apply precision if available
+                                        if (isset($precisions[$dataType]) && is_numeric($value)) {
+                                            $value = round($value, $precisions[$dataType]);
+                                        }
                                     } else {
                                         $value = "--";
                                     }

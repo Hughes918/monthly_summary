@@ -538,7 +538,7 @@ include('header.php');
                 <li>✅ Monthly statistics for DEOS hydrologic parameters</li>
                 <li>✅ Improved quality control of the underlying data</li>
             </ul>
-            <p>We’re still updating our historical climate stats, so data is currently available from 2015 onward. The full dataset (back to 2004) will be available later this year.</p>
+            
             <button id="closeLearnMorePopup" class="close-popup">Close</button>
         </div>
     </div>
@@ -586,7 +586,7 @@ include('header.php');
                 <select id="year" class="custom-select" onchange="refreshWithNewParams()"></select>
                 <script>
                     const yearDropdown = document.getElementById('year');
-                    const startYear = 2015;
+                    const startYear = 2004;
                     const currentYear = new Date().getFullYear();
                     const selectedYear = '<?php echo $year; ?>';
                     for (let y = currentYear; y >= startYear; y--) {

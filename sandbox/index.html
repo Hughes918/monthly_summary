@@ -4,35 +4,146 @@
   <meta charset="utf-8">
   <title>Monthly Summary Sandbox</title>
   <style>
-    body { font-family: Arial, sans-serif; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #333; padding: 8px; text-align: left; }
-    th { background-color: #f0f0f0; }
-    #downloadBtn { margin-top: 20px; padding: 10px 20px; font-size: 1em; }
-    .error { color: red; margin-top: 20px; }
-    .controls { margin-bottom: 20px; }
-    .controls input { margin-right: 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f9fa;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      text-align: center;
+      margin-top: 30px;
+      color: #2c3e50;
+    }
+    .controls {
+      margin: 30px auto 0 auto;
+      padding: 20px 30px 10px 30px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      max-width: 1100px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 20px;
+    }
+    .controls label {
+      font-weight: 500;
+      color: #34495e;
+      margin-bottom: 0;
+    }
+    .controls input[type="text"], .controls select {
+      padding: 7px 10px;
+      border: 1px solid #bfc9d1;
+      border-radius: 4px;
+      font-size: 1em;
+      background: #fafdff;
+      min-width: 120px;
+      margin-bottom: 0;
+    }
+    .controls button {
+      background: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 20px;
+      font-size: 1em;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 0;
+      transition: background 0.2s;
+    }
+    .controls button:disabled {
+      background: #bfc9d1;
+      color: #fff;
+      cursor: not-allowed;
+    }
+    .controls button:not(:last-child) {
+      margin-right: 8px;
+    }
+    .controls button:hover:not(:disabled) {
+      background: #217dbb;
+    }
+    #paramContainer label {
+      margin-right: 5px;
+    }
+    #paramContainer select {
+      margin-right: 15px;
+    }
+    .error {
+      color: #c0392b;
+      margin: 20px auto 0 auto;
+      max-width: 900px;
+      font-weight: 500;
+      text-align: center;
+    }
+    table {
+      border-collapse: collapse;
+      width: 95%;
+      margin: 30px auto 0 auto;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    th, td {
+      border: 1px solid #e1e8ed;
+      padding: 10px 8px;
+      text-align: left;
+      font-size: 1em;
+    }
+    th {
+      background-color: #f3f7fa;
+      color: #34495e;
+      font-weight: 600;
+    }
+    tr:nth-child(even) td {
+      background: #f9fbfc;
+    }
   </style>
 </head>
 <body>
   <h1>Monthly Summary Sandbox</h1>
   <div class="controls">
-    <label for="station">Station:</label>
-    <input type="text" id="station" value="DDAG" placeholder="Enter station (e.g. DDAG)">
+    <!-- Move startYear and endYear outside of paramContainer, so they are global for all parameters -->
     <label for="startYear">Start Year:</label>
     <input type="text" id="startYear" value="2023" placeholder="Start year">
     <label for="endYear">End Year:</label>
     <input type="text" id="endYear" value="2023" placeholder="End year">
-    <span id="paramContainer">
-      <label for="dataType1">Data Type:</label>
-      <input type="text" id="dataType1" value="43" placeholder="Enter data type (e.g. 43)">
+    <span id="paramContainer" style="display:flex;flex-wrap:wrap;gap:10px 20px;">
+      <span class="param-group" style="display:flex;align-items:center;gap:5px 8px;margin-bottom:5px;">
+        <label for="station1">Station:</label>
+        <input type="text" id="station1" value="DDAG" placeholder="Enter station" style="min-width:90px;">
+        <label for="dataType1">Data Type:</label>
+        <select id="dataType1"></select>
+      </span>
     </span>
     <button id="addParamBtn">Add Parameter</button>
+    <button id="tableBtn">Table</button>
+    <button id="statsBtn">Stats</button>
+    <button id="graphBtn">Graph</button>
     <button id="fetchBtn">Fetch Data</button>
     <button id="downloadBtn">Download CSV</button>
+    <!-- Keep this top-level Download (CSV) button; chart image download lives inside graphContainer -->
   </div>
   <div id="errorMsg" class="error"></div>
-  <table id="resultsTable">
+  <div id="loadingSpinner" style="display:none;text-align:center;margin-top:20px;">
+    <svg width="48" height="48" viewBox="0 0 50 50">
+      <circle cx="25" cy="25" r="20" fill="none" stroke="#3498db" stroke-width="5" stroke-linecap="round" stroke-dasharray="31.4 31.4" transform="rotate(-90 25 25)">
+        <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/>
+      </circle>
+    </svg>
+    <div style="color:#3498db;font-weight:500;margin-top:8px;">Loading...</div>
+  </div>
+  <div id="graphContainer" style="display:none;max-width:95%;margin:0 auto 20px auto;">
+    <div id="graphActions" style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:8px;">
+      <!-- Renamed to avoid duplicate id -->
+      <button id="downloadGraphBtnInner" style="display:none;background:#3498db;color:#fff;border:none;border-radius:4px;padding:7px 18px;font-size:1em;font-weight:500;cursor:pointer;transition:background 0.2s;">Download</button>
+    </div>
+    <canvas id="resultsChart"></canvas>
+  </div>
+  <div id="statsContainer" style="display:none;max-width:95%;margin:0 auto 20px auto;"></div>
+  <table id="resultsTable" style="display:none;">
     <thead>
       <tr>
          <th>Date</th>
@@ -43,26 +154,116 @@
       <!-- Table rows will be populated here -->
     </tbody>
   </table>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    /* ===== Render chart instantly: disable all Chart.js animations ===== */
+    if (window.Chart && Chart.defaults) {
+      Chart.defaults.animation = false;
+      if (Chart.defaults.transitions && Chart.defaults.transitions.active) {
+        Chart.defaults.transitions.active.animation = false;
+      }
+    }
+
     // Add unlimited parameter fields
     let paramCount = 1;
+    let paramOptions = [];
+
+    // Load parameter options from parameters.json and populate the first dropdown
+    fetch('parameters.json')
+      .then(r => r.json())
+      .then(paramsList => {
+        paramOptions = paramsList.map(p => ({
+          id: String(p.data_type_id),
+          name: p.display_name,
+          units: p.display_units
+        }));
+        populateDataTypeSelect(document.getElementById('dataType1'), paramOptions, '43');
+      });
+
+    function populateDataTypeSelect(selectElem, options, defaultId) {
+      selectElem.innerHTML = '';
+      options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt.id;
+        option.textContent = opt.name + (opt.units ? ` (${opt.units})` : '');
+        if (defaultId && opt.id === defaultId) option.selected = true;
+        selectElem.appendChild(option);
+      });
+    }
+
     document.getElementById("addParamBtn").addEventListener("click", function() {
       paramCount++;
       const paramContainer = document.getElementById("paramContainer");
+      const group = document.createElement("span");
+      group.className = "param-group";
+      group.style.display = "flex";
+      group.style.alignItems = "center";
+      group.style.gap = "5px 8px";
+      group.style.marginBottom = "5px";
+
+      const labelStation = document.createElement("label");
+      labelStation.htmlFor = `station${paramCount}`;
+      labelStation.textContent = "Station:";
+      const inputStation = document.createElement("input");
+      inputStation.type = "text";
+      inputStation.id = `station${paramCount}`;
+      inputStation.placeholder = "Enter station";
+      inputStation.style.minWidth = "90px";
+      const station1 = document.getElementById("station1");
+      inputStation.value = station1 ? station1.value : "";
+
       const label = document.createElement("label");
       label.htmlFor = `dataType${paramCount}`;
-      label.textContent = `Data Type ${paramCount}:`;
-      const input = document.createElement("input");
-      input.type = "text";
-      input.id = `dataType${paramCount}`;
-      input.placeholder = `Enter data type (e.g. 51)`;
-      input.style.marginRight = "10px";
-      paramContainer.appendChild(label);
-      paramContainer.appendChild(input);
+      label.textContent = "Data Type:";
+      const select = document.createElement("select");
+      select.id = `dataType${paramCount}`;
+      select.style.marginRight = "0";
+      if (paramOptions.length > 0) {
+        populateDataTypeSelect(select, paramOptions);
+      } else {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Loading...';
+        select.appendChild(option);
+      }
+      group.appendChild(labelStation);
+      group.appendChild(inputStation);
+      group.appendChild(label);
+      group.appendChild(select);
+      paramContainer.appendChild(group);
     });
 
     function buildProcessUrl(station, dataType, year, month) {
       return `process.php?station=${station}&dataType=${dataType}&startYear=${year}&endYear=${year}&month=${month}`;
+    }
+
+    function showSpinner() {
+      document.getElementById("loadingSpinner").style.display = "";
+    }
+    function hideSpinner() {
+      document.getElementById("loadingSpinner").style.display = "none";
+    }
+
+    let lastResults = null;
+    let lastDataTypes = null;
+    let lastStations = null;
+    let chartInstance = null;
+
+    function clearGraph() {
+      document.getElementById("graphContainer").style.display = "none";
+      document.getElementById("downloadGraphBtnInner").style.display = "none";
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+    }
+    function clearStats() {
+      document.getElementById("statsContainer").style.display = "none";
+      document.getElementById("statsContainer").innerHTML = "";
+    }
+    function clearTable() {
+      document.getElementById("resultsTable").style.display = "none";
     }
 
     function fetchAndDisplayData() {
@@ -70,95 +271,128 @@
       const tbody = document.querySelector("#resultsTable tbody");
       tbody.innerHTML = "";
       const theadRow = document.querySelector("#resultsTable thead tr");
-      // Remove all data type headers except Date
       while (theadRow.children.length > 1) {
         theadRow.removeChild(theadRow.lastChild);
       }
-
-      const station = document.getElementById("station").value.trim();
-      const startYear = parseInt(document.getElementById("startYear").value.trim(), 10);
-      const endYear = parseInt(document.getElementById("endYear").value.trim(), 10);
       const errorMsg = document.getElementById("errorMsg");
       errorMsg.textContent = "";
+      hideSpinner();
+      clearGraph();
+      clearStats();
+      clearTable();
 
-      // Collect all data type inputs
-      const dataTypes = [];
+      // Collect all station/dataType pairs
+      const paramPairs = [];
       for (let i = 1; i <= paramCount; i++) {
-        const input = document.getElementById(`dataType${i}`);
-        if (input && input.value.trim()) {
-          dataTypes.push(input.value.trim());
+        const stationInput = document.getElementById(`station${i}`);
+        const select = document.getElementById(`dataType${i}`);
+        if (stationInput && select && select.value) {
+          paramPairs.push({ station: stationInput.value.trim(), dataType: select.value });
         }
       }
-      // Add headers for each data type
-      dataTypes.forEach(dt => {
-        const th = document.createElement("th");
-        th.textContent = `Value (${dt})`;
-        theadRow.appendChild(th);
+
+      Promise.resolve(
+        fetch('parameters.json')
+          .then(r => r.json())
+          .catch(() => [])
+      ).then(paramsList => {
+        const paramMap = {};
+        paramsList.forEach(p => {
+          paramMap[String(p.data_type_id)] = p;
+        });
+        // Add station name to the column header
+        paramPairs.forEach((pair) => {
+          const th = document.createElement("th");
+          const param = paramMap[pair.dataType];
+          if (param) {
+            th.textContent = `${pair.station}: ${param.display_name} (${param.display_units})`;
+          } else {
+            th.textContent = `${pair.station}: Value (${pair.dataType})`;
+          }
+          theadRow.appendChild(th);
+        });
+
+        // Validate years
+        const startYear = parseInt(document.getElementById("startYear").value.trim(), 10);
+        const endYear = parseInt(document.getElementById("endYear").value.trim(), 10);
+        if (isNaN(startYear) || isNaN(endYear) || startYear > endYear) {
+          errorMsg.textContent = "Invalid year range.";
+          hideSpinner();
+          return;
+        }
+        if (paramPairs.length === 0) {
+          errorMsg.textContent = "Please enter at least one station and data type.";
+          hideSpinner();
+          return;
+        }
+        showSpinner();
+        let allResultsMap = {}; // date => {date, value1, value2, ...}
+        let totalFetches = (endYear - startYear + 1) * 12 * paramPairs.length;
+        let completedFetches = 0;
+
+        for (let year = startYear; year <= endYear; year++) {
+          for (let m = 1; m <= 12; m++) {
+            const monthStr = m.toString().padStart(2, '0');
+            paramPairs.forEach((pair, idx) => {
+              const url = buildProcessUrl(pair.station, pair.dataType, year, monthStr);
+              fetch(url)
+                .then(response => response.text())
+                .then(text => {
+                  let data;
+                  try {
+                    data = text ? JSON.parse(text) : { results: [] };
+                  } catch (e) {
+                    errorMsg.textContent = "Error parsing JSON: " + e.message;
+                    completedFetches++;
+                    return;
+                  }
+                  if (data.error) {
+                    errorMsg.textContent = data.error;
+                    completedFetches++;
+                    return;
+                  }
+                  if (data.results && data.results.length > 0) {
+                    data.results.forEach(item => {
+                      if (!allResultsMap[item.date]) {
+                        allResultsMap[item.date] = { date: item.date };
+                      }
+                      allResultsMap[item.date][`value${idx+1}`] = item.value;
+                    });
+                  }
+                  completedFetches++;
+                  if (completedFetches === totalFetches) {
+                    lastResults = allResultsMap;
+                    lastDataTypes = paramPairs.map(p => p.dataType);
+                    lastStations = paramPairs.map(p => p.station);
+                    renderTable(allResultsMap, paramPairs.length);
+                    hideSpinner();
+                  }
+                })
+                .catch(error => {
+                  errorMsg.textContent = "Error fetching data: " + error;
+                  completedFetches++;
+                  if (completedFetches === totalFetches) {
+                    hideSpinner();
+                  }
+                });
+            });
+          }
+        }
       });
-
-      // Validate years
-      if (isNaN(startYear) || isNaN(endYear) || startYear > endYear) {
-        errorMsg.textContent = "Invalid year range.";
-        return;
-      }
-      if (dataTypes.length === 0) {
-        errorMsg.textContent = "Please enter at least one data type.";
-        return;
-      }
-
-      let allResultsMap = {}; // date => {date, value1, value2, ...}
-      let totalFetches = (endYear - startYear + 1) * 12 * dataTypes.length;
-      let completedFetches = 0;
-
-      for (let year = startYear; year <= endYear; year++) {
-        for (let m = 1; m <= 12; m++) {
-          const monthStr = m.toString().padStart(2, '0');
-          dataTypes.forEach((dt, idx) => {
-            const url = buildProcessUrl(station, dt, year, monthStr);
-            fetch(url)
-              .then(response => response.text())
-              .then(text => {
-                let data;
-                try {
-                  data = text ? JSON.parse(text) : { results: [] };
-                } catch (e) {
-                  errorMsg.textContent = "Error parsing JSON: " + e.message;
-                  completedFetches++;
-                  return;
-                }
-                if (data.error) {
-                  errorMsg.textContent = data.error;
-                  completedFetches++;
-                  return;
-                }
-                if (data.results && data.results.length > 0) {
-                  data.results.forEach(item => {
-                    if (!allResultsMap[item.date]) {
-                      allResultsMap[item.date] = { date: item.date };
-                    }
-                    allResultsMap[item.date][`value${idx+1}`] = item.value;
-                  });
-                }
-                completedFetches++;
-                if (completedFetches === totalFetches) {
-                  renderTable(allResultsMap, dataTypes.length);
-                }
-              })
-              .catch(error => {
-                errorMsg.textContent = "Error fetching data: " + error;
-                completedFetches++;
-              });
-          });
-        }
-      }
     }
 
-    function renderTable(allResultsMap, paramCount) {
-      const tbody = document.querySelector("#resultsTable tbody");
+    function renderTable(allResultsMap, paramCountLocal) {
+      hideSpinner();
+      clearGraph();
+      clearStats();
+      const table = document.getElementById("resultsTable");
+      table.style.display = "";
+      const tbody = table.querySelector("tbody");
       tbody.innerHTML = "";
       const allResults = Object.values(allResultsMap);
       if (allResults.length === 0) {
         document.getElementById("errorMsg").textContent = "No data found for this selection.";
+        table.style.display = "none";
         return;
       }
       // Sort by date
@@ -168,7 +402,7 @@
         const tdDate = document.createElement("td");
         tdDate.textContent = item.date;
         tr.appendChild(tdDate);
-        for (let i = 1; i <= paramCount; i++) {
+        for (let i = 1; i <= paramCountLocal; i++) {
           const tdVal = document.createElement("td");
           tdVal.textContent = item[`value${i}`] !== undefined ? item[`value${i}`] : "--";
           tr.appendChild(tdVal);
@@ -177,10 +411,84 @@
       });
     }
 
-    document.getElementById("fetchBtn").addEventListener("click", fetchAndDisplayData);
+    // Show table button logic
+    document.getElementById("tableBtn").addEventListener("click", function() {
+      clearGraph();
+      clearStats();
+      if (lastResults && lastDataTypes) {
+        renderTable(lastResults, lastDataTypes.length);
+      }
+    });
 
-    // Do NOT fetch data on page load
-    // document.addEventListener("DOMContentLoaded", fetchAndDisplayData);
+    // Show stats button logic
+    document.getElementById("statsBtn").addEventListener("click", function() {
+      clearGraph();
+      clearTable();
+      if (!lastResults || !lastDataTypes) return;
+      const statsDiv = document.getElementById("statsContainer");
+      statsDiv.innerHTML = "";
+      statsDiv.style.display = "";
+
+      // Prepare stats for each parameter
+      const allResults = Object.values(lastResults).sort((a, b) => a.date.localeCompare(b.date));
+      if (allResults.length === 0) {
+        statsDiv.innerHTML = "<div style='color:#c0392b;font-weight:500;'>No data found for this selection.</div>";
+        return;
+      }
+      // Fetch parameter info for headers
+      fetch('parameters.json')
+        .then(r => r.json())
+        .then(paramsList => {
+          const paramMap = {};
+          paramsList.forEach(p => { paramMap[String(p.data_type_id)] = p; });
+          let html = "<table style='width:100%;border-collapse:collapse;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.07);margin-bottom:30px;'>";
+          html += "<thead><tr>";
+          html += "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Parameter</th>";
+          html += "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Count</th>";
+          html += "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Missing</th>";
+          html += "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Min</th>";
+          html += "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Mean</th>";
+          html += "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Max</th>";
+          html += "</tr></thead><tbody>";
+          for (let i = 1; i <= lastDataTypes.length; i++) {
+            const dt = lastDataTypes[i - 1];
+            const station = lastStations ? lastStations[i - 1] : "";
+            const param = paramMap[dt];
+            const label = param ? `${station}: ${param.display_name} (${param.display_units})` : `${station}: Value (${dt})`;
+            const values = allResults.map(r => r[`value${i}`])
+              .filter(v => v !== undefined && v !== "--" && !isNaN(v));
+            const count = values.length;
+            const missing = allResults.length - count;
+            let min = "--", max = "--", mean = "--";
+            if (count > 0) {
+              const nums = values.map(Number);
+              min = Math.min(...nums);
+              max = Math.max(...nums);
+              mean = (nums.reduce((a, b) => a + b, 0) / count).toFixed(2);
+            }
+            html += `<tr>
+              <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${label}</td>
+              <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${count}</td>
+              <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${missing}</td>
+              <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${min}</td>
+              <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${mean}</td>
+              <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${max}</td>
+            </tr>`;
+          }
+          html += "</tbody></table>";
+          statsDiv.innerHTML = html;
+        });
+    });
+
+    document.getElementById("fetchBtn").addEventListener("click", function() {
+      fetchAndDisplayData();
+      // Show table by default after fetch
+      setTimeout(() => {
+        if (lastResults && lastDataTypes) {
+          renderTable(lastResults, lastDataTypes.length);
+        }
+      }, 0);
+    });
 
     // CSV download
     function downloadCSV() {
@@ -208,11 +516,13 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      // Build the filename dynamically using all data types
-      const station = document.getElementById("station").value.trim();
+
+      // Build the filename dynamically (use first station + all data types)
+      const station1El = document.getElementById("station1");
+      const stationForName = station1El ? station1El.value.trim() : "station";
       const startYear = document.getElementById("startYear").value.trim();
       const endYear = document.getElementById("endYear").value.trim();
-      let filename = station;
+      let filename = stationForName || "station";
       for (let i = 1; i <= paramCount; i++) {
         const input = document.getElementById(`dataType${i}`);
         if (input && input.value.trim()) {
@@ -226,7 +536,99 @@
       document.body.removeChild(a);
     }
     document.getElementById("downloadBtn").addEventListener("click", downloadCSV);
+
+    /* ===== Graph button: toggle show/hide and render with no animation ===== */
+    document.getElementById("graphBtn").addEventListener("click", function() {
+      const graphContainerEl = document.getElementById("graphContainer");
+
+      // If the graph is currently showing, hide it and destroy the chart
+      if (graphContainerEl.style.display !== "none" && chartInstance) {
+        clearGraph(); // hides and destroys
+        return;
+      }
+
+      // Otherwise, show (build) the graph
+      if (!lastResults || !lastDataTypes) return;
+      const allResults = Object.values(lastResults).sort((a, b) => a.date.localeCompare(b.date));
+      if (allResults.length === 0) return;
+
+      const labels = allResults.map(r => r.date);
+      const datasets = [];
+
+      fetch('parameters.json')
+        .then(r => r.json())
+        .then(paramsList => {
+          const paramMap = {};
+          paramsList.forEach(p => { paramMap[String(p.data_type_id)] = p; });
+          for (let i = 1; i <= lastDataTypes.length; i++) {
+            const dt = lastDataTypes[i - 1];
+            const param = paramMap[dt];
+            const label = param ? `${param.display_name} (${param.display_units})` : `Value (${dt})`;
+            const data = allResults.map(r => {
+              const v = r[`value${i}`];
+              return (v !== undefined && v !== "--" && !isNaN(v)) ? Number(v) : null;
+            });
+            const colorList = [
+              "#3498db", "#e67e22", "#2ecc71", "#e74c3c",
+              "#9b59b6", "#16a085", "#34495e", "#f39c12"
+            ];
+            datasets.push({
+              label,
+              data,
+              borderColor: colorList[(i - 1) % colorList.length],
+              backgroundColor: colorList[(i - 1) % colorList.length] + "33",
+              spanGaps: true,
+              pointRadius: 2,
+              tension: 0.2
+            });
+          }
+          const ctx = document.getElementById('resultsChart').getContext('2d');
+          clearGraph(); // ensure any previous instance is gone
+
+          chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: { labels, datasets },
+            options: {
+              responsive: true,
+              animation: false, // belt-and-suspenders
+              plugins: {
+                legend: { display: true, position: 'top' },
+                title: { display: false }
+              },
+              interaction: { mode: 'index', intersect: false },
+              scales: {
+                x: { display: true, title: { display: true, text: 'Date' } },
+                y: { display: true, title: { display: true, text: 'Value' } }
+              }
+            }
+          });
+
+          document.getElementById("graphContainer").style.display = "";
+          document.getElementById("downloadGraphBtnInner").style.display = "";
+        });
+    });
+
+    document.getElementById("downloadGraphBtnInner").addEventListener("click", function() {
+      if (!chartInstance) return;
+      // Download with white background
+      const chart = chartInstance;
+      const canvas = chart.canvas;
+      const w = canvas.width;
+      const h = canvas.height;
+      const tmpCanvas = document.createElement('canvas');
+      tmpCanvas.width = w;
+      tmpCanvas.height = h;
+      const ctx = tmpCanvas.getContext('2d');
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(canvas, 0, 0);
+      const link = document.createElement('a');
+      link.href = tmpCanvas.toDataURL('image/png');
+      link.download = 'graph.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
   </script>
 </body>
 </html>
- 
