@@ -38,6 +38,16 @@ foreach ($param_list as $param) {
         $conversions[$id] = function($v) { return $v * 3.28084; };
     } elseif ($db_units === 'm/s' && $display_units === 'mph') {
         $conversions[$id] = function($v) { return $v * 2.23694; };
+    } elseif ($db_units === 'radians' || $db_units === 'rad') {
+        // Convert radians to degrees and normalize to [0, 360)
+        $conversions[$id] = function($v) {
+            if (!is_numeric($v)) return $v;
+            $deg = $v * (180 / M_PI);
+            // Normalize into [0,360)
+            $deg = fmod($deg, 360.0);
+            if ($deg < 0) $deg += 360.0;
+            return $deg;
+        };
     } else {
         $conversions[$id] = function($v) { return $v; };
     }

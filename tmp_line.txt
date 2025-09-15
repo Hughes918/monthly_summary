@@ -1,0 +1,1 @@
+        const avgDetail = `mean=${t1.meanStation.toFixed(2)} ${paramMeta.units}, overall=${t1.meanAll.toFixed(2)} ${paramMeta.units}, Δ=${t1.delta.toFixed(2)} ${paramMeta.units}, n=${t1.n}`;

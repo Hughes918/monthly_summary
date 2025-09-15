@@ -5,7 +5,7 @@
   {"key":"hdd","display_name":"Heating Degree Days","display_units":"°F","db_units":"°F","data_type_id":46,"precision":0,"aliases":["heating dd"]},
   {"key":"cdd","display_name":"Cooling Degree Days","display_units":"°F","db_units":"°F","data_type_id":47,"precision":0,"aliases":["cooling dd"]},
   {"key":"wind_mean","display_name":"Mean Wind Speed","display_units":"mph","db_units":"m/s","data_type_id":48,"precision":1,"aliases":["avg wind"]},
-  {"key":"wind_dir_mean","display_name":"Mean Wind Direction","display_units":"°","db_units":"°","data_type_id":49,"precision":0,"aliases":["mean wind dir"]},
+  {"key":"wind_dir_mean","display_name":"Mean Wind Direction","display_units":"°","db_units":"radians","data_type_id":49,"precision":0,"aliases":["mean wind dir"]},
   {"key":"wind_gust_max","display_name":"Peak Wind Gust Speed (Daily)","display_units":"mph","db_units":"m/s","data_type_id":50,"precision":1,"aliases":["daily max gust"]},
   {"key":"precip","display_name":"Gage Precipitation (Daily)","display_units":"in","db_units":"mm","data_type_id":51,"precision":2,"aliases":["rain","ppt"]},
   {"key":"stage_mean","display_name":"Mean Daily Gage Height","display_units":"ft","db_units":"m","data_type_id":69,"precision":2,"aliases":["gage height mean","stage"]},
