@@ -29,6 +29,9 @@
   {"key":"vwc_avg","display_name":"Daily Avg VWC","display_units":"g/g","db_units":"g/g","data_type_id":187,"precision":3,"aliases":["avg volumetric water content"]},
   {"key":"vwc_max","display_name":"Daily Max VWC","display_units":"g/g","db_units":"g/g","data_type_id":188,"precision":3},
   {"key":"vwc_min","display_name":"Daily Min VWC","display_units":"g/g","db_units":"g/g","data_type_id":189,"precision":3},
-  {"key":"solar","display_name":"Daily Solar","display_units":"MJ/m^2/day","db_units":"MJ/m^2/day","data_type_id":197,"precision":1}
+  {"key":"solar","display_name":"Daily Solar","display_units":"MJ/m^2/day","db_units":"MJ/m^2/day","data_type_id":197,"precision":1},
+  {"key":"pressure_avg","display_name":"Mean Daily Barometric Pressure","display_units":"mb","db_units":"mb","data_type_id":283,"precision":1},
+  {"key":"pressure_max","display_name":"Max Daily Barometric Pressure","display_units":"mb","db_units":"mb","data_type_id":284,"precision":1},
+  {"key":"pressure_min","display_name":"Min Daily Barometric Pressure","display_units":"mb","db_units":"mb","data_type_id":285,"precision":1}
 ]
 
