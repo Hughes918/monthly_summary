@@ -1,0 +1,22 @@
+        }
+        const score1 = dailyScores.length ? Math.round(mean(dailyScores)) : 0;
+        const avgDetail = `mean=${t1.meanStation.toFixed(2)} ${paramMeta.units}, peers=${t1.meanPeers.toFixed(2)} ${paramMeta.units}, avg|diff|=${t1.avgAbsDiff.toFixed(2)} ${paramMeta.units}, avgZ=${t1.avgZ.toFixed(2)}, days=${t1.nDays}`;
+
+        const overall = score1;
+        const cat = scoreCategory(overall);
+        stationQC[station] = { category: cat, score: overall };
+        html += `<tr>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${station}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${scoreBadge(score1)}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${avgDetail}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;font-weight:600;'>${scoreBadge(overall)}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${cat}</td>
+        </tr>`;
+      }
+      html += "</tbody></table>";
+      container.innerHTML = html;
+      container.style.display = '';
+    }
+  </script>
+</body>
+</html>

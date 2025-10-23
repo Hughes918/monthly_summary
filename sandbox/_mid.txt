@@ -1,0 +1,300 @@
+        return;
+      }
+      let html = "<table style='width:100%;border-collapse:collapse;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.07);margin-bottom:30px;'>";
+      html += "<thead><tr>";
+      html += "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Station / Parameter</th>";
+      html += "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Count</th>";
+      html += "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Missing</th>";
+      html += "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Min</th>";
+      html += "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Mean</th>";
+      html += "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Max</th>";
+      html += "</tr></thead><tbody>";
+      for (const station of STATIONS) {
+        const series = lastSeries[station] || [];
+        const nums = series.map(d => d.value).filter(v => v !== "--" && !isNaN(v));
+        const count = nums.length;
+        const missing = series.length - count;
+        let min = "--", max = "--", mean = "--";
+        if (count > 0) {
+          min = Math.min(...nums);
+          max = Math.max(...nums);
+          mean = (nums.reduce((a, b) => a + b, 0) / count).toFixed(2);
+        }
+        const label = `${station}: ${paramMeta.label} (${paramMeta.units})`;
+        html += `<tr>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${label}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${count}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${missing}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${min}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${mean}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${max}</td>
+        </tr>`;
+      }
+      html += "</tbody></table>";
+      statsDiv.style.display = "";
+      statsDiv.innerHTML = html;
+    }
+
+    function renderGraph() {
+      if (!lastSeries || !lastLabels || Object.keys(lastSeries).length === 0) return;
+      const labels = lastLabels;
+      const ctx = document.getElementById('resultsChart').getContext('2d');
+      clearGraph();
+
+      function colorForCategory(cat) {
+        switch (cat) {
+          case 'Minimal concern': return '#f1c40f'; // yellow
+          case 'Possible concern': return '#f39c12'; // orange
+          case 'Potential issue': return '#e74c3c'; // red
+          default: return '#bfc9d1'; // light grey
+        }
+      }
+
+      const datasets = STATIONS.map((station) => {
+        const series = lastSeries[station] || [];
+        const data = series.map(d => (d.value === "--" || isNaN(d.value)) ? null : Number(d.value));
+        const cat = (stationQC[station] && stationQC[station].category) ? stationQC[station].category : 'No concern';
+        const color = colorForCategory(cat);
+        return {
+          label: station,
+          data,
+          borderColor: color,
+          backgroundColor: color + '33',
+          spanGaps: false,
+          pointRadius: 2,
+          tension: 0.2
+        };
+      });
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          animation: false,
+          plugins: {
+            legend: { display: true, position: 'top' },
+            title: { display: false }
+          },
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: { display: true, title: { display: true, text: 'Date' } },
+            y: { display: true, title: { display: true, text: paramMeta.units || 'Value' } }
+          }
+        }
+      });
+      document.getElementById("graphContainer").style.display = "";
+    }
+
+    // Allow manual range application
+    document.getElementById('applyRangeBtn').addEventListener('click', () => {
+      fetchLast30Days();
+    });
+
+    // Auto-run on load
+    window.addEventListener('DOMContentLoaded', fetchLast30Days);
+
+    // ===== Quality Control Rendering =====
+    function scoreCategory(score) {
+      if (score >= 90) return 'No concern';
+      if (score >= 80) return 'Minimal concern';
+      if (score >= 70) return 'Possible concern';
+      return 'Potential issue';
+    }
+
+    
+
+    function mean(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+    function stddev(arr) {
+      if (arr.length < 2) return 0;
+      const m = mean(arr);
+      const v = arr.reduce((s,x)=>s+(x-m)*(x-m),0)/(arr.length-1);
+      return Math.sqrt(v);
+    }
+    function median(arr) {
+      const a = arr.filter(v => v !== null && !isNaN(v)).slice().sort((x,y)=>x-y);
+      const n = a.length;
+      if (!n) return NaN;
+      const mid = Math.floor(n/2);
+      return n % 2 ? a[mid] : (a[mid-1] + a[mid]) / 2;
+    }
+
+    function renderQualityChecks() {
+      const container = document.getElementById('qcContainer');
+      container.innerHTML = '';
+      if (!lastSeries || !lastLabels) { container.style.display = 'none'; return; }
+
+      // Build station -> numeric array aligned to labels (null for missing)
+      const stationNums = {};
+      for (const station of STATIONS) {
+        const series = lastSeries[station] || [];
+        stationNums[station] = series.map(d => (d && d.value !== "--" && !isNaN(d.value)) ? Number(d.value) : null);
+      }
+
+
+      // Compute SD-based comparison stats per station
+      const test1 = {}; // station -> {meanStation, meanPeers, nDays, avgAbsDiff, avgZ}
+      for (const station of STATIONS) {
+        let sumAbs = 0; let nDays = 0; let sumStation = 0; let sumPeers = 0; let nPeersDays = 0;
+        let sumZ = 0; let nZ = 0;
+        for (let i = 0; i < lastLabels.length; i++) {
+          const vi = stationNums[station][i];
+          if (vi === null) continue; // only evaluate on days with station value
+          const peers = [];
+          for (const s2 of STATIONS) {
+            if (s2 === station) continue;
+            const v2 = stationNums[s2][i];
+            if (v2 !== null) peers.push(v2);
+          }
+          if (peers.length === 0) continue; // need at least one peer that day
+          const mPeers = mean(peers);
+          const sPeers = stddev(peers);
+          const diff = Math.abs(vi - mPeers);
+          sumAbs += diff;
+          nDays++;
+          sumStation += vi;
+          sumPeers += mPeers;
+          nPeersDays++;
+          if (sPeers > 0) { sumZ += diff / sPeers; nZ++; }
+        }
+        const meanStation = nDays > 0 ? sumStation / nDays : 0;
+        const meanPeers = nPeersDays > 0 ? sumPeers / nPeersDays : 0;
+        const avgAbsDiff = nDays > 0 ? (sumAbs / nDays) : 0;
+        const avgZ = nZ > 0 ? (sumZ / nZ) : 0;
+        test1[station] = { meanStation, meanPeers, nDays, avgAbsDiff, avgZ };
+      }
+
+      // Legacy backfill removed; test now uses SD-based metrics directly.
+
+   
+
+      // Build table
+      let html = "<h2 style='color:#2c3e50;margin:10px 0 10px 0;'>Quality Control</h2>";
+      html += "<table style='width:100%;border-collapse:collapse;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.07);'>";
+      html += "<thead><tr>"+
+              "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Station</th>"+
+              "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>StdDev Score</th>"+
+              "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>StdDev Detail</th>"+
+              
+              "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Overall</th>"+
+              "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Category</th>"+
+              "</tr></thead><tbody>";
+
+      function scoreBadge(score) {
+        let bg = '#2ecc71'; // green
+        if (score < 70) bg = '#e74c3c';
+        else if (score < 80) bg = '#f39c12';
+        else if (score < 90) bg = '#f1c40f';
+        return `<span style="display:inline-block;padding:4px 8px;border-radius:12px;color:#fff;background:${bg};min-width:38px;text-align:center;">${score}</span>`;
+      }
+
+      for (const station of STATIONS) {
+        const t1 = test1[station];
+        // SD-based scoring: average of per-day scores derived from peer mean/SD
+        let score1 = 0; // will be computed below
+        const avgDetail = `mean=${t1.meanStation.toFixed(2)} ${paramMeta.units}, overall=${t1.meanAll.toFixed(2)} ${paramMeta.units}, Δ=${t1.delta.toFixed(2)} ${paramMeta.units}, n=${t1.n}`;
+
+      
+        const overall = score1;
+        const cat = scoreCategory(overall);
+        stationQC[station] = { category: cat, score: overall };
+        html += `<tr>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${station}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${scoreBadge(score1)}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${avgDetail}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;font-weight:600;'>${scoreBadge(overall)}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${cat}</td>
+        </tr>`;
+      }
+      html += "</tbody></table>";
+      container.innerHTML = html;
+      container.style.display = '';
+    }
+
+    // Override with SD-based QC scoring per spec
+    function renderQualityChecks() {
+      const container = document.getElementById('qcContainer');
+      container.innerHTML = '';
+      if (!lastSeries || !lastLabels) { container.style.display = 'none'; return; }
+
+      const stationNums = {};
+      for (const station of STATIONS) {
+        const series = lastSeries[station] || [];
+        stationNums[station] = series.map(d => (d && d.value !== "--" && !isNaN(d.value)) ? Number(d.value) : null);
+      }
+
+      const test1 = {};
+      for (const station of STATIONS) {
+        let sumAbs = 0; let nDays = 0; let sumStation = 0; let sumPeers = 0; let nPeersDays = 0;
+        let sumZ = 0; let nZ = 0;
+        for (let i = 0; i < lastLabels.length; i++) {
+          const vi = stationNums[station][i];
+          if (vi === null) continue;
+          const peers = [];
+          for (const s2 of STATIONS) {
+            if (s2 === station) continue;
+            const v2 = stationNums[s2][i];
+            if (v2 !== null) peers.push(v2);
+          }
+          if (peers.length === 0) continue;
+          const mPeers = mean(peers);
+          const sPeers = stddev(peers);
+          const diff = Math.abs(vi - mPeers);
+          sumAbs += diff;
+          nDays++;
+          sumStation += vi;
+          sumPeers += mPeers;
+          nPeersDays++;
+          if (sPeers > 0) { sumZ += diff / sPeers; nZ++; }
+        }
+        const meanStation = nDays > 0 ? sumStation / nDays : 0;
+        const meanPeers = nPeersDays > 0 ? sumPeers / nPeersDays : 0;
+        const avgAbsDiff = nDays > 0 ? (sumAbs / nDays) : 0;
+        const avgZ = nZ > 0 ? (sumZ / nZ) : 0;
+        test1[station] = { meanStation, meanPeers, nDays, avgAbsDiff, avgZ };
+      }
+
+      function scoreFromDiffAndSD(diff, s) {
+        if (diff <= 1) return 100;
+        if (!isFinite(s) || s <= 0) return 40;
+        const z = diff / s;
+        if (z <= 1) return 100;
+        if (z <= 2) return Math.round(100 - 10 * (z - 1));
+        if (z <= 5) return Math.round(100 - 30 * (z - 2));
+        return 0;
+      }
+
+      let html = "<h2 style='color:#2c3e50;margin:10px 0 10px 0;'>Quality Control</h2>";
+      html += "<table style='width:100%;border-collapse:collapse;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.07);'>";
+      html += "<thead><tr>"+
+              "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Station</th>"+
+              "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>StdDev Score</th>"+
+              "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>StdDev Detail</th>"+
+              "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Overall</th>"+
+              "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Category</th>"+
+              "</tr></thead><tbody>";
+
+      function scoreBadge(score) {
+        let bg = '#2ecc71';
+        if (score < 70) bg = '#e74c3c';
+        else if (score < 80) bg = '#f39c12';
+        else if (score < 90) bg = '#f1c40f';
+        return `<span style=\"display:inline-block;padding:4px 8px;border-radius:12px;color:#fff;background:${bg};min-width:38px;text-align:center;\">${score}</span>`;
+      }
+
+      for (const station of STATIONS) {
+        const t1 = test1[station];
+        const dailyScores = [];
+        for (let i = 0; i < lastLabels.length; i++) {
+          const vi = stationNums[station][i];
+          if (vi === null) continue;
+          const peers = [];
+          for (const s2 of STATIONS) {
+            if (s2 === station) continue;
+            const v2 = stationNums[s2][i];
+            if (v2 !== null) peers.push(v2);
+          }
+          if (peers.length === 0) continue;
+          const mPeers = mean(peers);
+          const sPeers = stddev(peers);
+          const diff = Math.abs(vi - mPeers);
+          dailyScores.push(scoreFromDiffAndSD(diff, sPeers));

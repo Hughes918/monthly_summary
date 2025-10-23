@@ -100,6 +100,29 @@
     tr:nth-child(even) td {
       background: #f9fbfc;
     }
+    /* Simple hover tooltip for score histories */
+    .tooltip-wrap { position: relative; display: inline-block; }
+    .tooltip-content {
+      display: none;
+      position: absolute;
+      z-index: 9999;
+      top: 120%;
+      left: 0;
+      min-width: 220px;
+      max-width: 320px;
+      max-height: 260px;
+      overflow: auto;
+      padding: 10px;
+      border: 1px solid #e1e8ed;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      color: #2c3e50;
+      font-size: 12px;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+    .tooltip-wrap:hover .tooltip-content { display: block; }
   </style>
 </head>
 <body>
@@ -160,6 +183,8 @@
     let paramMeta = { label: 'Mean Daily Barometric Pressure', units: 'mb' };
     let chartInstance = null;
     let stationQC = {}; // station -> { category, score }
+    let stationScoreHistory = {}; // station -> [{ date, score }] (per-day scores used in QC)
+    let fullDateMapByStation = {}; // station -> Map(dateStr -> value) for extended range
 
     function clearGraph() {
       document.getElementById("graphContainer").style.display = "none";
@@ -233,9 +258,9 @@
           }
         }
       } catch (_) { /* non-fatal */ }
-      // Fetch extended range (previous 6 days) to compute 7-day score history
+      // Fetch extended range (previous DAYS_BACK days) to compute rolling-30 scores
       const extStart = new Date(start);
-      extStart.setDate(extStart.getDate() - 6);
+      extStart.setDate(extStart.getDate() - DAYS_BACK);
       const months = monthsInRange(extStart, end);
 
       // Fetch data for all stations in parallel
@@ -272,6 +297,7 @@
         labels.push(dstr);
         cursor.setDate(cursor.getDate() + 1);
       }
+      const fullMaps = {};
       for (const { station, map } of stationData) {
         seriesByStation[station] = labels.map(dstr => {
           let v = map.has(dstr) ? map.get(dstr) : "--";
@@ -282,10 +308,12 @@
           }
           return { date: dstr, value: v };
         });
+        fullMaps[station] = map; // keep extended map for rolling windows
       }
 
       lastLabels = labels;
       lastSeries = seriesByStation;
+      fullDateMapByStation = fullMaps;
       hideSpinner();
       renderStats();
       renderQualityChecks();
@@ -569,7 +597,7 @@
               "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Station</th>"+
               "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>StdDev Score</th>"+
               "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>StdDev Detail</th>"+
-              "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Overall</th>"+
+              "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Trend</th>"+
               "<th style='padding:10px 8px;border:1px solid #e1e8ed;'>Category</th>"+
               "</tr></thead><tbody>";
 
@@ -581,35 +609,148 @@
         return `<span style=\"display:inline-block;padding:4px 8px;border-radius:12px;color:#fff;background:${bg};min-width:38px;text-align:center;\">${score}</span>`;
       }
 
+      function trendBadge(delta) {
+        const sign = delta > 0 ? '+' : (delta < 0 ? '' : '');
+        const arrow = delta > 0 ? '↑' : (delta < 0 ? '↓' : '→');
+        let bg = '#bfc9d1'; // neutral
+        if (delta > 0) bg = '#2ecc71';
+        if (delta < 0) bg = '#e74c3c';
+        return `<span style="display:inline-block;padding:4px 8px;border-radius:12px;color:#fff;background:${bg};min-width:56px;text-align:center;">${arrow} ${sign}${Math.round(delta)}</span>`;
+      }
+
+      function buildSparklineSVG(history) {
+        const w = 220, h = 40, pad = 2;
+        const n = (history && history.length) ? history.length : 0;
+        if (n <= 1) return '<div>No trend available</div>';
+        const xs = [];
+        const ys = [];
+        const stepX = (w - 2*pad) / (n - 1);
+        for (let i = 0; i < n; i++) {
+          const x = pad + i * stepX;
+          const v = Math.max(0, Math.min(100, Number(history[i].score) || 0));
+          const y = pad + (h - 2*pad) * (1 - v/100);
+          xs.push(x); ys.push(y);
+        }
+        let d = `M ${xs[0].toFixed(1)} ${ys[0].toFixed(1)}`;
+        for (let i = 1; i < n; i++) d += ` L ${xs[i].toFixed(1)} ${ys[i].toFixed(1)}`;
+        const area = `${d} L ${xs[n-1].toFixed(1)} ${(h-pad).toFixed(1)} L ${xs[0].toFixed(1)} ${(h-pad).toFixed(1)} Z`;
+        const cx = xs[n-1].toFixed(1), cy = ys[n-1].toFixed(1);
+        return `
+          <svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+            <path d="${area}" fill="#3498db22" stroke="none"></path>
+            <path d="${d}" fill="none" stroke="#3498db" stroke-width="2" stroke-linecap="round" />
+            <circle cx="${cx}" cy="${cy}" r="2.8" fill="#3498db" />
+          </svg>
+        `;
+      }
+
+      // Helper to build tooltip HTML from a score history
+      function buildTooltipContent(history) {
+        if (!history || history.length === 0) return '<div>No per-day scores</div>';
+        const spark = buildSparklineSVG(history);
+        const last = history[history.length - 1];
+        const first = history[0];
+        const delta = (Number(last.score) || 0) - (Number(first.score) || 0);
+        const sign = delta > 0 ? '+' : (delta < 0 ? '' : '');
+        return `
+          <div style="font-weight:600;margin-bottom:6px;">Trend (last ${history.length} days)</div>
+          ${spark}
+          <div style="margin-top:6px;color:#566;">Start: <strong>${first.score}</strong> → Now: <strong>${last.score}</strong> (${sign}${Math.round(delta)})</div>
+        `;
+      }
+
       for (const station of STATIONS) {
         const t1 = test1[station];
         const dailyScores = [];
+        const dailyHistory = [];
+        // For each displayed day, compute score as the average of
+        // per-day peer-difference scores across the previous 30 days
         for (let i = 0; i < lastLabels.length; i++) {
-          const vi = stationNums[station][i];
-          if (vi === null) continue;
-          const peers = [];
-          for (const s2 of STATIONS) {
-            if (s2 === station) continue;
-            const v2 = stationNums[s2][i];
-            if (v2 !== null) peers.push(v2);
+          const curDate = new Date(lastLabels[i]);
+          const windowScores = [];
+          for (let k = 1; k <= DAYS_BACK; k++) {
+            const d = new Date(curDate);
+            d.setDate(curDate.getDate() - k);
+            const dstr = formatDate(d);
+            // Pull station value for dstr from extended map
+            const mapSelf = fullDateMapByStation[station];
+            if (!mapSelf) continue;
+            let vi = mapSelf.has(dstr) ? mapSelf.get(dstr) : null;
+            if (vi === null || vi === undefined || isNaN(vi)) continue;
+            vi = Number(vi);
+            const peers = [];
+            for (const s2 of STATIONS) {
+              if (s2 === station) continue;
+              const map2 = fullDateMapByStation[s2];
+              if (!map2) continue;
+              let v2 = map2.has(dstr) ? map2.get(dstr) : null;
+              if (v2 !== null && v2 !== undefined && !isNaN(v2)) peers.push(Number(v2));
+            }
+            if (peers.length === 0) continue;
+            const mPeers = mean(peers);
+            const sPeers = stddev(peers);
+            const diff = Math.abs(vi - mPeers);
+            windowScores.push(scoreFromDiffAndSD(diff, sPeers));
           }
-          if (peers.length === 0) continue;
-          const mPeers = mean(peers);
-          const sPeers = stddev(peers);
-          const diff = Math.abs(vi - mPeers);
-          dailyScores.push(scoreFromDiffAndSD(diff, sPeers));
+          const dayScore = windowScores.length ? Math.round(mean(windowScores)) : 0;
+          dailyScores.push(dayScore);
+          dailyHistory.push({ date: lastLabels[i], score: dayScore });
         }
         const score1 = dailyScores.length ? Math.round(mean(dailyScores)) : 0;
+        const currentScore = dailyScores.length ? dailyScores[dailyScores.length - 1] : 0;
         const avgDetail = `mean=${t1.meanStation.toFixed(2)} ${paramMeta.units}, peers=${t1.meanPeers.toFixed(2)} ${paramMeta.units}, avg|diff|=${t1.avgAbsDiff.toFixed(2)} ${paramMeta.units}, avgZ=${t1.avgZ.toFixed(2)}, days=${t1.nDays}`;
 
-        const overall = score1;
+        const overall = currentScore;
         const cat = scoreCategory(overall);
         stationQC[station] = { category: cat, score: overall };
+        // Store per-day score history for hover tooltip
+        stationScoreHistory[station] = dailyHistory;
+        const tooltipHtml = buildTooltipContent(dailyHistory);
+        // Compute trend vs exactly 30 days prior to end-date
+        const endDateStr = lastLabels[lastLabels.length - 1];
+        const endDate = new Date(endDateStr);
+        const prevDate = new Date(endDate);
+        prevDate.setDate(endDate.getDate() - 30);
+        const prevDateStr = formatDate(prevDate);
+        function rollingScoreForDate(stn, dateStr) {
+          const cur = new Date(dateStr);
+          const windowScores = [];
+          for (let k = 1; k <= DAYS_BACK; k++) {
+            const d = new Date(cur);
+            d.setDate(cur.getDate() - k);
+            const dstr = formatDate(d);
+            const mapSelf = fullDateMapByStation[stn];
+            if (!mapSelf) continue;
+            let vi = mapSelf.has(dstr) ? mapSelf.get(dstr) : null;
+            if (vi === null || vi === undefined || isNaN(vi)) continue;
+            vi = Number(vi);
+            const peers = [];
+            for (const s2 of STATIONS) {
+              if (s2 === stn) continue;
+              const map2 = fullDateMapByStation[s2];
+              if (!map2) continue;
+              let v2 = map2.has(dstr) ? map2.get(dstr) : null;
+              if (v2 !== null && v2 !== undefined && !isNaN(v2)) peers.push(Number(v2));
+            }
+            if (peers.length === 0) continue;
+            const mPeers = mean(peers);
+            const sPeers = stddev(peers);
+            const diff = Math.abs(vi - mPeers);
+            windowScores.push(scoreFromDiffAndSD(diff, sPeers));
+          }
+          return windowScores.length ? Math.round(mean(windowScores)) : null;
+        }
+        const prevScore = rollingScoreForDate(station, prevDateStr);
+        const trendDelta = (prevScore === null) ? null : (currentScore - prevScore);
         html += `<tr>
           <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${station}</td>
-          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${scoreBadge(score1)}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;'>
+            <span class="tooltip-wrap">${scoreBadge(currentScore)}
+              <div class="tooltip-content">${tooltipHtml}</div>
+            </span>
+          </td>
           <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${avgDetail}</td>
-          <td style='padding:10px 8px;border:1px solid #e1e8ed;font-weight:600;'>${scoreBadge(overall)}</td>
+          <td style='padding:10px 8px;border:1px solid #e1e8ed;font-weight:600;'>${trendDelta === null ? '--' : trendBadge(trendDelta)}</td>
           <td style='padding:10px 8px;border:1px solid #e1e8ed;'>${cat}</td>
         </tr>`;
       }
