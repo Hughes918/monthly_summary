@@ -7,7 +7,7 @@
             <p id="deos-footer-info" class="cell large-9">
                 Delaware Environmental Observing System | 102 Pearson Hall | University of Delaware | Newark, DE 19716-2541<br>
                 Center for Environmental Monitoring &amp; Analysis<br>
-                Phone: (302) 831-6906  •   Fax: (302) 831-6654  •  © 2025
+                Phone: (302) 831-6906  •   Fax: (302) 831-6654  •  © 2026
             </p>
             <div id="deos-footer-connect" class="cell large-3">
                 <a id="deos-connect-facebook" class="deos-social-icon" href="https://www.facebook.com/pages/The-Delaware-Environmental-Observing-System/324846850825?ref=hl" target="_blank"></a>
@@ -24,7 +24,7 @@
             </a>
         </p>
         <ul id="deos-footer-links">
-            <li class="footer-item">© 2025 University of Delaware</li>
+            <li class="footer-item">© 2026 University of Delaware</li>
             <li class="footer-item">
                 <a class="footer-link" href="//www.udel.edu/home/legal-notices/">Legal Notices</a>
             </li>

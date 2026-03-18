@@ -44,6 +44,45 @@ function refreshWithNewParams() {
     window.location.href = `${window.location.origin}${window.location.pathname}?station=${station}&date=${date}`;
 }
 
+function getActiveStation() {
+    const stationSelect = document.getElementById('station-select');
+    if (stationSelect && stationSelect.value) {
+        return stationSelect.value;
+    }
+
+    const stationInput = document.getElementById('station');
+    return stationInput && stationInput.value ? stationInput.value : 'DAGF';
+}
+
+function formatDateForQuery(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function openDailyViewForRow(dateText) {
+    if (!dateText || !/^\d{4}-\d{2}-\d{2}$/.test(dateText)) {
+        return;
+    }
+
+    const startDate = new Date(`${dateText}T00:00:00`);
+    if (Number.isNaN(startDate.getTime())) {
+        return;
+    }
+
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
+
+    const dailyViewUrl = new URL('daily_view.php', window.location.href);
+    dailyViewUrl.searchParams.set('station', getActiveStation());
+    dailyViewUrl.searchParams.set('startDate', formatDateForQuery(startDate));
+    dailyViewUrl.searchParams.set('endDate', formatDateForQuery(endDate));
+    dailyViewUrl.searchParams.set('interval', '5min');
+
+    window.open(dailyViewUrl.toString(), '_blank', 'noopener');
+}
+
 // --- DOMContentLoaded setup ---
 document.addEventListener('DOMContentLoaded', () => {
     // Track page load event with URL, station, month, and year
@@ -108,6 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     });
     setTimeout(() => dataTable.columns.adjust(), 100);
+
+    $('#dataTable tbody').on('dblclick', 'tr', function () {
+        const dateCellText = $(this).find('td').first().text().trim();
+        openDailyViewForRow(dateCellText);
+    });
     
     // Handle consecutive climate-flagged precip column
     const precipColumnIndex = $('#dataTable thead tr:first-child th').toArray()
