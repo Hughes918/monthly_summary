@@ -78,7 +78,7 @@ function openDailyViewForRow(dateText) {
     dailyViewUrl.searchParams.set('station', getActiveStation());
     dailyViewUrl.searchParams.set('startDate', formatDateForQuery(startDate));
     dailyViewUrl.searchParams.set('endDate', formatDateForQuery(endDate));
-    dailyViewUrl.searchParams.set('interval', '5min');
+    dailyViewUrl.searchParams.set('interval', 'hourly');
 
     window.open(dailyViewUrl.toString(), '_blank', 'noopener');
 }

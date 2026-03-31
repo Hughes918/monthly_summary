@@ -61,6 +61,7 @@ table.dataTable thead tr:nth-child(2) th {
     border-top: none !important;
     padding: 0 !important;
     margin: 0 !important;
+    font-size: 1.05em;
 }
 
 /* Save button styling */
