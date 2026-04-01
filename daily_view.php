@@ -27,12 +27,28 @@ require_once __DIR__ . '/daily_view_helpers.php';
 <?php
 
 $apiKey = 'C7384045980DCA07FD2036B439448C1A281132329DE17A8CD8F03810091AF107';
+$dataLoadError = '';
+
+$defaultSelectedDate = '2025-07-30';
+$rawSelectedDate = isset($_GET['date'])
+    ? trim((string) $_GET['date'])
+    : (isset($_GET['startDate']) ? trim((string) $_GET['startDate']) : $defaultSelectedDate);
+
+$parsedSelectedDate = DateTimeImmutable::createFromFormat('!Y-m-d', $rawSelectedDate);
+$dateErrors = DateTimeImmutable::getLastErrors();
+$hasDateErrors = is_array($dateErrors)
+    && (($dateErrors['warning_count'] ?? 0) > 0 || ($dateErrors['error_count'] ?? 0) > 0);
+
+if (!($parsedSelectedDate instanceof DateTimeImmutable) || $hasDateErrors || $parsedSelectedDate->format('Y-m-d') !== $rawSelectedDate) {
+    error_log('daily_view.php: invalid date parameter received: ' . $rawSelectedDate);
+    $parsedSelectedDate = DateTimeImmutable::createFromFormat('!Y-m-d', $defaultSelectedDate);
+}
 
 // Get dates from form or use defaults
 $station = isset($_GET['station']) && trim($_GET['station']) !== '' ? strtoupper(trim($_GET['station'])) : 'DAGF';
-$selectedDate = isset($_GET['date']) ? $_GET['date'] : (isset($_GET['startDate']) ? $_GET['startDate'] : '2025-07-30');
+$selectedDate = $parsedSelectedDate->format('Y-m-d');
 $startDate = $selectedDate;
-$endDate = date('Y-m-d', strtotime($startDate . ' +1 day'));
+$endDate = $parsedSelectedDate->modify('+1 day')->format('Y-m-d');
 $downloadFormat = isset($_GET['download']) ? $_GET['download'] : '';
 $requestedInterval = isset($_GET['interval']) ? $_GET['interval'] : 'hourly';
 $timeInterval = $requestedInterval === '5min' ? '5min' : 'hourly';
@@ -47,7 +63,7 @@ if (!isset($stationOptions[$station]) && !empty($stationOptions)) {
 $stationDisplayName = $stationOptions[$station]['label'] ?? $station;
 
 // Format the title with the dates
-$startDisplay = date('m/d/Y', strtotime($startDate));
+$startDisplay = $parsedSelectedDate->format('m/d/Y');
 
 $url = "https://services.cema.udel.edu/internal_services/api/data/{$station}/{$startDate}/{$endDate}?format=JSON&timezone=ET";
 
@@ -106,11 +122,12 @@ try {
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $error = curl_error($ch);
 
-    if ($error) {
-        echo "cURL Error: " . $error . "\n";
+    if ($response === false || $error !== '') {
+        error_log('daily_view.php: data API cURL error for ' . $station . ' on ' . $startDate . ': ' . $error);
+        $dataLoadError = 'Unable to load subdaily data right now. Please try again shortly.';
     } elseif ($httpCode !== 200) {
-        echo "HTTP Error: " . $httpCode . "\n";
-        echo "Response: " . $response . "\n";
+        error_log('daily_view.php: data API returned HTTP ' . $httpCode . ' for ' . $station . ' on ' . $startDate);
+        $dataLoadError = 'Unable to load subdaily data right now. Please try again shortly.';
     } else {
         $data = json_decode($response, true);
         
@@ -388,22 +405,19 @@ try {
                 echo "</div>";
             }
         } else {
-            echo "JSON decode error: " . json_last_error_msg();
+            error_log('daily_view.php: JSON decode error for ' . $station . ' on ' . $startDate . ': ' . json_last_error_msg());
+            $dataLoadError = 'Unable to load subdaily data right now. Please try again shortly.';
         }
     }
 } catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
+    error_log('daily_view.php: unexpected error for ' . $station . ' on ' . $startDate . ': ' . $e->getMessage());
+    $dataLoadError = 'Unable to load subdaily data right now. Please try again shortly.';
 }
-?>
 
-<?php
-if (isset($response)) {
-   // echo htmlspecialchars(json_encode(json_decode($response, true), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-} else {
-    echo "No response data available";
+if ($dataLoadError !== '') {
+    echo '<p>' . htmlspecialchars($dataLoadError) . '</p>';
 }
 ?>
-</pre>
 
 <?php renderSharedFooter(); ?>
 
