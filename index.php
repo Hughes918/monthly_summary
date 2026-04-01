@@ -532,7 +532,7 @@ include('header.php');
                 class="banner-message banner-message-link"
                 href="daily_view.php?station=<?php echo urlencode($station_name); ?>&date=<?php echo urlencode($subdailyLandingDate); ?>&interval=hourly"
             >
-                New: Subdaily data is here. Click this message to open today's subdaily view, or double-click any daily row to jump to that date.
+                New: Subdaily data is here. Click this message to open today's subdaily view, or double-click any row to jump to that date.
             </a>
         </div>
         <div class="banner-title">Monthly Summary</div>
