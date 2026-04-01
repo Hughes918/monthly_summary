@@ -16,10 +16,13 @@
             </div>
         </div>
         <p id="deos-footer-logos">
-            <a href="http://www.udel.edu" target="_blank" title="UD Link">
+                <a href="http://www.udel.edu"
+                    target="_blank"
+                    title="UD Link">
                 <img id="footer-logo-ud" src="assets/footer-logo-ud.png" alt="UD Logo">
-            </a>
-            <a href="http://www.ceoe.udel.edu/" target="_blank" title="CEOE Link">
+                </a><a href="http://www.ceoe.udel.edu/"
+                    target="_blank"
+                    title="CEOE Link">
                 <img id="footer-logo-ceoe" src="assets/footer-logo-ceoe.png" alt="CEOE Logo">
             </a>
         </p>
@@ -42,6 +45,15 @@
         padding: 30px 0 10px;
         font-family: 'OpenSans', sans-serif;
         margin-top: 40px;
+
+        a,
+        a:link,
+        a:visited,
+        a:hover,
+        a:active,
+        a:focus {
+            text-decoration: none;
+        }
     }
 
     #deos-footer-content {
