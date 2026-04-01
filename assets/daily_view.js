@@ -360,6 +360,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (dateInput) {
+        dateInput.addEventListener('change', submitDateIfComplete);
         dateInput.addEventListener('blur', submitDateIfComplete);
         dateInput.addEventListener('keydown', function (event) {
             if (event.key === 'Enter') {
