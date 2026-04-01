@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var graphCanvas = document.getElementById('parameterChart');
     var chartInstance = null;
     var graphData = null;
+    var pendingDateSubmit = false;
 
     function trackAnalyticsEvent(eventName, eventData) {
         if (typeof window.gtag !== 'function') {
@@ -82,7 +83,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         initialDateValue = dateInput.value;
+        pendingDateSubmit = false;
         submitFilters();
+    }
+
+    function flushPendingDateSubmit() {
+        if (!pendingDateSubmit) {
+            return;
+        }
+
+        if (document.activeElement === dateInput) {
+            return;
+        }
+
+        submitDateIfComplete();
     }
 
     function setCurrentPanel(panelName) {
@@ -360,8 +374,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (dateInput) {
-        dateInput.addEventListener('change', submitDateIfComplete);
-        dateInput.addEventListener('blur', submitDateIfComplete);
+        dateInput.addEventListener('change', function () {
+            pendingDateSubmit = true;
+            window.setTimeout(flushPendingDateSubmit, 0);
+        });
+        dateInput.addEventListener('blur', function () {
+            if (!pendingDateSubmit && dateInput.value === initialDateValue) {
+                return;
+            }
+
+            flushPendingDateSubmit();
+        });
         dateInput.addEventListener('keydown', function (event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
