@@ -515,53 +515,13 @@ include('header.php');
 <body>
     <!-- Banner -->
     <div class="summary-banner-container">
-        <div class="banner-top" style="display: flex; align-items: center; justify-content: space-between;">
+            <div class="banner-top">
             <div class="banner-message">
-                📢 New: DEOS Monthly Summaries! 
-            </div>
-            <!-- Added margin-left for spacing -->
-            <div class="learn-more-container" style="margin-left: 10px;">
-                <a href="#" id="learnMoreLink">[Click to Learn More]</a>
+                    New: Subdaily data is now available. Double-click any daily row to open detailed observations.
             </div>
         </div>
         <div class="banner-title">Monthly Summary</div>
     </div>
-
-    <!-- Learn More Popup -->
-    <div id="learnMorePopup" class="info-popup">
-        <div class="info-popup-content">
-            <h3>Learn More</h3>
-            <p>Welcome to the new DEOS Monthly Summaries page!</p>
-            <p>We’ve made major improvements, including:</p>
-            <ul>
-                <li>✅ CSV downloads for easy data access</li>
-                <li>✅ Monthly statistics for DEOS hydrologic parameters</li>
-                <li>✅ Improved quality control of the underlying data</li>
-            </ul>
-            
-            <button id="closeLearnMorePopup" class="close-popup">Close</button>
-        </div>
-    </div>
-    <script>
-        // Remove the old toggleBanner listener if present
-        // New Learn More popup handling, similar to the Info popup
-        document.getElementById('learnMoreLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('learnMorePopup').style.display = 'block';
-            // (Optional) GA tracking for Learn More link
-            gtag('event', 'click', {
-                'event_category': 'Learn More',
-                'event_label': 'Learn More Link Pressed'
-            });
-        });
-        document.getElementById('closeLearnMorePopup').addEventListener('click', function() {
-            document.getElementById('learnMorePopup').style.display = 'none';
-        });
-        window.addEventListener('click', function(event) {
-            const popup = document.getElementById('learnMorePopup');
-            if (event.target == popup) popup.style.display = 'none';
-        });
-    </script>
 
     <!-- Top Controls -->
     <input hidden type="text" id="station" value="<?php echo htmlspecialchars($station_name); ?>">
