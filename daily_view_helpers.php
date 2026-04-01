@@ -1,12 +1,40 @@
 <?php
 
+function isLocalDevelopmentRequest() {
+    $serverName = strtolower((string) ($_SERVER['SERVER_NAME'] ?? ''));
+    $httpHost = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+    $remoteAddr = strtolower((string) ($_SERVER['REMOTE_ADDR'] ?? ''));
+    $serverAddr = strtolower((string) ($_SERVER['SERVER_ADDR'] ?? ''));
+
+    $localHosts = ['localhost', '127.0.0.1', '::1'];
+
+    foreach ([$serverName, $httpHost, $remoteAddr, $serverAddr] as $value) {
+        $normalizedValue = trim(explode(':', $value)[0]);
+        if (in_array($normalizedValue, $localHosts, true)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function configureCurlTlsOptions($ch) {
+    if (isLocalDevelopmentRequest()) {
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        return;
+    }
+
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+}
+
 function loadStationOptions($metadataSource, $apiKey = null) {
     if (preg_match('/^https?:\/\//i', (string) $metadataSource)) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $metadataSource);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        configureCurlTlsOptions($ch);
 
         $headers = [];
         if ($apiKey !== null && $apiKey !== '') {
