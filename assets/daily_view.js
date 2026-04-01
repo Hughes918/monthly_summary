@@ -18,6 +18,11 @@ document.addEventListener('DOMContentLoaded', function () {
     var chartInstance = null;
     var graphData = null;
     var pendingDateSubmit = false;
+    var isMobileDatePicker = !!(
+        window.matchMedia &&
+        window.matchMedia('(pointer: coarse)').matches &&
+        window.matchMedia('(hover: none)').matches
+    );
 
     function trackAnalyticsEvent(eventName, eventData) {
         if (typeof window.gtag !== 'function') {
@@ -376,8 +381,16 @@ document.addEventListener('DOMContentLoaded', function () {
     if (dateInput) {
         dateInput.addEventListener('change', function () {
             pendingDateSubmit = true;
+
+            if (isMobileDatePicker) {
+                window.setTimeout(submitDateIfComplete, 150);
+            }
         });
         dateInput.addEventListener('blur', function () {
+            if (isMobileDatePicker) {
+                return;
+            }
+
             if (!pendingDateSubmit && dateInput.value === initialDateValue) {
                 return;
             }
