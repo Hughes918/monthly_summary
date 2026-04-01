@@ -3,14 +3,26 @@ header('Content-Type: text/html; charset=UTF-8');
 
 // Retrieve query parameters
 $queryString = $_SERVER['QUERY_STRING'] ?? (isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY) : null);
+$defaultStation = 'DAGF';
+$newYorkNow = new DateTime('now', new DateTimeZone('America/New_York'));
+$defaultDate = strtoupper($newYorkNow->format('M')) . '_' . $newYorkNow->format('Y');
+$subdailyLandingDate = $newYorkNow->format('Y-m-d');
+$queryParams = [];
 
 if (!empty($queryString)) {
     parse_str($queryString, $queryParams);
-    $station_name = !empty($queryParams['station']) ? htmlspecialchars($queryParams['station']) : 'DAGF';
-    $date = !empty($queryParams['date']) ? htmlspecialchars($queryParams['date']) : strtoupper(date('M')) . '_' . date('Y');
-} else {
-    $station_name = 'DXXX';
-    $date = strtoupper(date('M')) . '_' . date('Y');
+}
+
+$station_name = !empty($queryParams['station']) ? htmlspecialchars($queryParams['station']) : $defaultStation;
+$date = !empty($queryParams['date']) ? htmlspecialchars($queryParams['date']) : $defaultDate;
+
+if (empty($queryParams['station']) || empty($queryParams['date'])) {
+    $redirectParams = $queryParams;
+    $redirectParams['station'] = !empty($queryParams['station']) ? $queryParams['station'] : $defaultStation;
+    $redirectParams['date'] = !empty($queryParams['date']) ? $queryParams['date'] : $defaultDate;
+    $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/index.php', PHP_URL_PATH) ?: '/index.php';
+    header('Location: ' . $requestPath . '?' . http_build_query($redirectParams));
+    exit;
 }
 
 // Validate and convert date
@@ -515,10 +527,13 @@ include('header.php');
 <body>
     <!-- Banner -->
     <div class="summary-banner-container">
-            <div class="banner-top">
-            <div class="banner-message">
-                    New: Subdaily data is now available. Double-click any daily row to open detailed observations.
-            </div>
+        <div class="banner-top">
+            <a
+                class="banner-message banner-message-link"
+                href="daily_view.php?station=<?php echo urlencode($station_name); ?>&date=<?php echo urlencode($subdailyLandingDate); ?>&interval=hourly"
+            >
+                New: Subdaily data is here. Click this message to open today's subdaily view, or double-click any daily row to jump to that date.
+            </a>
         </div>
         <div class="banner-title">Monthly Summary</div>
     </div>
