@@ -376,14 +376,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (dateInput) {
         dateInput.addEventListener('change', function () {
             pendingDateSubmit = true;
-            window.setTimeout(flushPendingDateSubmit, 0);
         });
         dateInput.addEventListener('blur', function () {
             if (!pendingDateSubmit && dateInput.value === initialDateValue) {
                 return;
             }
 
-            flushPendingDateSubmit();
+            window.setTimeout(flushPendingDateSubmit, 0);
         });
         dateInput.addEventListener('keydown', function (event) {
             if (event.key === 'Enter') {
