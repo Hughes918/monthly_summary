@@ -18,11 +18,13 @@ document.addEventListener('DOMContentLoaded', function () {
     var chartInstance = null;
     var graphData = null;
     var pendingDateSubmit = false;
-    var isMobileDatePicker = !!(
+    var userAgent = window.navigator && window.navigator.userAgent ? window.navigator.userAgent : '';
+    var isMobileUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(userAgent);
+    var hasCoarsePointer = !!(
         window.matchMedia &&
-        window.matchMedia('(pointer: coarse)').matches &&
-        window.matchMedia('(hover: none)').matches
+        window.matchMedia('(pointer: coarse)').matches
     );
+    var isMobileDatePicker = isMobileUserAgent || hasCoarsePointer;
 
     function trackAnalyticsEvent(eventName, eventData) {
         if (typeof window.gtag !== 'function') {
@@ -383,7 +385,13 @@ document.addEventListener('DOMContentLoaded', function () {
             pendingDateSubmit = true;
 
             if (isMobileDatePicker) {
-                window.setTimeout(submitDateIfComplete, 150);
+                window.setTimeout(function () {
+                    if (!pendingDateSubmit) {
+                        return;
+                    }
+
+                    submitDateIfComplete();
+                }, 0);
             }
         });
         dateInput.addEventListener('blur', function () {
