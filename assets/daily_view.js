@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var graphToggleButton = document.getElementById('toggleGraph');
     var graphPanel = document.getElementById('graphPanel');
     var panelStateInput = document.getElementById('panelState');
+    var graphStateInput = document.getElementById('graphState');
     var graphControls = document.getElementById('graphControls');
     var graphDataElement = document.getElementById('graphData');
     var graphEmpty = document.getElementById('graphEmpty');
@@ -43,6 +44,24 @@ document.addEventListener('DOMContentLoaded', function () {
         interval: document.querySelector('input[name="interval"]:checked') ? document.querySelector('input[name="interval"]:checked').value : '',
         panel: panelStateInput ? panelStateInput.value : ''
     });
+
+    function updateURL() {
+        const url = new URL(window.location);
+        if (graphControls) {
+            const selected = Array.from(graphControls.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+            if (selected.length > 0) {
+                url.searchParams.set('graph', selected.join(','));
+                if (graphStateInput) graphStateInput.value = selected.join(',');
+            } else {
+                url.searchParams.delete('graph');
+                if (graphStateInput) graphStateInput.value = '';
+            }
+        }
+        if (panelStateInput) {
+            url.searchParams.set('panel', panelStateInput.value);
+        }
+        history.replaceState(null, '', url);
+    }
 
     function showLoadingState(message) {
         if (!body || !loadingOverlay) {
@@ -147,6 +166,21 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {
             graphData = null;
         }
+    }
+
+    // Parse URL parameters for graph and panel
+    const urlParams = new URLSearchParams(window.location.search);
+    const graphParam = urlParams.get('graph');
+    const panelParam = urlParams.get('panel');
+    if (graphParam && graphControls) {
+        const selectedParams = graphParam.split(',');
+        graphControls.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.checked = selectedParams.includes(cb.value);
+        });
+        if (graphStateInput) graphStateInput.value = graphParam;
+    }
+    if (panelParam && panelStateInput) {
+        panelStateInput.value = panelParam;
     }
 
     function createScaleKey(unit) {
@@ -323,6 +357,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 panel: 'stats',
                 state: isVisible ? 'open' : 'closed'
             });
+            updateURL();
         });
     }
 
@@ -338,6 +373,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (isVisible) {
                 renderGraph();
             }
+            updateURL();
         });
     }
 
@@ -345,7 +381,23 @@ document.addEventListener('DOMContentLoaded', function () {
         graphControls.addEventListener('change', function (event) {
             if (event.target && event.target.matches('input[type="checkbox"]')) {
                 renderGraph();
+                updateURL();
             }
+        });
+    }
+
+    var downloadButton = document.getElementById('downloadGraph');
+    if (downloadButton) {
+        downloadButton.addEventListener('click', function() {
+            if (!chartInstance || !graphCanvas || !graphData) return;
+            html2canvas(graphCanvas).then(function(canvas) {
+                var link = document.createElement('a');
+                link.download = graphData.station + '_' + graphData.date + '_graph.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(function(error) {
+                console.error('Error generating graph image:', error);
+            });
         });
     }
 
@@ -360,6 +412,31 @@ document.addEventListener('DOMContentLoaded', function () {
             radio.addEventListener('change', function () {
                 submitFilters();
             });
+        });
+    }
+
+    var prevDateBtn = document.getElementById('prevDate');
+    var nextDateBtn = document.getElementById('nextDate');
+    var dateInput = document.getElementById('date');
+
+    function adjustDate(days) {
+        if (!dateInput || !dateInput.value) return;
+        var currentDate = new Date(dateInput.value);
+        currentDate.setDate(currentDate.getDate() + days);
+        var newDateStr = currentDate.toISOString().split('T')[0];
+        dateInput.value = newDateStr;
+        submitFilters();
+    }
+
+    if (prevDateBtn) {
+        prevDateBtn.addEventListener('click', function() {
+            adjustDate(-1);
+        });
+    }
+
+    if (nextDateBtn) {
+        nextDateBtn.addEventListener('click', function() {
+            adjustDate(1);
         });
     }
 
@@ -379,6 +456,9 @@ document.addEventListener('DOMContentLoaded', function () {
             setCurrentPanel('');
         }
     }
+
+    // Update URL with initial state
+    updateURL();
 
     if (dateInput) {
         dateInput.addEventListener('change', function () {

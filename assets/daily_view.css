@@ -129,6 +129,17 @@ body.quick-facelift {
     outline-offset: 2px;
 }
 
+.quick-facelift #prevDate,
+.quick-facelift #nextDate {
+    min-height: 28px;
+    width: 28px;
+    padding: 0;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 50%;
+    flex: none;
+}
+
 .quick-facelift .submit-button {
     margin-left: 0;
 }

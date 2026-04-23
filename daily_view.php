@@ -81,6 +81,7 @@ $validFlags = ['1', '3', '7'];
 <div class='controls'>
     <form method='GET'>
         <input type='hidden' name='panel' id='panelState' value='<?php echo htmlspecialchars($activePanel); ?>'>
+        <input type='hidden' name='graph' id='graphState' value=''>
         <button type='submit' id='applyFilters' hidden aria-hidden='true' tabindex='-1'>Apply filters</button>
         <div class='date-group'>
             <label for='station'>Station:</label>
@@ -92,7 +93,9 @@ $validFlags = ['1', '3', '7'];
         </div>
         <div class='date-group'>
             <label for='date'>Date:</label>
+            <button type='button' id='prevDate' title='Previous Day' aria-label='Previous Day'>-</button>
             <input type='date' id='date' name='date' value='<?php echo htmlspecialchars($startDate); ?>' required aria-describedby='controls-note'>
+            <button type='button' id='nextDate' title='Next Day' aria-label='Next Day'>+</button>
         </div>
         <div class='radio-group'>
             <span>Interval:</span>
@@ -272,7 +275,9 @@ try {
             $statsRows = [];
             $graphConfig = [
                 'labels' => [],
-                'series' => []
+                'series' => [],
+                'station' => $station,
+                'date' => $startDate
             ];
             if (!empty($columnOrder)) {
                 $defaultGraphParameter = in_array('Air Temperature', $columnOrder, true)
@@ -310,7 +315,7 @@ try {
 
                     foreach ($rows as $timestamp => $rowValues) {
                         $graphConfig['series'][$dataType]['values'][] = isset($graphRows[$timestamp][$dataType]) && is_numeric($graphRows[$timestamp][$dataType])
-                            ? round((float) $graphRows[$timestamp][$dataType], 4)
+                            ? round((float) $graphRows[$timestamp][$dataType], $columns[$dataType]['precision'])
                             : null;
                     }
                 }
@@ -337,6 +342,13 @@ try {
                         echo "</label>";
                     }
                     echo "</div>";
+                    echo "<button id='downloadGraph' type='button' title='Download Graph' aria-label='Download Graph' style='margin-left: 10px; padding: 5px; border: none; background: none; cursor: pointer;'>";
+                    echo "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'>";
+                    echo "<path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'></path>";
+                    echo "<polyline points='7,10 12,15 17,10'></polyline>";
+                    echo "<line x1='12' y1='15' x2='12' y2='3'></line>";
+                    echo "</svg>";
+                    echo "</button>";
                     echo "<div class='graph-canvas-wrap'>";
                     echo "<canvas id='parameterChart'></canvas>";
                     echo "<div class='graph-empty' id='graphEmpty' style='display:none;'>Select at least one parameter to display the graph.</div>";
@@ -422,6 +434,7 @@ if ($dataLoadError !== '') {
 <?php renderSharedFooter(); ?>
 
 <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'></script>
 <script src='assets/daily_view.js'></script>
 
 </body>
