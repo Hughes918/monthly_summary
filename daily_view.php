@@ -75,8 +75,81 @@ $validFlags = ['1', '3', '7'];
 <?php renderSharedHeader(); ?>
 
 <div class='page-title-wrap'>
-    <h1><?php echo htmlspecialchars($stationDisplayName); ?></h1>
-    <p class='page-subtitle'><?php echo htmlspecialchars($startDisplay . ' • ' . ($timeInterval === 'hourly' ? 'Hourly' : '5-Minute')); ?></p>
+    <div class='title-header'>
+        <div class='title-with-icon'>
+            <h1><?php echo htmlspecialchars($stationDisplayName); ?></h1>
+            <button type='button' id='infoButton' class='info-button' title='Parameter Information' aria-label='Open parameter information' aria-expanded='false' aria-controls='infoModal'>i</button>
+        </div>
+        <p class='page-subtitle'><?php echo htmlspecialchars($startDisplay . ' • ' . ($timeInterval === 'hourly' ? 'Hourly' : '5-Minute')); ?></p>
+    </div>
+</div>
+
+<div id='infoModal' class='info-modal' role='dialog' aria-labelledby='infoModalTitle' aria-hidden='true'>
+    <div class='modal-overlay'></div>
+    <div class='modal-content'>
+        <div class='modal-header'>
+            <h2 id='infoModalTitle'>About This Data</h2>
+            <button type='button' id='closeInfoModal' class='close-button' title='Close' aria-label='Close information panel'>
+                <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>
+                    <line x1='18' y1='6' x2='6' y2='18'></line>
+                    <line x1='6' y1='6' x2='18' y2='18'></line>
+                </svg>
+            </button>
+        </div>
+        <div class='modal-body'>
+            <section class='info-section'>
+                <h3>Data Resolution & Hourly Values</h3>
+                <p><strong>5-minute data</strong> is the native resolution of our network. All measurements are recorded at 5-minute intervals from the source instruments.</p>
+                <p><strong>Hourly values</strong> are derived from the 5-minute data using completion thresholds. This means:</p>
+                <ul>
+                    <li><strong>For averaging (mean):</strong> At least 10 observations required in the hour</li>
+                    <li><strong>For summation (precipitation):</strong> At least 12 observations required in the hour</li>
+                    <li><strong>For extremes (min/max):</strong> At least 1 observation required in the hour</li>
+                </ul>
+                <p>If the threshold is not met, the hourly value is not calculated and reported as missing.</p>
+            </section>
+
+            <section class='info-section'>
+                <h3>Parameter Descriptions</h3>
+                <?php $descriptions = getParameterDescriptions(); ?>
+                <?php foreach ($descriptions as $category => $parameters): ?>
+                    <div class='parameter-category'>
+                        <h4><?php echo htmlspecialchars($category); ?></h4>
+                        <dl class='parameter-list'>
+                            <?php foreach ($parameters as $paramName => $description): ?>
+                                <dt><?php echo htmlspecialchars($paramName); ?></dt>
+                                <dd><?php echo htmlspecialchars($description); ?></dd>
+                            <?php endforeach; ?>
+                        </dl>
+                    </div>
+                <?php endforeach; ?>
+            </section>
+
+            <section class='info-section'>
+                <h3>Understanding the Data Tables</h3>
+                <div class='info-subsection'>
+                    <h4>Completeness Column</h4>
+                    <p>Shows the number of valid 5-minute observations included in the daily statistics. For example, "287/288" means 287 out of 288 possible 5-minute intervals had valid data that day (288 intervals = 24 hours × 12 intervals per hour).</p>
+                </div>
+                <div class='info-subsection'>
+                    <h4>Unit Conversions</h4>
+                    <p>Temperature values from the network are converted from Kelvin to Fahrenheit. Precipitation is converted from millimeters to inches. Wind speed is converted from meters per second to miles per hour. Wind direction is converted from radians to cardinal directions (N, NNE, NE, etc.).</p>
+                </div>
+                <div class='info-subsection'>
+                    <h4>Aggregation Methods</h4>
+                    <p><strong>Mean (avg):</strong> Average value of the 5-minute observations in the period.</p>
+                    <p><strong>Sum:</strong> Total accumulated value (used for precipitation). Represents cumulative rainfall over the hour.</p>
+                    <p><strong>Min:</strong> Lowest value observed in the period.</p>
+                    <p><strong>Max:</strong> Highest value observed in the period.</p>
+                </div>
+            </section>
+
+            <section class='info-section'>
+                <h3>Data Quality Notes</h3>
+                <p>All data displayed on this page has been screened for quality and validity. Missing or invalid measurements appear as "-" in the tables. Gaps in the data may indicate instrument malfunction, maintenance, or network issues during that period.</p>
+            </section>
+        </div>
+    </div>
 </div>
 
 <div class='controls'>

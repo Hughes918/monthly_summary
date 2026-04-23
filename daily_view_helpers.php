@@ -161,6 +161,33 @@ function getParameterConfig($dataType, $rawUnits = '') {
     ];
 }
 
+function getParameterDescriptions() {
+    return [
+        'Temperature Parameters' => [
+            'Air Temperature' => 'The ambient air temperature at 2 meters above the ground surface.',
+            'Dew Point Temperature' => 'The temperature at which air becomes saturated and water vapor begins to condense. Lower values indicate drier conditions.',
+            'Heat Index' => 'The "feels like" temperature that combines actual air temperature and humidity. Higher values indicate more oppressive heat stress.',
+            'Wind Chill' => 'The "feels like" temperature that combines actual air temperature and wind speed. Lower values indicate increased frostbite risk.',
+            'Water Temperature' => 'The temperature of water at the measurement location.',
+            'Soil Temperature (2 in.)' => 'The temperature of soil at 2 inches below the ground surface.'
+        ],
+        'Wind Parameters' => [
+            'Wind Speed' => 'The average speed of horizontal wind movement, measured at 10 meters above ground. Used for meteorological analysis and wind resource assessment.',
+            'Wind Gust Speed (5)' => 'The maximum wind speed measured in the preceding 5-minute interval. Indicates sudden wind events that could affect operations.',
+            'Wind Direction' => 'The compass direction from which the wind is blowing (N, NNE, NE, etc.). Measured in degrees clockwise from north (0°).'
+        ],
+        'Moisture & Pressure Parameters' => [
+            'Relative humidity' => 'The ratio of actual water vapor in the air to the maximum amount air can hold at that temperature, expressed as a percentage.',
+            'Barometric Pressure' => 'The atmospheric pressure at the measurement location. Changes indicate weather system movement and potential weather changes.',
+            'Gage Precipitation (5)' => 'Rainfall measured with a tipping bucket gauge over the preceding 5-minute interval. Raw precipitation values before hourly aggregation.'
+        ],
+        'Solar & Water Parameters' => [
+            'Solar Radiation' => 'The amount of solar electromagnetic radiation striking a horizontal surface. Important for agriculture, solar energy, and evapotranspiration calculations.',
+            'Depth to Water' => 'The distance from the land surface to the water table, typically measured in groundwater monitoring wells.'
+        ]
+    ];
+}
+
 function convertValue($value, $conversionType) {
     switch ($conversionType) {
         case 'kelvin_to_fahrenheit':

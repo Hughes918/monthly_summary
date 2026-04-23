@@ -472,6 +472,55 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Info Modal Handlers
+    var infoButton = document.getElementById('infoButton');
+    var infoModal = document.getElementById('infoModal');
+    var closeInfoModal = document.getElementById('closeInfoModal');
+
+    function openInfoModal() {
+        if (!infoModal) return;
+        infoModal.setAttribute('aria-hidden', 'false');
+        infoButton.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeInfoModalFunc() {
+        if (!infoModal) return;
+        infoModal.setAttribute('aria-hidden', 'true');
+        infoButton.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+    }
+
+    if (infoButton) {
+        infoButton.addEventListener('click', openInfoModal);
+    }
+
+    if (closeInfoModal) {
+        closeInfoModal.addEventListener('click', closeInfoModalFunc);
+    }
+
+    if (infoModal) {
+        var modalOverlay = infoModal.querySelector('.modal-overlay');
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', closeInfoModalFunc);
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && infoModal.getAttribute('aria-hidden') === 'false') {
+                closeInfoModalFunc();
+            }
+        });
+
+        // Prevent modal scrolling from scrolling page
+        var modalBody = infoModal.querySelector('.modal-body');
+        if (modalBody) {
+            modalBody.addEventListener('wheel', function (event) {
+                event.stopPropagation();
+            });
+        }
+    }
+
     if (panelStateInput) {
         if (panelStateInput.value === 'stats' && toggleButton && statsPanel) {
             setPanelState(toggleButton, statsPanel, true);
