@@ -29,7 +29,7 @@ function configureCurlTlsOptions($ch) {
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 }
 
-function loadStationOptions($metadataSource, $apiKey = null) {
+function loadStationOptions($metadataSource, $apiKey = null, $type = 'all') {
     if (preg_match('/^https?:\/\//i', (string) $metadataSource)) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $metadataSource);
@@ -72,6 +72,19 @@ function loadStationOptions($metadataSource, $apiKey = null) {
     $stationOptions = [];
     foreach ($decodedMetadata as $stationCode => $stationInfo) {
         if (!is_array($stationInfo)) {
+            continue;
+        }
+
+        if ($type === 'meteorological' && ($stationInfo['weather_station'] ?? $stationInfo['Weather_Station'] ?? 'N') !== 'Y') {
+            continue;
+        }
+        if ($type === 'hydrological' && !in_array('Y', [
+            $stationInfo['streamflow_station'] ?? $stationInfo['Streamflow_Station'] ?? 'N',
+            $stationInfo['tidal_station'] ?? $stationInfo['Tidal_Station'] ?? 'N',
+            $stationInfo['waterquality_station'] ?? $stationInfo['Waterquality_Station'] ?? 'N',
+            $stationInfo['groundwater_station'] ?? $stationInfo['Groundwater_Station'] ?? 'N',
+            $stationInfo['waterbouy_station'] ?? $stationInfo['Waterbouy_Station'] ?? 'N'
+        ])) {
             continue;
         }
 

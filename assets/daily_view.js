@@ -235,6 +235,30 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (selectedKeys.length === 0) {
+            // Try to select a default parameter
+            let defaultKey = null;
+            if (graphData.series['Air Temperature']) {
+                defaultKey = 'Air Temperature';
+            } else if (graphData.series['Water Temperature']) {
+                defaultKey = 'Water Temperature';
+            } else {
+                // Select the first available
+                const seriesKeys = Object.keys(graphData.series);
+                if (seriesKeys.length > 0) {
+                    defaultKey = seriesKeys[0];
+                }
+            }
+            if (defaultKey) {
+                const checkbox = graphControls.querySelector(`input[value="${defaultKey}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    selectedKeys = [defaultKey];
+                    updateURL();
+                }
+            }
+        }
+
+        if (selectedKeys.length === 0) {
             graphCanvas.style.display = 'none';
             if (graphEmpty) {
                 graphEmpty.style.display = 'block';
@@ -404,6 +428,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (stationSelect) {
         stationSelect.addEventListener('change', function () {
             submitFilters();
+        });
+    }
+
+    if (controlsForm) {
+        Array.prototype.forEach.call(controlsForm.querySelectorAll('input[name="type"]'), function (radio) {
+            radio.addEventListener('change', function () {
+                submitFilters();
+            });
         });
     }
 

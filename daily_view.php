@@ -46,6 +46,7 @@ if (!($parsedSelectedDate instanceof DateTimeImmutable) || $hasDateErrors || $pa
 
 // Get dates from form or use defaults
 $station = isset($_GET['station']) && trim($_GET['station']) !== '' ? strtoupper(trim($_GET['station'])) : 'DAGF';
+$type = isset($_GET['type']) ? $_GET['type'] : 'meteorological';
 $selectedDate = $parsedSelectedDate->format('Y-m-d');
 $startDate = $selectedDate;
 $endDate = $parsedSelectedDate->modify('+1 day')->format('Y-m-d');
@@ -55,7 +56,7 @@ $timeInterval = $requestedInterval === '5min' ? '5min' : 'hourly';
 $requestedPanel = isset($_GET['panel']) ? trim((string) $_GET['panel']) : '';
 $activePanel = in_array($requestedPanel, ['stats', 'graph'], true) ? $requestedPanel : '';
 
-$stationOptions = loadStationOptions('https://services.cema.udel.edu/internal_services/api/station_metadata/DEOS', $apiKey);
+$stationOptions = loadStationOptions('https://services.cema.udel.edu/internal_services/api/station_metadata/DEOS', $apiKey, $type);
 if (!isset($stationOptions[$station]) && !empty($stationOptions)) {
     $station = array_key_first($stationOptions);
 }
@@ -90,6 +91,11 @@ $validFlags = ['1', '3', '7'];
                     <option value='<?php echo htmlspecialchars($stationOption['code']); ?>' <?php echo $stationOption['code'] === $station ? 'selected' : ''; ?>><?php echo htmlspecialchars($stationOption['label']); ?></option>
                 <?php endforeach; ?>
             </select>
+        </div>
+        <div class='radio-group'>
+            <span>Type:</span>
+            <label><input type='radio' name='type' value='meteorological' <?php echo $type !== 'hydrological' ? 'checked' : ''; ?>>Meteorological</label>
+            <label><input type='radio' name='type' value='hydrological' <?php echo $type === 'hydrological' ? 'checked' : ''; ?>>Hydrological</label>
         </div>
         <div class='date-group'>
             <label for='date'>Date:</label>
