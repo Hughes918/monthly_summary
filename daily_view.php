@@ -76,12 +76,10 @@ $validFlags = ['1', '3', '7'];
 
 <div class='page-title-wrap'>
     <div class='title-header'>
-        <div class='title-with-icon'>
-            <h1><?php echo htmlspecialchars($stationDisplayName); ?></h1>
-            <button type='button' id='infoButton' class='info-button' title='Parameter Information' aria-label='Open parameter information' aria-expanded='false' aria-controls='infoModal'>i</button>
-        </div>
+        <h1><?php echo htmlspecialchars($stationDisplayName); ?></h1>
         <p class='page-subtitle'><?php echo htmlspecialchars($startDisplay . ' • ' . ($timeInterval === 'hourly' ? 'Hourly' : '5-Minute')); ?></p>
     </div>
+    <button type='button' id='infoButton' class='info-button' title='Parameter Information' aria-label='Open parameter information' aria-expanded='false' aria-controls='infoModal'><i>i</i></button>
 </div>
 
 <div id='infoModal' class='info-modal' role='dialog' aria-labelledby='infoModalTitle' aria-hidden='true'>
@@ -413,6 +411,7 @@ try {
                 if (!empty($graphConfig['series'])) {
                     echo "<div class='graph-panel' id='graphPanel'>";
                     echo "<h2>Parameter Graph</h2>";
+                    echo "<div class='graph-controls-wrapper'>";
                     echo "<div class='graph-controls' id='graphControls'>";
                     foreach ($graphConfig['series'] as $dataType => $seriesConfig) {
                         echo "<label>";
@@ -421,13 +420,14 @@ try {
                         echo "</label>";
                     }
                     echo "</div>";
-                    echo "<button id='downloadGraph' type='button' title='Download Graph' aria-label='Download Graph' style='margin-left: 10px; padding: 5px; border: none; background: none; cursor: pointer;'>";
+                    echo "<button id='downloadGraph' type='button' title='Download Graph' aria-label='Download Graph' class='download-graph-button'>";
                     echo "<svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'>";
                     echo "<path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'></path>";
                     echo "<polyline points='7,10 12,15 17,10'></polyline>";
                     echo "<line x1='12' y1='15' x2='12' y2='3'></line>";
                     echo "</svg>";
                     echo "</button>";
+                    echo "</div>";
                     echo "<div class='graph-canvas-wrap'>";
                     echo "<canvas id='parameterChart'></canvas>";
                     echo "<div class='graph-empty' id='graphEmpty' style='display:none;'>Select at least one parameter to display the graph.</div>";

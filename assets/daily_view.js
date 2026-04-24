@@ -310,7 +310,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 };
             }
 
-            datasets.push({
+            var isPointOnly = key === 'Heat Index' || key === 'Wind Chill' || key === 'Wind Chill Temperature';
+            var datasetConfig = {
                 label: series.unit ? series.label + ' (' + series.unit + ')' : series.label,
                 data: series.values,
                 type: series.graphType,
@@ -323,7 +324,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 tension: series.graphType === 'bar' ? 0 : 0.2,
                 spanGaps: true,
                 order: series.graphType === 'bar' ? 2 : 1
-            });
+            };
+
+            if (isPointOnly) {
+                datasetConfig.showLine = false;
+                datasetConfig.pointRadius = graphData.labels.length > 48 ? 3 : 5;
+                datasetConfig.pointHoverRadius = 7;
+                datasetConfig.pointBorderWidth = 2;
+                datasetConfig.pointStyle = 'circle';
+            }
+
+            datasets.push(datasetConfig);
         });
 
         chartInstance = new Chart(graphCanvas, {

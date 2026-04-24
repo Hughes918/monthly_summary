@@ -365,6 +365,42 @@ body.quick-facelift {
     margin-bottom: 16px;
 }
 
+.quick-facelift .graph-controls-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.quick-facelift .graph-controls-wrapper .graph-controls {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.quick-facelift .download-graph-button {
+    flex-shrink: 0;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--accent);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quick-facelift .download-graph-button:hover {
+    color: var(--accent-strong);
+    transform: scale(1.1);
+}
+
+.quick-facelift .download-graph-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
 .quick-facelift .graph-controls label {
     display: inline-flex;
     align-items: center;
@@ -501,6 +537,10 @@ body.quick-facelift {
     max-width: 1280px;
     margin: 0 auto 18px;
     padding: 8px 4px 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
 }
 
 .quick-facelift .title-header {
@@ -508,12 +548,7 @@ body.quick-facelift {
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
-}
-
-.quick-facelift .title-with-icon {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    flex: 1;
 }
 
 .quick-facelift .info-button {
@@ -521,24 +556,30 @@ body.quick-facelift {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
     padding: 0;
     background: transparent;
     border: 2px solid var(--accent);
     border-radius: 50%;
     color: var(--accent);
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 1;
     cursor: pointer;
     transition: all 0.2s ease;
+    margin-top: 6px;
+}
+
+.quick-facelift .info-button i {
+    font-style: italic;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    font-family: Georgia, "Times New Roman", serif;
 }
 
 .quick-facelift .info-button:hover {
     background: rgba(47, 107, 80, 0.08);
-    transform: scale(1.05);
+    transform: scale(1.08);
 }
 
 .quick-facelift .info-button:focus-visible {
