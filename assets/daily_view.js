@@ -385,6 +385,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (toggleButton && statsPanel) {
         toggleButton.addEventListener('click', function () {
+            trackAnalyticsEvent('daily_view_button_click', {
+                event_category: 'Daily View',
+                event_label: 'Button Clicked',
+                button_name: 'toggleStats'
+            });
             var isVisible = toggleExclusivePanel(toggleButton, statsPanel, graphToggleButton, graphPanel, 'stats');
             trackAnalyticsEvent('daily_view_panel_toggle', {
                 event_category: 'Daily View',
@@ -398,6 +403,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (graphToggleButton && graphPanel) {
         graphToggleButton.addEventListener('click', function () {
+            trackAnalyticsEvent('daily_view_button_click', {
+                event_category: 'Daily View',
+                event_label: 'Button Clicked',
+                button_name: 'toggleGraph'
+            });
             var isVisible = toggleExclusivePanel(graphToggleButton, graphPanel, toggleButton, statsPanel, 'graph');
             trackAnalyticsEvent('daily_view_panel_toggle', {
                 event_category: 'Daily View',
@@ -438,6 +448,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (stationSelect) {
         stationSelect.addEventListener('change', function () {
+            trackAnalyticsEvent('daily_view_station_change', {
+                event_category: 'Daily View',
+                event_label: 'Station Changed',
+                station_code: stationSelect.value,
+                station_name: stationSelect.selectedOptions.length ? stationSelect.selectedOptions[0].text : '',
+                date: dateInput ? dateInput.value : ''
+            });
             submitFilters();
         });
     }
@@ -468,17 +485,37 @@ document.addEventListener('DOMContentLoaded', function () {
         currentDate.setDate(currentDate.getDate() + days);
         var newDateStr = currentDate.toISOString().split('T')[0];
         dateInput.value = newDateStr;
+        trackAnalyticsEvent('daily_view_date_change', {
+            event_category: 'Daily View',
+            event_label: 'Date Changed via Button',
+            button_direction: days > 0 ? 'next' : 'previous',
+            old_date: dateInput.getAttribute('data-previous-value') || '',
+            new_date: newDateStr,
+            station_code: stationSelect ? stationSelect.value : '',
+            station_name: stationSelect && stationSelect.selectedOptions.length ? stationSelect.selectedOptions[0].text : ''
+        });
+        dateInput.setAttribute('data-previous-value', newDateStr);
         submitFilters();
     }
 
     if (prevDateBtn) {
         prevDateBtn.addEventListener('click', function() {
+            trackAnalyticsEvent('daily_view_button_click', {
+                event_category: 'Daily View',
+                event_label: 'Button Clicked',
+                button_name: 'prevDate'
+            });
             adjustDate(-1);
         });
     }
 
     if (nextDateBtn) {
         nextDateBtn.addEventListener('click', function() {
+            trackAnalyticsEvent('daily_view_button_click', {
+                event_category: 'Daily View',
+                event_label: 'Button Clicked',
+                button_name: 'nextDate'
+            });
             adjustDate(1);
         });
     }
@@ -600,6 +637,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 return;
             }
+
+            trackAnalyticsEvent('daily_view_filter_submit', {
+                event_category: 'Daily View',
+                event_label: 'Filters Applied',
+                station_code: stationSelect ? stationSelect.value : '',
+                station_name: stationSelect && stationSelect.selectedOptions.length ? stationSelect.selectedOptions[0].text : '',
+                date: dateInput ? dateInput.value : '',
+                type: document.querySelector('input[name="type"]:checked') ? document.querySelector('input[name="type"]:checked').value : '',
+                interval: document.querySelector('input[name="interval"]:checked') ? document.querySelector('input[name="interval"]:checked').value : ''
+            });
 
             showLoadingState('Fetching the selected station and date. This can take a moment.');
         });
