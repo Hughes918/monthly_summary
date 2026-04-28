@@ -16,6 +16,10 @@ if (!empty($queryString)) {
 $station_name = !empty($queryParams['station']) ? htmlspecialchars($queryParams['station']) : $defaultStation;
 $date = !empty($queryParams['date']) ? htmlspecialchars($queryParams['date']) : $defaultDate;
 
+// Check if station has restricted water data
+$restrictedWaterDataStations = ['DAGF', 'DWAR', 'DSND', 'DJCR'];
+$stationHasRestrictedWaterData = in_array(strtoupper($station_name), $restrictedWaterDataStations);
+
 if (empty($queryParams['station']) || empty($queryParams['date'])) {
     $redirectParams = $queryParams;
     $redirectParams['station'] = !empty($queryParams['station']) ? $queryParams['station'] : $defaultStation;
@@ -485,6 +489,26 @@ if (isset($data['data']) && is_array($data['data'])) {
     }
 }
 
+// If station has restricted water data, replace water-related columns with '--'
+if ($stationHasRestrictedWaterData) {
+    $waterTypeColumns = [];
+    // Identify columns with 'water' display_type
+    foreach ($metadata as $meta) {
+        if ($meta['display_type'] === 'water') {
+            $waterTypeColumns[] = $meta['data_name_display'];
+        }
+    }
+    // Replace values in water columns with '--' for all rows
+    foreach ($tableData as &$row) {
+        foreach ($waterTypeColumns as $waterCol) {
+            if (isset($row[$waterCol])) {
+                $row[$waterCol] = '--';
+            }
+        }
+    }
+    unset($row); // Break the reference
+}
+
 // Columns array
 $columns = array_merge(['Date'], $initialColumns);
 
@@ -599,6 +623,12 @@ include('header.php');
             </div>
         </div>
     </div>
+
+    <?php if ($stationHasRestrictedWaterData): ?>
+    <div class='data-notice'>
+        <p><small>Well depth and water temperature information is available by contacting the <a href='https://dnrec.delaware.gov/geological-survey/' target='_blank' rel='noopener'>Delaware Geological Survey</a>.</small></p>
+    </div>
+    <?php endif; ?>
 
     <!-- Data Table -->
     <div class="table-container">
