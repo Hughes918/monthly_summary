@@ -47,6 +47,11 @@ if (!($parsedSelectedDate instanceof DateTimeImmutable) || $hasDateErrors || $pa
 // Get dates from form or use defaults
 $station = isset($_GET['station']) && trim($_GET['station']) !== '' ? strtoupper(trim($_GET['station'])) : 'DAGF';
 $type = isset($_GET['type']) ? $_GET['type'] : 'meteorological';
+
+// Check if station has restricted water data
+$restrictedWaterDataStations = ['DAGF', 'DWAR', 'DSND', 'DJCR'];
+$stationHasRestrictedWaterData = in_array($station, $restrictedWaterDataStations);
+
 $selectedDate = $parsedSelectedDate->format('Y-m-d');
 $startDate = $selectedDate;
 $endDate = $parsedSelectedDate->modify('+1 day')->format('Y-m-d');
@@ -185,6 +190,12 @@ $validFlags = ['1', '3', '7'];
         <!--<div class='controls-note' id='controls-note'></div>-->
     </form>
 </div>
+
+<?php if ($stationHasRestrictedWaterData): ?>
+<div class='data-notice'>
+    <p><small>Well depth and water temperature information is available by contacting the <a href='https://dnrec.delaware.gov/geological-survey/' target='_blank' rel='noopener'>Delaware Geological Survey</a>.</small></p>
+</div>
+<?php endif; ?>
 
 <?php
 
@@ -345,6 +356,14 @@ try {
 
                 return $leftIndex <=> $rightIndex;
             });
+
+            // Filter out water data columns for restricted stations
+            if ($stationHasRestrictedWaterData) {
+                $columnOrder = array_filter($columnOrder, function($col) {
+                    return $col !== 'Water Temperature' && $col !== 'Depth to Water';
+                });
+                $columnOrder = array_values($columnOrder); // Re-index array
+            }
 
             ksort($rows);
             ksort($graphRows);

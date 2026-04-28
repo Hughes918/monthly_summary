@@ -4,6 +4,31 @@ table.dataTable {
     table-layout: auto;
     border-collapse: collapse;
 }
+.data-notice {
+    max-width: 1280px;
+    margin: 12px auto 18px;
+    padding: 12px 14px;
+    background: rgba(47, 107, 80, 0.06);
+    border-left: 3px solid #2f6b50;
+    border-radius: 6px;
+}
+
+.data-notice p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #5f6f69;
+    line-height: 1.4;
+}
+
+.data-notice a {
+    color: #2f6b50;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.data-notice a:hover {
+    text-decoration: underline;
+}
 
 /* Sticky first column */
 table.dataTable tbody td:first-child,
