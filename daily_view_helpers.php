@@ -172,7 +172,7 @@ function getParameterDescriptions() {
             'Soil Temperature (2 in.)' => 'The temperature of soil at 2 inches below the ground surface.'
         ],
         'Wind Parameters' => [
-            'Wind Speed' => 'The average speed of horizontal wind movement, measured at 10 meters above ground. Used for meteorological analysis and wind resource assessment.',
+            'Wind Speed' => 'The average speed of horizontal wind movement, typically measured at 3 meters above ground. Used for meteorological analysis and wind resource assessment.',
             'Wind Gust Speed (5)' => 'The maximum wind speed measured in the preceding 5-minute interval. Indicates sudden wind events that could affect operations.',
             'Wind Direction' => 'The compass direction from which the wind is blowing (N, NNE, NE, etc.). Measured in degrees clockwise from north (0°).'
         ],
