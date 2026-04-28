@@ -45,6 +45,9 @@ document.addEventListener('DOMContentLoaded', function () {
         panel: panelStateInput ? panelStateInput.value : ''
     });
 
+    // Sync form controls with URL parameters on initial load
+    syncFormWithURL();
+
     function updateURL() {
         const url = new URL(window.location);
         if (graphControls) {
@@ -75,6 +78,50 @@ document.addEventListener('DOMContentLoaded', function () {
 
         body.classList.add('is-loading');
         loadingOverlay.setAttribute('aria-hidden', 'false');
+    }
+
+    function hideLoadingState() {
+        if (!body || !loadingOverlay) {
+            return;
+        }
+
+        body.classList.remove('is-loading');
+        loadingOverlay.setAttribute('aria-hidden', 'true');
+    }
+
+    function syncFormWithURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Sync station
+        const station = urlParams.get('station');
+        if (station && stationSelect) {
+            stationSelect.value = station;
+        }
+        
+        // Sync date - check both 'date' and 'startDate' parameters
+        const date = urlParams.get('date') || urlParams.get('startDate');
+        if (date && dateInput) {
+            dateInput.value = date;
+            initialDateValue = date;
+        }
+        
+        // Sync type radio buttons
+        const type = urlParams.get('type');
+        if (type && controlsForm) {
+            const typeRadio = controlsForm.querySelector('input[name="type"][value="' + type + '"]');
+            if (typeRadio) {
+                typeRadio.checked = true;
+            }
+        }
+        
+        // Sync interval radio buttons
+        const interval = urlParams.get('interval');
+        if (interval && controlsForm) {
+            const intervalRadio = controlsForm.querySelector('input[name="interval"][value="' + interval + '"]');
+            if (intervalRadio) {
+                intervalRadio.checked = true;
+            }
+        }
     }
 
     function submitFilters() {
@@ -651,4 +698,15 @@ document.addEventListener('DOMContentLoaded', function () {
             showLoadingState('Fetching the selected station and date. This can take a moment.');
         });
     }
+
+    // Hide loading state when page is fully loaded
+    hideLoadingState();
+
+    // Handle browser back button and history navigation
+    window.addEventListener('pageshow', function (event) {
+        // Always hide loading state when page is shown (including from cache)
+        hideLoadingState();
+        // Sync form controls with URL when navigating back
+        syncFormWithURL();
+    });
 });
