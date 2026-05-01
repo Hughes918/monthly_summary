@@ -551,15 +551,12 @@ include('header.php');
 <body>
     <!-- Banner -->
     <div class="summary-banner-container">
-        <div class="banner-top">
-            <a
-                class="banner-message banner-message-link"
-                href="daily_view.php?station=<?php echo urlencode($station_name); ?>&date=<?php echo urlencode($subdailyLandingDate); ?>&interval=hourly"
-            >
-                New: Subdaily data are here. Click on this message to open today's subdaily view, or double-click any row to jump to that date.
-            </a>
-        </div>
-        <div class="banner-title">Monthly Summary</div>
+        <nav class="page-context-nav" aria-label="Page navigation">
+            <span class="is-active" aria-current="page">Monthly Summary</span>
+            <a href="daily_view.php?station=<?php echo urlencode($station_name); ?>&date=<?php echo urlencode($subdailyLandingDate); ?>&interval=hourly">Daily Summary <span class="new-badge">NEW</span></a>
+            <a href="../station/index.php?station=DAGF">Real Time</a>
+        </nav>
+        <h1 class="banner-title">Monthly Summary</h1>
     </div>
 
     <!-- Top Controls -->

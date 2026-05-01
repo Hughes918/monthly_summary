@@ -79,7 +79,7 @@ $stationDisplayName = $station !== '' ? ($stationOptions[$station]['label'] ?? $
 $startDisplay = $parsedSelectedDate->format('m/d/Y');
 
 $url = $station !== ''
-    ? "https://services.cema.udel.edu/internal_services/api/data/{$station}/{$startDate}/{$endDate}?format=JSON&timezone=ET"
+    ? "https://services.cema.udel.edu/internal_services/api/data/{$station}/{$startDate}/{$endDate}?format=JSON&timezone=ET&data_quality=1"
     : '';
 
 $validFlags = ['1', '3', '7'];
@@ -90,6 +90,11 @@ $validFlags = ['1', '3', '7'];
 
 <div class='page-title-wrap'>
     <div class='title-header'>
+        <nav class='page-context-nav' aria-label='Page navigation'>
+            <a href='index.php'>Monthly Summary</a>
+            <span class='is-active' aria-current='page'>Daily Summary</span>
+            <a href='../station/index.php?station=DAGF'>Real Time</a>
+        </nav>
         <h1><?php echo htmlspecialchars($stationDisplayName); ?></h1>
         <p class='page-subtitle'><?php echo htmlspecialchars($startDisplay . ' • ' . ($timeInterval === 'hourly' ? 'Hourly' : '5-Minute')); ?></p>
     </div>
@@ -257,17 +262,18 @@ if ($station === '') {
                         }
 
                         foreach ($measurements as $measurementName => $measurement) {
-                            if (!is_array($measurement)) {
-                                continue;
-                            }
-
-                            $dataType = $measurement['data_type'] ?? $measurementName;
-                            $value = $measurement['value'] ?? null;
-                            $flag = (string)($measurement['flag'] ?? '');
-                            $measurementTimestamp = $measurement['timestamp'] ?? $timestamp;
+                            $dataType = is_array($measurement)
+                                ? ($measurement['data_type'] ?? $measurementName)
+                                : $measurementName;
+                            $measurementTimestamp = is_array($measurement)
+                                ? ($measurement['timestamp'] ?? $timestamp)
+                                : $timestamp;
 
                             if (!isset($columns[$dataType])) {
-                                $columns[$dataType] = getParameterConfig($dataType, $measurement['units'] ?? '');
+                                $columns[$dataType] = getParameterConfig(
+                                    $dataType,
+                                    is_array($measurement) ? ($measurement['units'] ?? '') : ''
+                                );
                             }
 
                             $easternDateTime = parseEasternDateTime($measurementTimestamp);
@@ -289,10 +295,16 @@ if ($station === '') {
                                 $graphRows[$rowTimestamp] = [];
                             }
 
+                            if (!is_array($measurement)) {
+                                $rows[$rowTimestamp][$dataType] = '-';
+                                continue;
+                            }
+
+                            $value = $measurement['value'] ?? null;
+                            $flag = (string)($measurement['flag'] ?? '');
+
                             if ($value === null || !in_array($flag, $validFlags, true) || !is_numeric($value)) {
-                                if ($timeInterval !== 'hourly') {
-                                    $rows[$rowTimestamp][$dataType] = '-';
-                                }
+                                $rows[$rowTimestamp][$dataType] = '-';
                                 continue;
                             }
 

@@ -11,7 +11,7 @@ body.quick-facelift {
     --shadow-soft: 0 14px 34px rgba(21, 44, 33, 0.08);
     font-family: "Segoe UI", "Trebuchet MS", sans-serif;
     margin: 0;
-    padding: 18px;
+    padding: 0;
     color: var(--text-main);
     background: var(--page-bg);
 }
@@ -526,7 +526,7 @@ body.quick-facelift {
 
 @media (max-width: 900px) {
     body.quick-facelift {
-        padding: 12px;
+        padding: 0;
     }
 
     .quick-facelift .controls form {
@@ -618,6 +618,42 @@ body.quick-facelift {
     align-items: flex-start;
     gap: 0;
     flex: 1;
+}
+
+.quick-facelift .page-context-nav {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 10px;
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.quick-facelift .page-context-nav a,
+.quick-facelift .page-context-nav .is-active {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid #c7d8cc;
+    text-decoration: none;
+    line-height: 1.2;
+}
+
+.quick-facelift .page-context-nav a {
+    color: var(--accent);
+    background: #fff;
+}
+
+.quick-facelift .page-context-nav a:hover {
+    background: var(--accent-soft);
+}
+
+.quick-facelift .page-context-nav .is-active {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
 }
 
 .quick-facelift .info-button {
@@ -854,6 +890,11 @@ body.quick-facelift {
     .quick-facelift .title-header {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .quick-facelift .page-context-nav {
+        font-size: 0.86rem;
+        gap: 6px;
     }
 
     .quick-facelift .modal-content {

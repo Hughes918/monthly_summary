@@ -1,4 +1,15 @@
 /* Ensure uniform table layout */
+:root {
+    --page-bg: linear-gradient(180deg, #f4f7f1 0%, #eaf1e5 100%);
+    --panel-bg: rgba(255, 255, 255, 0.92);
+    --panel-border: #d7e2d0;
+    --text-main: #183028;
+    --text-muted: #5f6f69;
+    --accent: #2f6b50;
+    --accent-strong: #214f3c;
+    --accent-soft: #eef5f0;
+}
+
 table.dataTable {
     width: 100%;
     table-layout: auto;
@@ -71,7 +82,7 @@ table.dataTable td {
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 10px 10px; /* changed from 8px */
-    border: 2px solid #ddd;
+    border: 1px solid var(--panel-border);
 }
 
 /* Header cell adjustments */
@@ -82,7 +93,7 @@ table.dataTable thead th {
 }
 /* Combine header row 2 properties */
 table.dataTable thead tr:nth-child(2) th {
-    border-bottom: 1px solid #ddd !important;
+    border-bottom: 1px solid var(--panel-border) !important;
     border-top: none !important;
     padding: 0 !important;
     margin: 0 !important;
@@ -95,7 +106,7 @@ table.dataTable thead tr:nth-child(2) th {
     display: block;
     width: 150px;
     padding: 10px;
-    background-color: #007BFF;
+    background-color: var(--accent);
     color: white;
     text-align: center;
     font-size: 14px;
@@ -103,7 +114,7 @@ table.dataTable thead tr:nth-child(2) th {
     border-radius: 5px;
 }
 #saveCsvButton:hover {
-    background-color: #0056b3;
+    background-color: var(--accent-strong);
 }
 
 /* Hide the default DataTables button container */
@@ -125,8 +136,8 @@ table.dataTable thead .sorting_desc {
 
 /* Last row styling */
 #dataTable tbody tr:last-child {
-    background-color: #f8f9fa;
-    border-top: 2px solid #dee2e6;
+    background-color: var(--accent-soft);
+    border-top: 1px solid var(--panel-border);
 }
 
 /* Toggle buttons container */
@@ -141,21 +152,21 @@ table.dataTable thead .sorting_desc {
     margin-bottom: 10px;
     padding: 8px 16px;
     border: none;
-    background-color: #007BFF;
+    background-color: var(--accent);
     color: white;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s, border 0.3s;
 }
 .toggle-buttons button:hover {
-    background-color: #0056b3;
+    background-color: var(--accent-strong);
 }
 /* Selected toggle button */
 .toggle-buttons button.active {
-    background-color: #004080;
+    background-color: var(--accent-strong);
     color: #ffffff;
     font-weight: bold;
-    border: 2px solid #002f5f;
+    border: 1px solid var(--accent-strong);
 }
 /* Fixed height and vertical centering for buttons */
 .toggle-buttons button,
@@ -180,7 +191,7 @@ table.dataTable thead .sorting_desc {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    background-color: #007BFF;
+    background-color: var(--accent);
     color: #fff;
     border: none;
     border-radius: 5px;
@@ -193,7 +204,7 @@ table.dataTable thead .sorting_desc {
     transition: background-color 0.3s ease;
 }
 .custom-select:hover {
-    background-color: #0056b3;
+    background-color: var(--accent-strong);
 }
 /* Remove default arrow */
 .select-wrapper::after {
@@ -227,10 +238,12 @@ table.dataTable thead .sorting_desc {
 
 /* Global layout */
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Segoe UI", "Trebuchet MS", sans-serif;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
+    color: var(--text-main);
+    background: var(--page-bg);
 }
 .top-controls {
     display: flex;
@@ -289,7 +302,7 @@ body {
     line-height: 40px !important;
     text-align: center;
     border: none !important;
-    background: #007BFF !important;
+    background: var(--accent) !important;
     color: white !important;
     border-radius: 4px !important;
     display: inline-block !important;
@@ -300,7 +313,7 @@ body {
     margin-top: 10px !important;
 }
 .save-button:hover {
-    background: #0056b3 !important;
+    background: var(--accent-strong) !important;
 }
 
 /* Dropdown view styling */
@@ -313,7 +326,7 @@ body {
     -webkit-appearance: none;
     -moz-appearance: none;
     border: none;
-    background: #007BFF;
+    background: var(--accent);
     color: white;
     border-radius: 4px;
     font-size: 14px;
@@ -389,7 +402,7 @@ table.dataTable thead {
     cursor: pointer;
     margin-left: 10px;
     margin-top: 10px; /* Changed from 12px to 11px */
-    color: #333;
+    color: var(--accent);
 }
 
 /* Info popup overlay and content styling */
@@ -408,7 +421,8 @@ table.dataTable thead {
     background-color: #fff;
     margin: 10% auto;
     padding: 20px;
-    border-radius: 5px;
+    border-radius: 12px;
+    border: 1px solid var(--panel-border);
     max-width: 400px;
     max-height: 90%;
     overflow-y: auto;
@@ -422,7 +436,7 @@ table.dataTable thead {
     margin-left: 20px;
 }
 .close-popup {
-    background: #333;
+    background: var(--accent);
     color: #fff;
     border: none;
     padding: 8px 12px;
@@ -456,87 +470,227 @@ table.dataTable thead {
 
 /* Banner container styling */
 .summary-banner-container {
-    /* Change layout to vertical stacking */
+    max-width: 1280px;
+    margin: 0 auto 18px;
+    padding: 8px 4px 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    /* Remove flex-wrap if present */
+    align-items: flex-start;
+    justify-content: flex-start;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
 }
 
-.banner-top {
-    width: 100%;
+.page-context-nav {
     display: flex;
-    justify-content: center;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 10px;
+    font-size: 0.92rem;
+    font-weight: 600;
 }
 
-.banner-message {
-    width: min(100%, 920px);
-    padding: 12px 18px;
-    border: 2px solid #8f4a00;
-    border-radius: 10px;
-    background: #ffd76a;
-    color: #3d2300;
-    font-size: 17px;
-    font-weight: 700;
-    line-height: 1.4;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-}
-
-.banner-message-link {
-    display: block;
+.page-context-nav a,
+.page-context-nav .is-active {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid #c7d8cc;
     text-decoration: none;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    line-height: 1.2;
 }
 
-.banner-message-link:hover,
-.banner-message-link:focus-visible {
-    background: #ffcf4d;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
-    transform: translateY(-1px);
-    outline: none;
+.page-context-nav a {
+    color: #2f6b50;
+    background: #fff;
+    gap: 6px;
+}
+
+.page-context-nav a:hover {
+    background: #eef5f0;
+}
+
+.page-context-nav .is-active {
+    color: #fff;
+    background: #2f6b50;
+    border-color: #2f6b50;
+}
+
+.page-context-nav .new-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #f2c94c;
+    color: #573600;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
 }
 
 /* Add a bit of padding between the top row and the banner title */
 .banner-title {
-    margin-top: 10px;
-    font-size: 32px; /* increased size */
+    margin: 0 0 18px;
+    padding: 0;
+    max-width: none;
+    text-align: left;
+    font-size: clamp(1.7rem, 2vw + 1rem, 2.5rem);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    color: var(--accent-strong);
 }
 .collapsed-banner {
     font-size: 16px;
 }
 .collapsed-banner a {
-    color: #007BFF;
+    color: var(--accent);
     text-decoration: none;
     cursor: pointer;
 }
 .expanded-banner {
     margin-top: 10px;
 }
+
+/* Daily-view style alignment for monthly page controls and table */
+.top-controls,
+.table-container,
+.data-notice {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.top-controls {
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding: 18px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    box-shadow: 0 14px 34px rgba(21, 44, 33, 0.08);
+}
+
+.table-container {
+    margin-bottom: 20px;
+    padding: 0;
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 14px 34px rgba(21, 44, 33, 0.08);
+}
+
+.dataTables_scrollBody {
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+}
+
+table.dataTable {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100% !important;
+}
+
+table.dataTable th,
+table.dataTable td {
+    border: 0;
+    border-bottom: 1px solid #e3ebe3;
+    padding: 11px 12px;
+}
+
+table.dataTable thead th {
+    background: linear-gradient(180deg, #3a7b5b 0%, #2f6b50 100%);
+    color: #fff;
+    border-bottom: 0 !important;
+    white-space: normal;
+    line-height: 1.2;
+    vertical-align: bottom;
+}
+
+table.dataTable thead tr:first-child th {
+    padding-top: 14px !important;
+    padding-bottom: 5px !important;
+}
+
+table.dataTable thead tr:nth-child(2) th {
+    padding-top: 5px !important;
+    padding-bottom: 6px !important;
+    font-size: 13px;
+    font-weight: 700;
+    background: linear-gradient(180deg, #3a7b5b 0%, #2f6b50 100%) !important;
+    color: #fff !important;
+    border-bottom: 0 !important;
+}
+
+/* DataTables can inject additional header sizing rows; keep only title + units rows visible */
+table.dataTable thead tr:nth-child(n+3) {
+    display: none !important;
+}
+
+/* Keep DataTables sizing header in scroll body hidden */
+.dataTables_scrollBody thead,
+.dataTables_scrollBody thead tr,
+.dataTables_scrollBody thead th {
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border: 0 !important;
+    line-height: 0 !important;
+    font-size: 0 !important;
+    visibility: collapse !important;
+}
+
+table.dataTable tbody tr:nth-child(even) {
+    background-color: #f8fbf8;
+}
+
+table.dataTable tbody tr:hover {
+    background-color: #eef5f0;
+}
+
+table.dataTable tbody td:first-child,
+table.dataTable tfoot td:first-child {
+    background-color: #fbfdfb;
+}
+
+/* Match daily_view header coloring across all header columns, including sticky first column */
+table.dataTable thead th:first-child {
+    background: linear-gradient(180deg, #3a7b5b 0%, #2f6b50 100%) !important;
+    color: #fff !important;
+}
+
 @media (max-width: 600px) {
+    body {
+        padding: 0;
+    }
+
     .summary-banner-container {
         flex-direction: column;
         align-items: flex-start;
+        margin-bottom: 12px;
     }
 
-    .banner-top {
-        justify-content: stretch;
-    }
-
-    .banner-message {
-        width: 100%;
-        padding: 12px 14px;
-        font-size: 15px;
-        text-align: left;
+    .page-context-nav {
+        justify-content: flex-start;
+        font-size: 0.86rem;
+        gap: 6px;
     }
 
     .banner-title {
         margin-bottom: 10px;
+    }
+
+    .top-controls,
+    .table-container {
+        border-radius: 16px;
     }
 }
 

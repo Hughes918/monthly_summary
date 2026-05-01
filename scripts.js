@@ -146,7 +146,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }))
         ]
     });
-    setTimeout(() => dataTable.columns.adjust(), 100);
+
+    function pruneExtraHeaderRows() {
+        const headerSelectors = ['#dataTable thead', '.dataTables_scrollHead thead'];
+        headerSelectors.forEach((selector) => {
+            document.querySelectorAll(selector).forEach((thead) => {
+                const rows = Array.from(thead.querySelectorAll('tr'));
+                rows.forEach((row, index) => {
+                    if (index >= 2) {
+                        row.remove();
+                    }
+                });
+            });
+        });
+    }
+
+    setTimeout(() => {
+        dataTable.columns.adjust();
+        pruneExtraHeaderRows();
+    }, 100);
 
     $('#dataTable tbody').on('dblclick', 'tr', function () {
         const dateCellText = $(this).find('td').first().text().trim();
