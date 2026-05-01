@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var statsPanel = document.getElementById('statsPanel');
     var graphToggleButton = document.getElementById('toggleGraph');
     var graphPanel = document.getElementById('graphPanel');
+    var tableToggleButton = document.getElementById('toggleTable');
+    var tablePanel = document.getElementById('tablePanel');
     var panelStateInput = document.getElementById('panelState');
     var graphStateInput = document.getElementById('graphState');
     var graphControls = document.getElementById('graphControls');
@@ -61,7 +63,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         if (panelStateInput) {
-            url.searchParams.set('panel', panelStateInput.value);
+            if (panelStateInput.value) {
+                url.searchParams.set('panel', panelStateInput.value);
+            } else {
+                url.searchParams.delete('panel');
+            }
         }
         history.replaceState(null, '', url);
     }
@@ -172,12 +178,20 @@ document.addEventListener('DOMContentLoaded', function () {
         submitDateIfComplete();
     }
 
-    function setCurrentPanel(panelName) {
-        if (!panelStateInput) {
+    function openDesktopDatePicker() {
+        if (!dateInput || isMobileDatePicker) {
             return;
         }
 
-        panelStateInput.value = panelName;
+        if (typeof dateInput.showPicker !== 'function') {
+            return;
+        }
+
+        try {
+            dateInput.showPicker();
+        } catch (error) {
+            // Ignore if the browser blocks opening picker without direct user activation.
+        }
     }
 
     function setPanelState(button, panel, isVisible) {
@@ -189,22 +203,22 @@ document.addEventListener('DOMContentLoaded', function () {
         button.setAttribute('aria-expanded', isVisible ? 'true' : 'false');
     }
 
-    function toggleExclusivePanel(activeButton, activePanel, inactiveButton, inactivePanel, activePanelName) {
-        if (!activeButton || !activePanel) {
-            return false;
+    function syncPanelStateInput() {
+        if (!panelStateInput) {
+            return;
         }
 
-        var shouldShowActive = !activePanel.classList.contains('is-visible');
-
-        setPanelState(activeButton, activePanel, shouldShowActive);
-
-        if (inactiveButton && inactivePanel) {
-            setPanelState(inactiveButton, inactivePanel, false);
+        var activePanels = [];
+        if (statsPanel && statsPanel.classList.contains('is-visible')) {
+            activePanels.push('stats');
         }
-
-        setCurrentPanel(shouldShowActive ? activePanelName : '');
-
-        return shouldShowActive;
+        if (graphPanel && graphPanel.classList.contains('is-visible')) {
+            activePanels.push('graph');
+        }
+        if (tablePanel && tablePanel.classList.contains('is-visible')) {
+            activePanels.push('table');
+        }
+        panelStateInput.value = activePanels.join(',');
     }
 
     if (graphDataElement) {
@@ -234,8 +248,24 @@ document.addEventListener('DOMContentLoaded', function () {
         return 'scale_' + (unit || 'value').replace(/[^a-zA-Z0-9]+/g, '_').toLowerCase();
     }
 
-    function createColor(index, alpha) {
-        var palette = [
+    function getSeriesBaseColor(seriesKey, index) {
+        var fixedColors = {
+            'Gage Precipitation (5)': [44, 160, 44],      // Rain - Green
+            'Wind Chill': [128, 0, 128],                  // Wind Chill - Purple
+            'Wind Chill Temperature': [128, 0, 128],      // Wind Chill - Purple
+            'Heat Index': [139, 0, 0],                    // Heat Index - Dark Red
+            'Dew Point Temperature': [44, 160, 44],       // Dew Pt - Green
+            'Air Temperature': [214, 39, 40],             // Air Temp - Red
+            'Wind Speed': [31, 119, 180],                 // Wind Speed - Blue
+            'Wind Gust Speed (5)': [0, 55, 130],          // Wind Gust - Dark Blue
+            'Wind Direction': [255, 127, 14]              // Wind Direction - Orange
+        };
+
+        if (fixedColors[seriesKey]) {
+            return fixedColors[seriesKey];
+        }
+
+        var fallbackPalette = [
             [214, 39, 40],
             [31, 119, 180],
             [44, 160, 44],
@@ -247,7 +277,12 @@ document.addEventListener('DOMContentLoaded', function () {
             [188, 189, 34],
             [23, 190, 207]
         ];
-        var color = palette[index % palette.length];
+
+        return fallbackPalette[index % fallbackPalette.length];
+    }
+
+    function createSeriesColor(seriesKey, index, alpha) {
+        var color = getSeriesBaseColor(seriesKey, index);
         return 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + alpha + ')';
     }
 
@@ -363,8 +398,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 data: series.values,
                 type: series.graphType,
                 yAxisID: scaleKey,
-                borderColor: createColor(index, 1),
-                backgroundColor: series.graphType === 'bar' ? createColor(index, 0.45) : createColor(index, 0.15),
+                borderColor: createSeriesColor(key, index, 1),
+                backgroundColor: series.graphType === 'bar' ? createSeriesColor(key, index, 0.45) : createSeriesColor(key, index, 0.15),
                 borderWidth: series.graphType === 'bar' ? 1 : 2,
                 pointRadius: series.graphType === 'bar' ? 0 : (graphData.labels.length > 48 ? 0 : 2),
                 pointHoverRadius: series.graphType === 'bar' ? 0 : 4,
@@ -437,7 +472,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 event_label: 'Button Clicked',
                 button_name: 'toggleStats'
             });
-            var isVisible = toggleExclusivePanel(toggleButton, statsPanel, graphToggleButton, graphPanel, 'stats');
+            var isVisible = !statsPanel.classList.contains('is-visible');
+            setPanelState(toggleButton, statsPanel, isVisible);
+            syncPanelStateInput();
             trackAnalyticsEvent('daily_view_panel_toggle', {
                 event_category: 'Daily View',
                 event_label: 'Stats Panel Toggle',
@@ -455,7 +492,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 event_label: 'Button Clicked',
                 button_name: 'toggleGraph'
             });
-            var isVisible = toggleExclusivePanel(graphToggleButton, graphPanel, toggleButton, statsPanel, 'graph');
+            var isVisible = !graphPanel.classList.contains('is-visible');
+            setPanelState(graphToggleButton, graphPanel, isVisible);
+            syncPanelStateInput();
             trackAnalyticsEvent('daily_view_panel_toggle', {
                 event_category: 'Daily View',
                 event_label: 'Graph Panel Toggle',
@@ -465,6 +504,26 @@ document.addEventListener('DOMContentLoaded', function () {
             if (isVisible) {
                 renderGraph();
             }
+            updateURL();
+        });
+    }
+
+    if (tableToggleButton && tablePanel) {
+        tableToggleButton.addEventListener('click', function () {
+            trackAnalyticsEvent('daily_view_button_click', {
+                event_category: 'Daily View',
+                event_label: 'Button Clicked',
+                button_name: 'toggleTable'
+            });
+            var isVisible = !tablePanel.classList.contains('is-visible');
+            setPanelState(tableToggleButton, tablePanel, isVisible);
+            syncPanelStateInput();
+            trackAnalyticsEvent('daily_view_panel_toggle', {
+                event_category: 'Daily View',
+                event_label: 'Table Panel Toggle',
+                panel: 'table',
+                state: isVisible ? 'open' : 'closed'
+            });
             updateURL();
         });
     }
@@ -617,26 +676,48 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (panelStateInput) {
-        if (panelStateInput.value === 'stats' && toggleButton && statsPanel) {
-            setPanelState(toggleButton, statsPanel, true);
-            if (graphToggleButton && graphPanel) {
-                setPanelState(graphToggleButton, graphPanel, false);
-            }
-        } else if (panelStateInput.value === 'graph' && graphToggleButton && graphPanel) {
-            setPanelState(graphToggleButton, graphPanel, true);
-            if (toggleButton && statsPanel) {
-                setPanelState(toggleButton, statsPanel, false);
-            }
-            renderGraph();
-        } else {
-            setCurrentPanel('');
+        var selectedPanels = panelStateInput.value ? panelStateInput.value.split(',') : [];
+        var showStats = selectedPanels.includes('stats');
+        var showGraph = selectedPanels.includes('graph');
+        var showTable = selectedPanels.includes('table');
+
+        if (toggleButton && statsPanel) {
+            setPanelState(toggleButton, statsPanel, showStats);
         }
+
+        if (graphToggleButton && graphPanel) {
+            setPanelState(graphToggleButton, graphPanel, showGraph);
+        }
+
+        if (tableToggleButton && tablePanel) {
+            setPanelState(tableToggleButton, tablePanel, showTable);
+        }
+
+        if (showGraph) {
+            renderGraph();
+        }
+        syncPanelStateInput();
     }
 
     // Update URL with initial state
     updateURL();
 
     if (dateInput) {
+        dateInput.addEventListener('pointerdown', function (event) {
+            if (event.pointerType && event.pointerType !== 'mouse') {
+                return;
+            }
+
+            if (isMobileDatePicker) {
+                return;
+            }
+
+            event.preventDefault();
+            dateInput.focus();
+            openDesktopDatePicker();
+        });
+        dateInput.addEventListener('click', openDesktopDatePicker);
+        dateInput.addEventListener('focus', openDesktopDatePicker);
         dateInput.addEventListener('change', function () {
             pendingDateSubmit = true;
 
@@ -648,7 +729,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     submitDateIfComplete();
                 }, 0);
+                return;
             }
+
+            submitDateIfComplete();
         });
         dateInput.addEventListener('blur', function () {
             if (isMobileDatePicker) {

@@ -59,7 +59,14 @@ $downloadFormat = isset($_GET['download']) ? $_GET['download'] : '';
 $requestedInterval = isset($_GET['interval']) ? $_GET['interval'] : 'hourly';
 $timeInterval = $requestedInterval === '5min' ? '5min' : 'hourly';
 $requestedPanel = isset($_GET['panel']) ? trim((string) $_GET['panel']) : '';
-$activePanel = in_array($requestedPanel, ['stats', 'graph'], true) ? $requestedPanel : '';
+$requestedPanels = $requestedPanel !== ''
+    ? array_map('trim', explode(',', $requestedPanel))
+    : [];
+$activePanels = array_values(array_intersect($requestedPanels, ['stats', 'graph', 'table']));
+if (empty($activePanels)) {
+    $activePanels = ['table'];
+}
+$activePanelState = implode(',', $activePanels);
 
 $stationOptions = loadStationOptions('https://services.cema.udel.edu/internal_services/api/station_metadata/DEOS', $apiKey, $type);
 if (!isset($stationOptions[$station]) && !empty($stationOptions)) {
@@ -157,7 +164,7 @@ $validFlags = ['1', '3', '7'];
 
 <div class='controls'>
     <form method='GET'>
-        <input type='hidden' name='panel' id='panelState' value='<?php echo htmlspecialchars($activePanel); ?>'>
+        <input type='hidden' name='panel' id='panelState' value='<?php echo htmlspecialchars($activePanelState); ?>'>
         <input type='hidden' name='graph' id='graphState' value=''>
         <button type='submit' id='applyFilters' hidden aria-hidden='true' tabindex='-1'>Apply filters</button>
         <div class='date-group'>
@@ -185,8 +192,9 @@ $validFlags = ['1', '3', '7'];
             <label><input type='radio' name='interval' value='5min' <?php echo $timeInterval === '5min' ? 'checked' : ''; ?>>5 Minute</label>
         </div>
         <button type='submit' name='download' value='csv'>Download CSV</button>
-        <button type='button' id='toggleStats' aria-expanded='false' aria-controls='statsPanel'>Stats</button>
-        <button type='button' id='toggleGraph' aria-expanded='false' aria-controls='graphPanel'>Graph</button>
+        <button type='button' id='toggleStats' aria-expanded='false' aria-controls='statsPanel'><span class='toggle-check' aria-hidden='true'></span><span>Stats</span></button>
+        <button type='button' id='toggleGraph' aria-expanded='false' aria-controls='graphPanel'><span class='toggle-check' aria-hidden='true'></span><span>Graph</span></button>
+        <button type='button' id='toggleTable' aria-expanded='false' aria-controls='tablePanel'><span class='toggle-check' aria-hidden='true'></span><span>Table</span></button>
         <!--<div class='controls-note' id='controls-note'></div>-->
     </form>
 </div>
@@ -427,6 +435,29 @@ try {
             if (empty($rows) || empty($columnOrder)) {
                 echo "<p>No parameter records were returned for the selected date range.</p>";
             } else {
+                if (!empty($statsRows)) {
+                    echo "<div class='stats-panel' id='statsPanel'>";
+                    echo "<h2>5-Minute Parameter Stats</h2>";
+                    echo "<div class='table-wrap'>";
+                    echo "<table class='stats-table'>";
+                    echo "<thead>";
+                    echo "<tr><th>Parameter</th><th>Summary</th><th>Value</th><th>Completeness</th></tr>";
+                    echo "</thead>";
+                    echo "<tbody>";
+                    foreach ($statsRows as $statsRow) {
+                        echo "<tr>";
+                        echo "<td>" . htmlspecialchars($statsRow['label']) . "</td>";
+                        echo "<td>" . htmlspecialchars($statsRow['summary_label']) . "</td>";
+                        echo "<td>" . htmlspecialchars($statsRow['summary_value']) . "</td>";
+                        echo "<td>" . htmlspecialchars($statsRow['completeness']) . "</td>";
+                        echo "</tr>";
+                    }
+                    echo "</tbody>";
+                    echo "</table>";
+                    echo "</div>";
+                    echo "</div>";
+                }
+
                 if (!empty($graphConfig['series'])) {
                     echo "<div class='graph-panel' id='graphPanel'>";
                     echo "<h2>Parameter Graph</h2>";
@@ -455,30 +486,7 @@ try {
                     echo "</div>";
                 }
 
-                if (!empty($statsRows)) {
-                    echo "<div class='stats-panel' id='statsPanel'>";
-                    echo "<h2>5-Minute Parameter Stats</h2>";
-                    echo "<div class='table-wrap'>";
-                    echo "<table class='stats-table'>";
-                    echo "<thead>";
-                    echo "<tr><th>Parameter</th><th>Summary</th><th>Value</th><th>Completeness</th></tr>";
-                    echo "</thead>";
-                    echo "<tbody>";
-                    foreach ($statsRows as $statsRow) {
-                        echo "<tr>";
-                        echo "<td>" . htmlspecialchars($statsRow['label']) . "</td>";
-                        echo "<td>" . htmlspecialchars($statsRow['summary_label']) . "</td>";
-                        echo "<td>" . htmlspecialchars($statsRow['summary_value']) . "</td>";
-                        echo "<td>" . htmlspecialchars($statsRow['completeness']) . "</td>";
-                        echo "</tr>";
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    echo "</div>";
-                    echo "</div>";
-                }
-
-                echo "<div class='table-wrap'>";
+                echo "<div class='table-wrap table-panel' id='tablePanel'>";
                 echo "<table id='dataTable' class='data-table'>";
                 echo "<thead>";
                 echo "<tr><th>" . htmlspecialchars(getTimeHeaderLabel($timeInterval)) . "</th>";
