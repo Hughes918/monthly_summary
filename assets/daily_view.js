@@ -568,7 +568,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (controlsForm) {
         Array.prototype.forEach.call(controlsForm.querySelectorAll('input[name="type"]'), function (radio) {
             radio.addEventListener('change', function () {
-                submitFilters();
+                if (stationSelect) {
+                    stationSelect.value = '';
+                }
+                controlsForm.submit();
             });
         });
     }

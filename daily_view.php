@@ -45,7 +45,7 @@ if (!($parsedSelectedDate instanceof DateTimeImmutable) || $hasDateErrors || $pa
 }
 
 // Get dates from form or use defaults
-$station = isset($_GET['station']) && trim($_GET['station']) !== '' ? strtoupper(trim($_GET['station'])) : 'DAGF';
+$station = isset($_GET['station']) && trim($_GET['station']) !== '' ? strtoupper(trim($_GET['station'])) : '';
 $type = isset($_GET['type']) ? $_GET['type'] : 'meteorological';
 
 // Check if station has restricted water data
@@ -69,16 +69,18 @@ if (empty($activePanels)) {
 $activePanelState = implode(',', $activePanels);
 
 $stationOptions = loadStationOptions('https://services.cema.udel.edu/internal_services/api/station_metadata/DEOS', $apiKey, $type);
-if (!isset($stationOptions[$station]) && !empty($stationOptions)) {
-    $station = array_key_first($stationOptions);
+if ($station !== '' && !isset($stationOptions[$station])) {
+    $station = '';
 }
 
-$stationDisplayName = $stationOptions[$station]['label'] ?? $station;
+$stationDisplayName = $station !== '' ? ($stationOptions[$station]['label'] ?? $station) : 'Select a station';
 
 // Format the title with the dates
 $startDisplay = $parsedSelectedDate->format('m/d/Y');
 
-$url = "https://services.cema.udel.edu/internal_services/api/data/{$station}/{$startDate}/{$endDate}?format=JSON&timezone=ET";
+$url = $station !== ''
+    ? "https://services.cema.udel.edu/internal_services/api/data/{$station}/{$startDate}/{$endDate}?format=JSON&timezone=ET"
+    : '';
 
 $validFlags = ['1', '3', '7'];
 
@@ -170,6 +172,7 @@ $validFlags = ['1', '3', '7'];
         <div class='date-group'>
             <label for='station'>Station:</label>
             <select id='station' name='station' required aria-describedby='controls-note'>
+                <option value='' <?php echo $station === '' ? 'selected' : ''; ?> disabled>Select a station</option>
                 <?php foreach ($stationOptions as $stationOption): ?>
                     <option value='<?php echo htmlspecialchars($stationOption['code']); ?>' <?php echo $stationOption['code'] === $station ? 'selected' : ''; ?>><?php echo htmlspecialchars($stationOption['label']); ?></option>
                 <?php endforeach; ?>
@@ -207,28 +210,31 @@ $validFlags = ['1', '3', '7'];
 
 <?php
 
-try {
-    // Use cURL to make the request
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    configureCurlTlsOptions($ch);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "x-api-key: $apiKey"
-    ]);
-    
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $error = curl_error($ch);
+if ($station === '') {
+    echo "<p>Please select a station to view data for the selected type.</p>";
+} else {
+    try {
+        // Use cURL to make the request
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        configureCurlTlsOptions($ch);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "x-api-key: $apiKey"
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
 
-    if ($response === false || $error !== '') {
-        error_log('daily_view.php: data API cURL error for ' . $station . ' on ' . $startDate . ': ' . $error);
-        $dataLoadError = 'Unable to load subdaily data right now. Please try again shortly.';
-    } elseif ($httpCode !== 200) {
-        error_log('daily_view.php: data API returned HTTP ' . $httpCode . ' for ' . $station . ' on ' . $startDate);
-        $dataLoadError = 'Unable to load subdaily data right now. Please try again shortly.';
-    } else {
-        $data = json_decode($response, true);
+        if ($response === false || $error !== '') {
+            error_log('daily_view.php: data API cURL error for ' . $station . ' on ' . $startDate . ': ' . $error);
+            $dataLoadError = 'Unable to load subdaily data right now. Please try again shortly.';
+        } elseif ($httpCode !== 200) {
+            error_log('daily_view.php: data API returned HTTP ' . $httpCode . ' for ' . $station . ' on ' . $startDate);
+            $dataLoadError = 'Unable to load subdaily data right now. Please try again shortly.';
+        } else {
+            $data = json_decode($response, true);
         
         if (json_last_error() === JSON_ERROR_NONE) {
             $rows = [];
@@ -522,14 +528,15 @@ try {
                 echo "</table>";
                 echo "</div>";
             }
-        } else {
-            error_log('daily_view.php: JSON decode error for ' . $station . ' on ' . $startDate . ': ' . json_last_error_msg());
-            $dataLoadError = 'Unable to load subdaily data right now. Please try again shortly.';
+            } else {
+                error_log('daily_view.php: JSON decode error for ' . $station . ' on ' . $startDate . ': ' . json_last_error_msg());
+                $dataLoadError = 'Unable to load subdaily data right now. Please try again shortly.';
+            }
         }
+    } catch (Exception $e) {
+        error_log('daily_view.php: unexpected error for ' . $station . ' on ' . $startDate . ': ' . $e->getMessage());
+        $dataLoadError = 'Unable to load subdaily data right now. Please try again shortly.';
     }
-} catch (Exception $e) {
-    error_log('daily_view.php: unexpected error for ' . $station . ' on ' . $startDate . ': ' . $e->getMessage());
-    $dataLoadError = 'Unable to load subdaily data right now. Please try again shortly.';
 }
 
 if ($dataLoadError !== '') {
