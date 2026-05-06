@@ -93,7 +93,7 @@ $validFlags = ['1', '3', '7'];
         <nav class='page-context-nav' aria-label='Page navigation'>
             <a href='index.php'>Monthly Summary</a>
             <span class='is-active' aria-current='page'>Daily Summary</span>
-            <a href='../station/index.php?station=DAGF'>Real Time</a>
+            <a href='../station/index.php?station=DAGF' target='_blank' rel='noopener noreferrer'>Real Time</a>
         </nav>
         <h1><?php echo htmlspecialchars($stationDisplayName); ?></h1>
         <p class='page-subtitle'><?php echo htmlspecialchars($startDisplay . ' • ' . ($timeInterval === 'hourly' ? 'Hourly' : '5-Minute')); ?></p>
