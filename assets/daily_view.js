@@ -299,6 +299,15 @@ document.addEventListener('DOMContentLoaded', function () {
         return parts.slice(1).join(' ');
     }
 
+    function formatChartDate(dateString) {
+        if (typeof dateString !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+            return dateString || '';
+        }
+
+        var parts = dateString.split('-');
+        return parts[1] + '/' + parts[2] + '/' + parts[0];
+    }
+
     function renderGraph() {
         if (!graphPanel || !graphControls || !graphCanvas || !graphData || typeof Chart === 'undefined') {
             return;
@@ -354,6 +363,19 @@ document.addEventListener('DOMContentLoaded', function () {
         if (graphEmpty) {
             graphEmpty.style.display = 'none';
         }
+
+        var chartTitleParts = [];
+        if (graphData.stationLabel) {
+            chartTitleParts.push(graphData.stationLabel);
+        } else if (graphData.station) {
+            chartTitleParts.push(graphData.station);
+        }
+
+        if (graphData.date) {
+            chartTitleParts.push(formatChartDate(graphData.date));
+        }
+
+        var chartTitleText = chartTitleParts.join(' - ');
 
         var datasets = [];
         var scales = {
@@ -436,6 +458,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 stacked: false,
                 plugins: {
+                    title: {
+                        display: chartTitleText !== '',
+                        text: chartTitleText,
+                        font: {
+                            size: 16,
+                            weight: '600'
+                        },
+                        padding: {
+                            bottom: 10
+                        }
+                    },
                     legend: {
                         position: 'top'
                     },

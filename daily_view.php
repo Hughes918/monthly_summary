@@ -188,7 +188,7 @@ $validFlags = ['1', '3', '7'];
             <label><input type='radio' name='type' value='meteorological' <?php echo $type !== 'hydrological' ? 'checked' : ''; ?>>Meteorological</label>
             <label><input type='radio' name='type' value='hydrological' <?php echo $type === 'hydrological' ? 'checked' : ''; ?>>Hydrological</label>
         </div>
-        <div class='date-group'>
+        <div class='date-group date-nav-group'>
             <label for='date'>Date:</label>
             <button type='button' id='prevDate' title='Previous Day' aria-label='Previous Day'>-</button>
             <input type='date' id='date' name='date' value='<?php echo htmlspecialchars($startDate); ?>' required aria-describedby='controls-note'>
@@ -399,6 +399,7 @@ if ($station === '') {
                 'labels' => [],
                 'series' => [],
                 'station' => $station,
+                'stationLabel' => $stationDisplayName,
                 'date' => $startDate
             ];
             if (!empty($columnOrder)) {
