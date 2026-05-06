@@ -15,6 +15,7 @@ if (!empty($queryString)) {
 
 $station_name = !empty($queryParams['station']) ? htmlspecialchars($queryParams['station']) : $defaultStation;
 $date = !empty($queryParams['date']) ? htmlspecialchars($queryParams['date']) : $defaultDate;
+$realTimeStation = !empty($queryParams['station']) ? strtoupper(trim((string)$queryParams['station'])) : $defaultStation;
 
 // Check if station has restricted water data
 $restrictedWaterDataStations = ['DAGF', 'DWAR', 'DSND', 'DJCR'];
@@ -37,6 +38,11 @@ if (strpos($date, '_') !== false) {
     if ($dateObj && is_numeric($year)) {
         $start_date = $dateObj->format('Y-m-01');
         $end_date   = $dateObj->format('Y-m-t');
+        $isCurrentSelectedMonth = strtoupper($dateObj->format('M')) === strtoupper($newYorkNow->format('M'))
+            && $dateObj->format('Y') === $newYorkNow->format('Y');
+        $subdailyLandingDate = $isCurrentSelectedMonth
+            ? $newYorkNow->format('Y-m-d')
+            : $dateObj->format('Y-m-01');
         // JSON data URL
         $jsonFile = "http://150.136.239.199/almanac/retrieve.old.php?start=$start_date&end=$end_date&station_name=$station_name&raw_values=Y";
     } else {
@@ -554,7 +560,7 @@ include('header.php');
         <nav class="page-context-nav" aria-label="Page navigation">
             <span class="is-active" aria-current="page">Monthly Summary</span>
             <a href="daily_view.php?station=<?php echo urlencode($station_name); ?>&date=<?php echo urlencode($subdailyLandingDate); ?>&interval=hourly">Daily Summary <span class="new-badge">NEW</span></a>
-            <a href="../station/index.php?station=DAGF" target="_blank" rel="noopener noreferrer">Real Time</a>
+            <a href="../station/index.php?station=<?php echo urlencode($realTimeStation); ?>" target="_blank" rel="noopener noreferrer">Real Time</a>
         </nav>
         <h1 class="banner-title">Monthly Summary</h1>
     </div>

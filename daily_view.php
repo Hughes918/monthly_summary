@@ -29,7 +29,7 @@ require_once __DIR__ . '/daily_view_helpers.php';
 $apiKey = 'C7384045980DCA07FD2036B439448C1A281132329DE17A8CD8F03810091AF107';
 $dataLoadError = '';
 
-$defaultSelectedDate = '2025-07-30';
+$defaultSelectedDate = (new DateTimeImmutable('now', new DateTimeZone('America/New_York')))->format('Y-m-d');
 $rawSelectedDate = isset($_GET['date'])
     ? trim((string) $_GET['date'])
     : (isset($_GET['startDate']) ? trim((string) $_GET['startDate']) : $defaultSelectedDate);
@@ -55,6 +55,7 @@ $stationHasRestrictedWaterData = in_array($station, $restrictedWaterDataStations
 $selectedDate = $parsedSelectedDate->format('Y-m-d');
 $startDate = $selectedDate;
 $endDate = $parsedSelectedDate->modify('+1 day')->format('Y-m-d');
+$monthlyDateParam = strtoupper($parsedSelectedDate->format('M')) . '_' . $parsedSelectedDate->format('Y');
 $downloadFormat = isset($_GET['download']) ? $_GET['download'] : '';
 $requestedInterval = isset($_GET['interval']) ? $_GET['interval'] : 'hourly';
 $timeInterval = $requestedInterval === '5min' ? '5min' : 'hourly';
@@ -72,6 +73,7 @@ $stationOptions = loadStationOptions('https://services.cema.udel.edu/internal_se
 if ($station !== '' && !isset($stationOptions[$station])) {
     $station = '';
 }
+$realTimeStation = $station !== '' ? $station : 'DAGF';
 
 $stationDisplayName = $station !== '' ? ($stationOptions[$station]['label'] ?? $station) : 'Select a station';
 
@@ -91,9 +93,9 @@ $validFlags = ['1', '3', '7'];
 <div class='page-title-wrap'>
     <div class='title-header'>
         <nav class='page-context-nav' aria-label='Page navigation'>
-            <a href='index.php'>Monthly Summary</a>
+            <a href='index.php?station=<?php echo urlencode($realTimeStation); ?>&date=<?php echo urlencode($monthlyDateParam); ?>'>Monthly Summary</a>
             <span class='is-active' aria-current='page'>Daily Summary</span>
-            <a href='../station/index.php?station=DAGF' target='_blank' rel='noopener noreferrer'>Real Time</a>
+            <a href='../station/index.php?station=<?php echo urlencode($realTimeStation); ?>' target='_blank' rel='noopener noreferrer'>Real Time</a>
         </nav>
         <h1><?php echo htmlspecialchars($stationDisplayName); ?></h1>
         <p class='page-subtitle'><?php echo htmlspecialchars($startDisplay . ' • ' . ($timeInterval === 'hourly' ? 'Hourly' : '5-Minute')); ?></p>
