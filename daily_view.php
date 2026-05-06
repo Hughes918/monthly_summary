@@ -79,7 +79,7 @@ $stationDisplayName = $station !== '' ? ($stationOptions[$station]['label'] ?? $
 $startDisplay = $parsedSelectedDate->format('m/d/Y');
 
 $url = $station !== ''
-    ? "https://services.cema.udel.edu/internal_services/api/data/{$station}/{$startDate}/{$endDate}?format=JSON&timezone=ET&data_quality=1"
+    ? "https://services.cema.udel.edu/internal_services/api/data/{$station}/{$startDate}/{$endDate}?format=JSON&timezone=ET&flags=0,1,2,3,4,5,6,7,8,9"
     : '';
 
 $validFlags = ['1', '3', '7'];
@@ -427,11 +427,13 @@ if ($station === '') {
                 }
 
                 foreach ($columnOrder as $dataType) {
+                    $hasGraphableData = ($statsCounts[$dataType] ?? 0) > 0;
                     $graphConfig['series'][$dataType] = [
                         'label' => $columns[$dataType]['label'],
                         'unit' => getGraphUnit($columns[$dataType]),
                         'graphType' => $dataType === 'Gage Precipitation (5)' ? 'bar' : 'line',
-                        'checked' => $dataType === $defaultGraphParameter,
+                        'checked' => $hasGraphableData && $dataType === $defaultGraphParameter,
+                        'graphable' => $hasGraphableData,
                         'values' => []
                     ];
 
@@ -482,8 +484,12 @@ if ($station === '') {
                     echo "<div class='graph-controls-wrapper'>";
                     echo "<div class='graph-controls' id='graphControls'>";
                     foreach ($graphConfig['series'] as $dataType => $seriesConfig) {
-                        echo "<label>";
-                        echo "<input type='checkbox' value='" . htmlspecialchars($dataType) . "'" . ($seriesConfig['checked'] ? " checked" : "") . ">";
+                        $isGraphable = !empty($seriesConfig['graphable']);
+                        $labelClass = $isGraphable ? '' : ' class="is-disabled"';
+                        $disabledAttr = $isGraphable ? '' : ' disabled';
+                        $titleAttr = $isGraphable ? '' : ' title="No valid observations available for this day."';
+                        echo "<label" . $labelClass . $titleAttr . ">";
+                        echo "<input type='checkbox' value='" . htmlspecialchars($dataType) . "'" . ($seriesConfig['checked'] ? " checked" : "") . $disabledAttr . ">";
                         echo htmlspecialchars($seriesConfig['label']);
                         echo "</label>";
                     }

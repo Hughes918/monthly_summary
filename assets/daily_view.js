@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (graphParam && graphControls) {
         const selectedParams = graphParam.split(',');
         graphControls.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-            cb.checked = selectedParams.includes(cb.value);
+            cb.checked = !cb.disabled && selectedParams.includes(cb.value);
         });
         if (graphStateInput) graphStateInput.value = graphParam;
     }
@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         var selectedKeys = Array.prototype.map.call(
-            graphControls.querySelectorAll('input[type="checkbox"]:checked'),
+            graphControls.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)'),
             function (checkbox) {
                 return checkbox.value;
             }
@@ -319,20 +319,22 @@ document.addEventListener('DOMContentLoaded', function () {
         if (selectedKeys.length === 0) {
             // Try to select a default parameter
             let defaultKey = null;
-            if (graphData.series['Air Temperature']) {
+            if (graphData.series['Air Temperature'] && graphData.series['Air Temperature'].graphable !== false) {
                 defaultKey = 'Air Temperature';
-            } else if (graphData.series['Water Temperature']) {
+            } else if (graphData.series['Water Temperature'] && graphData.series['Water Temperature'].graphable !== false) {
                 defaultKey = 'Water Temperature';
             } else {
                 // Select the first available
                 const seriesKeys = Object.keys(graphData.series);
                 if (seriesKeys.length > 0) {
-                    defaultKey = seriesKeys[0];
+                    defaultKey = seriesKeys.find(function (key) {
+                        return graphData.series[key] && graphData.series[key].graphable !== false;
+                    }) || null;
                 }
             }
             if (defaultKey) {
                 const checkbox = graphControls.querySelector(`input[value="${defaultKey}"]`);
-                if (checkbox) {
+                if (checkbox && !checkbox.disabled) {
                     checkbox.checked = true;
                     selectedKeys = [defaultKey];
                     updateURL();

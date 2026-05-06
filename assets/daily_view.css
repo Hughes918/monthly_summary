@@ -481,6 +481,28 @@ body.quick-facelift {
     color: var(--text-main);
 }
 
+.quick-facelift .graph-controls label.is-disabled {
+    background: #f1f1f1;
+    border-color: #d6d6d6;
+    color: #7a7a7a;
+    cursor: not-allowed;
+}
+
+.quick-facelift .graph-controls label.is-disabled input[type="checkbox"] {
+    accent-color: #c7c7c7;
+    cursor: not-allowed;
+}
+
+.quick-facelift .graph-controls label.is-disabled::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f3b7b7;
+    border: 1px solid #e39b9b;
+    flex: none;
+}
+
 .quick-facelift .graph-controls input[type="checkbox"] {
     margin: 0;
     accent-color: var(--accent);
