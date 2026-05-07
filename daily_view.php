@@ -518,7 +518,7 @@ if ($station === '') {
                 }
 
                 echo "<div class='table-wrap table-panel' id='tablePanel'>";
-                echo "<table id='dataTable' class='data-table' data-interval='" . htmlspecialchars($timeInterval) . "'>";
+                echo "<table id='dataTable' class='data-table' data-interval='" . htmlspecialchars($timeInterval) . "' data-type='" . htmlspecialchars($type) . "'>";
                 echo "<thead>";
                 echo "<tr><th>" . htmlspecialchars(getTimeHeaderLabel($timeInterval)) . "</th>";
                 foreach ($columnOrder as $dataType) {

@@ -742,6 +742,14 @@ body.quick-facelift {
     .quick-facelift .data-table[data-interval="hourly"] .time-subhead-mobile {
         display: inline;
     }
+
+    .quick-facelift .data-table[data-type="hydrological"] .timestamp,
+    .quick-facelift .data-table[data-type="hydrological"] thead th:first-child {
+        min-width: 96px;
+        max-width: 96px;
+        padding-left: 6px;
+        padding-right: 6px;
+    }
 }
 
 /* Info Modal Styles */
