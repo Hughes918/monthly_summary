@@ -17,7 +17,7 @@
                     </a>
                 </div>
                 <div id="header-logo-title">
-                    <a id="logo-title-link" href="/">DELAWARE ENVIRONMENTAL<span class="mobile-title-break"> </span><span class="mobile-title-break-line">OBSERVING SYSTEM</span></a>
+                    <a id="logo-title-link" href="/"><span class="mobile-title-line-1">DELAWARE ENVIRONMENTAL</span><span class="mobile-title-line-2">OBSERVING SYSTEM</span></a>
                 </div>
             </div>
             <!-- Removed mobile menu icon code -->
@@ -174,7 +174,8 @@
         font-family: 'OpenSans', sans-serif;
     }
 
-    #logo-title-link .mobile-title-break-line {
+    #logo-title-link .mobile-title-line-1,
+    #logo-title-link .mobile-title-line-2 {
         display: inline;
     }
 
@@ -183,12 +184,11 @@
             display: none !important;
         }
 
-        #logo-title-link .mobile-title-break {
-            display: none;
-        }
-
-        #logo-title-link .mobile-title-break-line {
+        #logo-title-link .mobile-title-line-1,
+        #logo-title-link .mobile-title-line-2 {
             display: block;
+            white-space: nowrap;
+            line-height: 1.1;
         }
     }
 </style>
