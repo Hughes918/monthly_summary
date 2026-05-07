@@ -184,9 +184,18 @@
             display: none !important;
         }
 
+        #header-logo-title {
+            width: 100%;
+            margin-left: 0;
+            text-align: center;
+        }
+
         #logo-title-link {
-            font-size: 10px;
+            display: block;
+            width: 100%;
+            font-size: 13px;
             letter-spacing: 0;
+            line-height: 1.15;
         }
 
         #logo-title-link .mobile-title-line-1,
