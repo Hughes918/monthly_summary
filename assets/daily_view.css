@@ -429,6 +429,18 @@ body.quick-facelift {
     color: var(--text-muted);
 }
 
+.quick-facelift .graph-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.quick-facelift .graph-panel-header h2 {
+    margin: 0;
+}
+
 .quick-facelift .graph-controls {
     display: flex;
     flex-wrap: wrap;
@@ -437,16 +449,7 @@ body.quick-facelift {
 }
 
 .quick-facelift .graph-controls-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
     margin-bottom: 16px;
-}
-
-.quick-facelift .graph-controls-wrapper .graph-controls {
-    flex: 1;
-    margin-bottom: 0;
 }
 
 .quick-facelift .download-graph-button {
