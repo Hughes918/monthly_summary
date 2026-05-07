@@ -541,6 +541,11 @@ body.quick-facelift {
     z-index: 1;
 }
 
+.quick-facelift .timestamp-mobile,
+.quick-facelift .time-subhead-mobile {
+    display: none;
+}
+
 .quick-facelift thead .timestamp,
 .quick-facelift thead th:first-child {
     position: sticky;
@@ -690,6 +695,16 @@ body.quick-facelift {
     .quick-facelift td {
         padding: 10px;
         font-size: 0.95rem;
+    }
+
+    .quick-facelift .data-table[data-interval="hourly"] .timestamp-desktop,
+    .quick-facelift .data-table[data-interval="hourly"] .time-subhead-desktop {
+        display: none;
+    }
+
+    .quick-facelift .data-table[data-interval="hourly"] .timestamp-mobile,
+    .quick-facelift .data-table[data-interval="hourly"] .time-subhead-mobile {
+        display: inline;
     }
 }
 

@@ -516,14 +516,21 @@ if ($station === '') {
                 }
 
                 echo "<div class='table-wrap table-panel' id='tablePanel'>";
-                echo "<table id='dataTable' class='data-table'>";
+                echo "<table id='dataTable' class='data-table' data-interval='" . htmlspecialchars($timeInterval) . "'>";
                 echo "<thead>";
                 echo "<tr><th>" . htmlspecialchars(getTimeHeaderLabel($timeInterval)) . "</th>";
                 foreach ($columnOrder as $dataType) {
                     echo "<th>" . htmlspecialchars($columns[$dataType]['label']) . "</th>";
                 }
                 echo "</tr>";
-                echo "<tr><th>ET</th>";
+                echo "<tr><th class='time-subhead-cell'>";
+                if ($timeInterval === 'hourly') {
+                    echo "<span class='time-subhead-desktop'>ET</span>";
+                    echo "<span class='time-subhead-mobile'>" . htmlspecialchars($parsedSelectedDate->format('n/j/Y')) . "</span>";
+                } else {
+                    echo "ET";
+                }
+                echo "</th>";
                 foreach ($columnOrder as $dataType) {
                     echo "<th>" . htmlspecialchars(getColumnUnit($columns[$dataType])) . "</th>";
                 }
@@ -540,7 +547,18 @@ if ($station === '') {
 
                 foreach ($rows as $timestamp => $rowValues) {
                     echo "<tr class='data-row'>";
-                    echo "<td class='timestamp'>" . htmlspecialchars($rowLabels[$timestamp] ?? $timestamp) . "</td>";
+                    if ($timeInterval === 'hourly') {
+                        $timestampDateTime = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $timestamp, new DateTimeZone('America/New_York'));
+                        if ($timestampDateTime instanceof DateTimeImmutable) {
+                            $hourEnd = $timestampDateTime->modify('+59 minutes');
+                            $hourlyMobileLabel = $timestampDateTime->format('g:i') . '-' . $hourEnd->format('g:iA');
+                        } else {
+                            $hourlyMobileLabel = $rowLabels[$timestamp] ?? $timestamp;
+                        }
+                        echo "<td class='timestamp'><span class='timestamp-desktop'>" . htmlspecialchars($rowLabels[$timestamp] ?? $timestamp) . "</span><span class='timestamp-mobile'>" . htmlspecialchars($hourlyMobileLabel) . "</span></td>";
+                    } else {
+                        echo "<td class='timestamp'>" . htmlspecialchars($rowLabels[$timestamp] ?? $timestamp) . "</td>";
+                    }
                     foreach ($columnOrder as $dataType) {
                         echo "<td>" . htmlspecialchars($rowValues[$dataType] ?? '-') . "</td>";
                     }
