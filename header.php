@@ -20,7 +20,11 @@
                     <a id="logo-title-link" href="/"><span class="mobile-title-line-1">DELAWARE ENVIRONMENTAL</span><span class="mobile-title-line-2">OBSERVING SYSTEM</span></a>
                 </div>
             </div>
-            <!-- Removed mobile menu icon code -->
+            <button id="header-mobile-menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="header-nav">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
         <ul id="header-nav">
             <li class="header-nav-option"><a href="http://deos.udel.edu">Home</a></li>
@@ -32,7 +36,21 @@
         </ul>
     </div>
 </header>
-<!-- Removed toggleMobileMenu() JS function -->
+<script>
+    (function () {
+        var toggleButton = document.getElementById('header-mobile-menu-toggle');
+        var nav = document.getElementById('header-nav');
+        if (!toggleButton || !nav) {
+            return;
+        }
+
+        toggleButton.addEventListener('click', function () {
+            var isOpen = nav.classList.toggle('is-open');
+            toggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            toggleButton.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+        });
+    })();
+</script>
 </body>
 </html>
 
@@ -179,7 +197,28 @@
         display: inline;
     }
 
+    #header-mobile-menu-toggle {
+        display: none;
+    }
+
     @media screen and (max-width: 768px) {
+        #header {
+            height: auto;
+            min-height: 64px;
+        }
+
+        #header .grid-x {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        #header-title {
+            flex: 1 1 auto;
+            padding: 8px 0;
+        }
+
         #header-logo-img {
             display: none !important;
         }
@@ -187,13 +226,15 @@
         #header-logo-title {
             width: 100%;
             margin-left: 0;
-            text-align: center;
+            text-align: left;
+            top: 0;
+            position: static;
         }
 
         #logo-title-link {
             display: block;
             width: 100%;
-            font-size: 13px;
+            font-size: 12px;
             letter-spacing: 0;
             line-height: 1.15;
         }
@@ -203,6 +244,48 @@
             display: block;
             white-space: nowrap;
             line-height: 1.1;
+        }
+
+        #header-mobile-menu-toggle {
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            width: 36px;
+            height: 36px;
+            padding: 6px;
+            border: 1px solid #a9a9a9;
+            border-radius: 6px;
+            background: #fff;
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+
+        #header-mobile-menu-toggle span {
+            display: block;
+            width: 100%;
+            height: 2px;
+            background: #555;
+            border-radius: 2px;
+        }
+
+        #header-nav {
+            display: none;
+            width: 100%;
+            margin: 4px 0 0;
+            padding: 8px 0 2px;
+            text-align: left;
+        }
+
+        #header-nav.is-open {
+            display: block;
+        }
+
+        #header-nav .header-nav-option {
+            display: block !important;
+            padding: 4px 0;
+            line-height: 1.7em;
+            text-align: left;
         }
     }
 </style>
