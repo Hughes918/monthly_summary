@@ -638,6 +638,24 @@ body.quick-facelift {
         width: 100%;
     }
 
+    .quick-facelift .controls form > .date-group:first-of-type {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: 8px;
+        flex-wrap: nowrap;
+    }
+
+    .quick-facelift .controls form > .date-group:first-of-type label[for="station"] {
+        margin: 0;
+        white-space: nowrap;
+    }
+
+    .quick-facelift .controls form > .date-group:first-of-type select#station {
+        width: 100%;
+        min-width: 0;
+    }
+
     .quick-facelift .radio-group {
         flex-wrap: nowrap;
         justify-content: space-between;
@@ -671,6 +689,21 @@ body.quick-facelift {
     .quick-facelift .controls #toggleTable {
         flex: 0 0 calc(50% - 6px);
         width: calc(50% - 6px);
+    }
+
+    .quick-facelift .graph-controls {
+        gap: 6px;
+    }
+
+    .quick-facelift .graph-controls label {
+        flex: 0 1 calc(33.333% - 6px);
+        max-width: calc(33.333% - 6px);
+        gap: 4px;
+        padding: 6px 8px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .quick-facelift .date-nav-group {
