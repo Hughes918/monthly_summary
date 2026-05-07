@@ -179,9 +179,14 @@
         display: inline;
     }
 
-    @media screen and (max-width: 600px) {
+    @media screen and (max-width: 768px) {
         #header-logo-img {
             display: none !important;
+        }
+
+        #logo-title-link {
+            font-size: 10px;
+            letter-spacing: 0;
         }
 
         #logo-title-link .mobile-title-line-1,
