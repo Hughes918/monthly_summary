@@ -211,12 +211,13 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
+            gap: 4px;
         }
 
         #header-title {
             flex: 1 1 auto;
             padding: 8px 0;
+            min-width: 0;
         }
 
         #header-logo-img {
@@ -251,9 +252,9 @@
             flex-direction: column;
             justify-content: center;
             gap: 4px;
-            width: 36px;
-            height: 36px;
-            padding: 6px;
+            width: 32px;
+            height: 32px;
+            padding: 5px;
             border: 1px solid #a9a9a9;
             border-radius: 6px;
             background: #fff;
