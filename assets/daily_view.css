@@ -623,11 +623,16 @@ body.quick-facelift {
     }
 
     .quick-facelift #logo-title-link .title-desktop {
-        display: none;
+        display: inline;
+        font-size: 10px;
+        line-height: 1.1;
+        white-space: normal;
+        text-wrap: balance;
+        max-width: 230px;
     }
 
     .quick-facelift #logo-title-link .title-mobile {
-        display: inline;
+        display: none;
     }
 
     .quick-facelift h1 {
