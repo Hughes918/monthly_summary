@@ -242,7 +242,7 @@
             align-items: flex-start;
             justify-content: center;
             width: 100%;
-            font-size: clamp(28px, 4.2vw, 20px) !important;
+            font-size: clamp(20px, 4.2vw, 20px) !important;
             font-weight: 700;
             letter-spacing: 0;
             line-height: 1.2 !important;
