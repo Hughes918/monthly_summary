@@ -215,6 +215,8 @@
         }
 
         #header-title {
+            display: flex;
+            align-items: center;
             flex: 1 1 auto;
             padding: 8px 0;
             min-width: 0;
@@ -225,6 +227,8 @@
         }
 
         #header-logo-title {
+            display: block;
+            flex: 1 1 auto;
             width: 100%;
             margin-left: 0;
             text-align: left;
@@ -233,18 +237,23 @@
         }
 
         #logo-title-link {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
             width: 100%;
-            font-size: 12px;
-            letter-spacing: 0;
-            line-height: 1.15;
+            font-size: 14px !important;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            line-height: 1.2 !important;
         }
 
         #logo-title-link .mobile-title-line-1,
         #logo-title-link .mobile-title-line-2 {
             display: block;
             white-space: nowrap;
-            line-height: 1.1;
+            width: 100%;
+            line-height: 1.15;
         }
 
         #header-mobile-menu-toggle {
