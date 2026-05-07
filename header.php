@@ -17,10 +17,7 @@
                     </a>
                 </div>
                 <div id="header-logo-title">
-                    <a id="logo-title-link" href="/" aria-label="DELAWARE ENVIRONMENTAL OBSERVING SYSTEM">
-                        <span class="title-desktop">DELAWARE ENVIRONMENTAL OBSERVING SYSTEM</span>
-                        <span class="title-mobile">DELAWARE ENV.<br>OBSERVING SYSTEM</span>
-                    </a>
+                    <a id="logo-title-link" href="/">DELAWARE ENVIRONMENTAL OBSERVING SYSTEM</a>
                 </div>
             </div>
             <!-- Removed mobile menu icon code -->

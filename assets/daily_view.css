@@ -29,10 +29,6 @@ body.quick-facelift {
     color: var(--accent-strong);
 }
 
-.quick-facelift #logo-title-link .title-mobile {
-    display: none;
-}
-
 .quick-facelift .page-title-wrap {
     max-width: 1280px;
     margin: 0 auto 18px;
@@ -620,19 +616,6 @@ body.quick-facelift {
     body.quick-facelift {
         font-size: 19px;
         line-height: 1.55;
-    }
-
-    .quick-facelift #logo-title-link .title-desktop {
-        display: inline-block;
-        font-size: 13px;
-        line-height: 1.2;
-        white-space: normal;
-        max-width: 22ch;
-        text-align: center;
-    }
-
-    .quick-facelift #logo-title-link .title-mobile {
-        display: none;
     }
 
     .quick-facelift h1 {
