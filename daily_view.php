@@ -5,6 +5,7 @@ require_once __DIR__ . '/daily_view_helpers.php';
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
     <script async src='https://www.googletagmanager.com/gtag/js?id=G-BTMTESR1DZ'></script>
     <script>
         window.dataLayer = window.dataLayer || [];
