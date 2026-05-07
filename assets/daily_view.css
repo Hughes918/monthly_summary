@@ -550,6 +550,7 @@ body.quick-facelift {
 
 @media (max-width: 900px) {
     body.quick-facelift {
+        font-size: 18px;
         padding: 0;
     }
 
@@ -604,9 +605,14 @@ body.quick-facelift {
 }
 
 @media (max-width: 640px) {
+    body.quick-facelift {
+        font-size: 19px;
+        line-height: 1.55;
+    }
+
     .quick-facelift h1 {
         margin-bottom: 14px;
-        font-size: 1.5rem;
+        font-size: 1.65rem;
     }
 
     .quick-facelift .controls,
@@ -639,7 +645,7 @@ body.quick-facelift {
         width: auto;
         min-height: 40px;
         padding: 8px 14px;
-        font-size: 15px;
+        font-size: 1rem;
     }
 
     .quick-facelift .controls button[type="submit"][name="download"],
@@ -668,6 +674,7 @@ body.quick-facelift {
     .quick-facelift th,
     .quick-facelift td {
         padding: 10px;
+        font-size: 0.95rem;
     }
 }
 
@@ -963,7 +970,7 @@ body.quick-facelift {
     }
 
     .quick-facelift .page-context-nav {
-        font-size: 0.94rem;
+        font-size: 1rem;
         gap: 6px;
     }
 
@@ -982,11 +989,20 @@ body.quick-facelift {
     }
 
     .quick-facelift .modal-header h2 {
-        font-size: 18px;
+        font-size: 1.2rem;
     }
 
     .quick-facelift .info-section {
         margin-bottom: 20px;
         padding-bottom: 20px;
+    }
+
+    .quick-facelift .info-section p,
+    .quick-facelift .info-section ul,
+    .quick-facelift .parameter-list dt,
+    .quick-facelift .parameter-list dd,
+    .quick-facelift .info-subsection h4,
+    .quick-facelift .info-subsection p {
+        font-size: 1rem;
     }
 }
