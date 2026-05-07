@@ -242,9 +242,9 @@
             align-items: flex-start;
             justify-content: center;
             width: 100%;
-            font-size: 14px !important;
+            font-size: clamp(28px, 4.2vw, 20px) !important;
             font-weight: 700;
-            letter-spacing: 0.01em;
+            letter-spacing: 0;
             line-height: 1.2 !important;
         }
 
