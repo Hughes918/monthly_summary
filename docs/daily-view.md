@@ -1,6 +1,6 @@
 # Daily View Technical Documentation
 
-Last updated: 2026-05-06
+Last updated: 2026-05-07
 
 ## 1) Purpose
 
@@ -20,8 +20,8 @@ The page is designed to support meteorological and hydrological station data wit
 - `daily_view.php` -> `daily_view_helpers.php` (`require_once`)
 - `daily_view_helpers.php` -> `header.php` (`renderSharedHeader()`)
 - `daily_view_helpers.php` -> `footer.php` (`renderSharedFooter()`)
-- `daily_view.php` -> `assets/daily_view.css`
-- `daily_view.php` -> `assets/daily_view.js`
+- `daily_view.php` -> `assets/daily_view.css` (cache-busted with file modified time)
+- `daily_view.php` -> `assets/daily_view.js` (cache-busted with file modified time)
 
 ### External services/libraries
 
@@ -51,7 +51,7 @@ Accepted query parameters:
 
 Defaults and normalization:
 
-- Date defaults to `2025-07-30` when invalid/missing.
+- Date defaults to the current day in `America/New_York` when invalid/missing.
 - Interval is constrained to `hourly` or `5min`.
 - Panel state is constrained to `stats`, `graph`, `table`.
 - Station is validated against metadata station list; invalid station is cleared.
@@ -152,6 +152,13 @@ Main responsibilities:
 - Defines quick-facelift visual system (panels, controls, tables, graph layout).
 - Includes panel visibility states and responsive behavior.
 - Includes graph-control styles for enabled and disabled parameter chips.
+- Includes mobile-specific Daily View behavior:
+  - Controls layout keeps station and core radio choices compact on small screens.
+  - Action buttons (`Download CSV`, `Stats`, `Graph`, `Table`) render in a 2x2 grid on small screens.
+  - Graph panel header places download icon button in the same row as `Parameter Graph`.
+  - Hourly table swaps mobile timestamp display to time-range only and shows selected date in the subheader cell.
+  - Hydrological mobile table uses a narrower timestamp column width than meteorological.
+  - Shared header mobile layout supports two-line title and hamburger-triggered nav menu.
 
 ## 9) Error Handling and Failures
 

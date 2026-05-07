@@ -24,6 +24,8 @@ These docs describe the Daily View stack:
   - Reads query params (`station`, `date`, `type`, `interval`, `panel`, `graph`, `download`)
   - Calls APIs and builds data structures for table/stats/graph
   - Renders page markup and embeds graph JSON config
+  - Applies cache-busting query params for `assets/daily_view.css` and `assets/daily_view.js`
+  - Includes responsive table attributes (`data-interval`, `data-type`) used by mobile CSS
 - `daily_view_helpers.php`
   - Unit conversion, aggregation, formatting, CSV export, shared header/footer rendering
 - `assets/daily_view.js`
@@ -59,9 +61,13 @@ These docs describe the Daily View stack:
 2. Verify both `hourly` and `5min` modes.
 3. Verify restricted stations behavior.
 4. Verify graph controls for graphable vs non-graphable parameters.
-5. Update `daily-view.md` if behavior changed.
+5. Verify mobile-specific behavior:
+   - Hourly first column uses time-only label on small screens with date shown in subheader.
+   - Hydrological timestamp column uses tighter width on small screens.
+   - Header title wraps to two lines with hamburger menu toggle.
+6. Update `daily-view.md` if behavior changed.
 
 ## Ownership Notes
 
-- Last updated: 2026-05-06
+- Last updated: 2026-05-07
 - Update this date whenever Daily View behavior or dependencies change.
