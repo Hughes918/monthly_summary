@@ -17,7 +17,7 @@
                     </a>
                 </div>
                 <div id="header-logo-title">
-                    <a id="logo-title-link" href="/"><span class="mobile-title-line-1">DELAWARE ENVIRONMENTAL</span><span class="mobile-title-line-2">OBSERVING SYSTEM</span></a>
+                    <a id="logo-title-link" href="/"><span class="mobile-title-line-1">DELAWARE ENVIRONMENTAL </span><span class="mobile-title-line-2">OBSERVING SYSTEM</span></a>
                 </div>
             </div>
             <button id="header-mobile-menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="header-nav">
