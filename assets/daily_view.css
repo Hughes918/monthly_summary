@@ -326,8 +326,9 @@ body.quick-facelift {
 }
 
 .quick-facelift .table-wrap {
-    overflow-x: auto;
+    overflow: auto;
     max-width: 1280px;
+    max-height: 80vh;
     margin-bottom: 20px;
     border: 1px solid var(--panel-border);
     border-radius: 18px;
@@ -549,11 +550,37 @@ body.quick-facelift {
     display: none;
 }
 
+.quick-facelift .data-table thead,
+.quick-facelift .stats-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.quick-facelift .data-table thead th,
+.quick-facelift .stats-table thead th {
+    z-index: 5;
+}
+
+.quick-facelift .data-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #fbfdfb;
+}
+
+.quick-facelift .stats-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: #fbfdfb;
+}
+
 .quick-facelift thead .timestamp,
 .quick-facelift thead th:first-child {
     position: sticky;
     left: 0;
-    z-index: 2;
+    z-index: 7;
 }
 
 @media (max-width: 900px) {
