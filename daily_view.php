@@ -12,7 +12,8 @@ require_once __DIR__ . '/daily_view_helpers.php';
         gtag('js', new Date());
         gtag('config', 'G-BTMTESR1DZ');
     </script>
-    <link rel='stylesheet' href='assets/daily_view.css'>
+    <?php $dailyViewCssVersion = @filemtime(__DIR__ . '/assets/daily_view.css') ?: time(); ?>
+    <link rel='stylesheet' href='assets/daily_view.css?v=<?php echo urlencode((string) $dailyViewCssVersion); ?>'>
 </head>
 <body class='quick-facelift'>
 
@@ -569,7 +570,8 @@ if ($dataLoadError !== '') {
 
 <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'></script>
-<script src='assets/daily_view.js'></script>
+<?php $dailyViewJsVersion = @filemtime(__DIR__ . '/assets/daily_view.js') ?: time(); ?>
+<script src='assets/daily_view.js?v=<?php echo urlencode((string) $dailyViewJsVersion); ?>'></script>
 
 </body>
 </html>
