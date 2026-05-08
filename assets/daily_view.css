@@ -801,10 +801,11 @@ body.quick-facelift {
 .quick-facelift .page-context-nav {
     display: flex;
     align-items: center;
+    justify-content: flex-start;
     flex-wrap: wrap;
     gap: 8px;
     margin: 0 0 10px;
-    font-size: 1rem;
+    font-size: 0.92rem;
     font-weight: 600;
 }
 
@@ -820,18 +821,32 @@ body.quick-facelift {
 }
 
 .quick-facelift .page-context-nav a {
-    color: var(--accent);
+    color: #2f6b50;
     background: #fff;
+    gap: 6px;
 }
 
 .quick-facelift .page-context-nav a:hover {
-    background: var(--accent-soft);
+    background: #eef5f0;
 }
 
 .quick-facelift .page-context-nav .is-active {
     color: #fff;
-    background: var(--accent);
-    border-color: var(--accent);
+    background: #2f6b50;
+    border-color: #2f6b50;
+}
+
+.quick-facelift .page-context-nav .new-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #f2c94c;
+    color: #573600;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
 }
 
 .quick-facelift .info-button {
@@ -1071,7 +1086,8 @@ body.quick-facelift {
     }
 
     .quick-facelift .page-context-nav {
-        font-size: 1rem;
+        justify-content: flex-start;
+        font-size: 0.86rem;
         gap: 6px;
     }
 

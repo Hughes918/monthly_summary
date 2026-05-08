@@ -15,6 +15,7 @@ require_once __DIR__ . '/daily_view_helpers.php';
     </script>
     <?php $dailyViewCssVersion = @filemtime(__DIR__ . '/assets/daily_view.css') ?: time(); ?>
     <link rel='stylesheet' href='assets/daily_view.css?v=<?php echo urlencode((string) $dailyViewCssVersion); ?>'>
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'>
 </head>
 <body class='quick-facelift'>
 
@@ -97,7 +98,7 @@ $validFlags = ['1', '3', '7'];
         <nav class='page-context-nav' aria-label='Page navigation'>
             <a href='index.php?station=<?php echo urlencode($realTimeStation); ?>&date=<?php echo urlencode($monthlyDateParam); ?>'>Monthly Summary</a>
             <span class='is-active' aria-current='page'>Daily Summary</span>
-            <a href='../../station/index.php?station=<?php echo urlencode($realTimeStation); ?>' target='_blank' rel='noopener noreferrer'>Real Time</a>
+            <a href='../../station/index.php?station=<?php echo urlencode($realTimeStation); ?>' target='_blank' rel='noopener noreferrer'>Real Time <i class='fa-solid fa-arrow-up-right-from-square' aria-hidden='true'></i></a>
         </nav>
         <h1><?php echo htmlspecialchars($stationDisplayName); ?></h1>
         <p class='page-subtitle'><?php echo htmlspecialchars($startDisplay . ' • ' . ($timeInterval === 'hourly' ? 'Hourly' : '5-Minute')); ?></p>
@@ -362,7 +363,9 @@ if ($station === '') {
             $preferredOrder = [
                 'Wind Direction',
                 'Wind Speed',
+                'Wind Speed (30 ft)',
                 'Wind Gust Speed (5)',
+                'Wind Gust Speed (30 ft.)',
                 'Air Temperature',
                 'Dew Point Temperature',
                 'Heat Index',
@@ -371,6 +374,9 @@ if ($station === '') {
                 'Gage Precipitation (5)',
                 'Solar Radiation',
                 'Soil Temperature (2 in.)',
+                'Soil Temperature (4 in.)',
+                'Soil Temperature (8 in.)',
+                'Soil Temperature (20 in.)',
                 'Water Temperature',
                 'Depth to Water'
             ];

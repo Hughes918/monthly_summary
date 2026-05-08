@@ -560,7 +560,7 @@ include('header.php');
         <nav class="page-context-nav" aria-label="Page navigation">
             <span class="is-active" aria-current="page">Monthly Summary</span>
             <a href="daily_view.php?station=<?php echo urlencode($station_name); ?>&date=<?php echo urlencode($subdailyLandingDate); ?>&interval=hourly">Daily Summary <span class="new-badge">NEW</span></a>
-            <a href="../../station/index.php?station=<?php echo urlencode($realTimeStation); ?>" target="_blank" rel="noopener noreferrer">Real Time</a>
+            <a href="../../station/index.php?station=<?php echo urlencode($realTimeStation); ?>" target="_blank" rel="noopener noreferrer">Real Time <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
         </nav>
         <h1 class="banner-title">Monthly Summary</h1>
     </div>

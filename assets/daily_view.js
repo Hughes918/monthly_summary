@@ -248,42 +248,132 @@ document.addEventListener('DOMContentLoaded', function () {
         return 'scale_' + (unit || 'value').replace(/[^a-zA-Z0-9]+/g, '_').toLowerCase();
     }
 
-    function getSeriesBaseColor(seriesKey, index) {
-        var fixedColors = {
-            'Gage Precipitation (5)': [44, 160, 44],      // Rain - Green
-            'Wind Chill': [128, 0, 128],                  // Wind Chill - Purple
-            'Wind Chill Temperature': [128, 0, 128],      // Wind Chill - Purple
-            'Heat Index': [139, 0, 0],                    // Heat Index - Dark Red
-            'Dew Point Temperature': [44, 160, 44],       // Dew Pt - Green
-            'Air Temperature': [214, 39, 40],             // Air Temp - Red
-            'Wind Speed': [31, 119, 180],                 // Wind Speed - Blue
-            'Wind Gust Speed (5)': [0, 55, 130],          // Wind Gust - Dark Blue
-            'Wind Direction': [255, 127, 14]              // Wind Direction - Orange
-        };
+    /** Preferred RGB per parameter when only one graph line uses that color; collisions among selected series are avoided. */
+    var GRAPH_FIXED_COLORS = {
+        'Gage Precipitation (5)': [44, 160, 44],
+        'Wind Chill': [128, 0, 128],
+        'Wind Chill Temperature': [128, 0, 128],
+        'Heat Index': [139, 0, 0],
+        'Dew Point Temperature': [44, 160, 44],
+        'Air Temperature': [214, 39, 40],
+        'Wind Speed': [31, 119, 180],
+        'Wind Gust Speed (5)': [0, 55, 130],
+        'Wind Direction': [255, 127, 14]
+    };
 
-        if (fixedColors[seriesKey]) {
-            return fixedColors[seriesKey];
-        }
+    var GRAPH_FALLBACK_PALETTE = [
+        [214, 39, 40],
+        [31, 119, 180],
+        [44, 160, 44],
+        [255, 127, 14],
+        [148, 103, 189],
+        [140, 86, 75],
+        [227, 119, 194],
+        [127, 127, 127],
+        [188, 189, 34],
+        [23, 190, 207]
+    ];
 
-        var fallbackPalette = [
-            [214, 39, 40],
-            [31, 119, 180],
-            [44, 160, 44],
-            [255, 127, 14],
-            [148, 103, 189],
-            [140, 86, 75],
-            [227, 119, 194],
-            [127, 127, 127],
-            [188, 189, 34],
-            [23, 190, 207]
-        ];
+    /** Extra distinct colors used only when the preferred + fallback set would repeat within one chart. */
+    var GRAPH_EXTENDED_PALETTE = [
+        [65, 182, 230],
+        [252, 141, 89],
+        [178, 223, 138],
+        [251, 154, 153],
+        [166, 206, 227],
+        [253, 191, 111],
+        [202, 178, 214],
+        [106, 61, 154],
+        [177, 89, 40],
+        [189, 215, 231]
+    ];
 
-        return fallbackPalette[index % fallbackPalette.length];
+    function graphRgbKey(rgb) {
+        return rgb[0] + ',' + rgb[1] + ',' + rgb[2];
     }
 
-    function createSeriesColor(seriesKey, index, alpha) {
-        var color = getSeriesBaseColor(seriesKey, index);
-        return 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + alpha + ')';
+    function hslToRgb(hDeg, sPct, lPct) {
+        var h = ((hDeg % 360) + 360) % 360 / 360;
+        var s = Math.max(0, Math.min(100, sPct)) / 100;
+        var l = Math.max(0, Math.min(100, lPct)) / 100;
+        var r;
+        var g;
+        var b;
+
+        if (s === 0) {
+            r = g = b = l;
+        } else {
+            var hue2rgb = function hue2rgb(p, q, t) {
+                if (t < 0) {
+                    t += 1;
+                }
+                if (t > 1) {
+                    t -= 1;
+                }
+                if (t < 1 / 6) {
+                    return p + (q - p) * 6 * t;
+                }
+                if (t < 1 / 2) {
+                    return q;
+                }
+                if (t < 2 / 3) {
+                    return p + (q - p) * (2 / 3 - t) * 6;
+                }
+                return p;
+            };
+
+            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            var p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1 / 3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1 / 3);
+        }
+
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+
+    /**
+     * Assigns one RGB per selected series so no two visible parameters share the same color.
+     * Tries semantic fixed color first, then shared palettes, then golden-angle HSL.
+     */
+    function assignDistinctSeriesColors(seriesKeys) {
+        var used = Object.create(null);
+        var assigned = {};
+        var pool = GRAPH_FALLBACK_PALETTE.concat(GRAPH_EXTENDED_PALETTE);
+        var spill = 0;
+
+        seriesKeys.forEach(function (key, index) {
+            var preferred = GRAPH_FIXED_COLORS[key] || GRAPH_FALLBACK_PALETTE[index % GRAPH_FALLBACK_PALETTE.length];
+            var rgb = null;
+
+            if (!used[graphRgbKey(preferred)]) {
+                rgb = preferred;
+            } else {
+                for (var i = 0; i < pool.length; i++) {
+                    if (!used[graphRgbKey(pool[i])]) {
+                        rgb = pool[i];
+                        break;
+                    }
+                }
+            }
+
+            while (!rgb) {
+                var candidate = hslToRgb((spill * 137.508) % 360, 68, 47);
+                spill += 1;
+                if (!used[graphRgbKey(candidate)]) {
+                    rgb = candidate;
+                }
+            }
+
+            used[graphRgbKey(rgb)] = true;
+            assigned[key] = rgb;
+        });
+
+        return assigned;
+    }
+
+    function rgbaFromRgb(rgb, alpha) {
+        return 'rgba(' + rgb[0] + ', ' + rgb[1] + ', ' + rgb[2] + ', ' + alpha + ')';
     }
 
     function formatGraphAxisLabel(label) {
@@ -377,6 +467,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var chartTitleText = chartTitleParts.join(' - ');
 
+        var keysToPlot = selectedKeys.filter(function (key) {
+            return graphData.series && graphData.series[key];
+        });
+        var seriesRgbByKey = assignDistinctSeriesColors(keysToPlot);
+
         var datasets = [];
         var scales = {
             x: {
@@ -388,11 +483,8 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         var scaleOrder = [];
 
-        selectedKeys.forEach(function (key, index) {
+        keysToPlot.forEach(function (key) {
             var series = graphData.series[key];
-            if (!series) {
-                return;
-            }
 
             var unit = series.unit || 'value';
             var scaleKey = createScaleKey(unit);
@@ -417,13 +509,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             var isPointOnly = key === 'Heat Index' || key === 'Wind Chill' || key === 'Wind Chill Temperature';
+            var seriesRgb = seriesRgbByKey[key];
             var datasetConfig = {
                 label: series.unit ? series.label + ' (' + series.unit + ')' : series.label,
                 data: series.values,
                 type: series.graphType,
                 yAxisID: scaleKey,
-                borderColor: createSeriesColor(key, index, 1),
-                backgroundColor: series.graphType === 'bar' ? createSeriesColor(key, index, 0.45) : createSeriesColor(key, index, 0.15),
+                borderColor: rgbaFromRgb(seriesRgb, 1),
+                backgroundColor: series.graphType === 'bar' ? rgbaFromRgb(seriesRgb, 0.45) : rgbaFromRgb(seriesRgb, 0.15),
                 borderWidth: series.graphType === 'bar' ? 1 : 2,
                 pointRadius: series.graphType === 'bar' ? 0 : (graphData.labels.length > 48 ? 0 : 2),
                 pointHoverRadius: series.graphType === 'bar' ? 0 : 4,

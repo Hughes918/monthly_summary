@@ -129,7 +129,72 @@ function normalizeUnits($units) {
     return $unitMap[$units] ?? $units;
 }
 
+/**
+ * Decide whether to convert wind from m/s to mph using the API units string.
+ * When units are omitted, behavior differs by parameter (some feeds ship mph without labeling).
+ *
+ * @param bool $whenEmptyAssumeMs If true, missing units → m/s (multiply). If false, missing → no conversion.
+ */
+function resolveWindSpeedConversion(string $rawUnits, bool $whenEmptyAssumeMs): string {
+    $u = strtolower(trim(html_entity_decode(strip_tags($rawUnits), ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+    $u = preg_replace('/\s+/', '', $u);
+
+    if ($u === '') {
+        return $whenEmptyAssumeMs ? 'ms_to_mph' : 'none';
+    }
+
+    if (strpos($u, 'mph') !== false || strpos($u, 'mi/h') !== false || strpos($u, 'mi.h') !== false || strpos($u, 'mile') !== false) {
+        return 'none';
+    }
+
+    if (strpos($u, 'm.s') !== false || strpos($u, 'm/s') !== false || preg_match('/^m\.?s-?\d*$/', $u)) {
+        return 'ms_to_mph';
+    }
+
+    return 'none';
+}
+
 function getParameterConfig($dataType, $rawUnits = '') {
+    $dataType = trim((string) $dataType);
+
+    // Any soil depth from the API: values are Kelvin → °F (same as 2 in.)
+    if (preg_match('/^Soil Temperature\s*\(\s*(\d+)\s*in\.?\s*\)\s*$/i', $dataType, $soilMatch)) {
+        $depth = $soilMatch[1];
+
+        return [
+            'label' => 'Soil Temp ' . $depth . 'in',
+            'conversion' => 'kelvin_to_fahrenheit',
+            'precision' => 1,
+            'units' => 'F',
+            'hourly_agg' => 'avg'
+        ];
+    }
+
+    // 30 ft anemometer: network provides m/s → mph, one decimal like standard wind speed
+    if ((preg_match('/^\s*Wind\s+Speed\s*\(\s*30\s*(?:ft|feet)\.?\s*\)\s*$/i', $dataType)
+        || preg_match('/^\s*Wind\s+Speed\s*\(\s*30ft\s*\)\s*$/i', $dataType))
+        && !preg_match('/Gust/i', $dataType)) {
+        return [
+            'label' => 'Wind Spd 30ft',
+            'conversion' => resolveWindSpeedConversion((string) $rawUnits, true),
+            'precision' => 1,
+            'units' => 'mph',
+            'hourly_agg' => 'avg'
+        ];
+    }
+
+    // 30 ft gust: some feeds already expose mph (avoid double conversion); convert only if units say m/s
+    if (preg_match('/^\s*Wind\s+Gust\s+Speed\s*\(\s*30\s*(?:ft|feet)\.?\s*\)\s*$/i', $dataType)
+        || preg_match('/^\s*Wind\s+Gust\s+Speed\s*\(\s*30ft\s*\)\s*$/i', $dataType)) {
+        return [
+            'label' => 'Gust 30ft',
+            'conversion' => resolveWindSpeedConversion((string) $rawUnits, false),
+            'precision' => 1,
+            'units' => 'mph',
+            'hourly_agg' => 'max'
+        ];
+    }
+
     static $configMap = [
         'Air Temperature' => ['label' => 'Air Temp', 'conversion' => 'kelvin_to_fahrenheit', 'precision' => 1, 'units' => 'F', 'hourly_agg' => 'avg'],
         'Barometric Pressure' => ['label' => 'Pressure', 'conversion' => 'none', 'precision' => 1, 'units' => 'mb', 'hourly_agg' => 'avg'],
@@ -138,7 +203,6 @@ function getParameterConfig($dataType, $rawUnits = '') {
         'Gage Precipitation (5)' => ['label' => 'Precip', 'conversion' => 'mm_to_inches', 'precision' => 2, 'units' => 'in', 'hourly_agg' => 'sum'],
         'Heat Index' => ['label' => 'Heat Index', 'conversion' => 'kelvin_to_fahrenheit', 'precision' => 1, 'units' => 'F', 'hourly_agg' => 'max'],
         'Relative humidity' => ['label' => 'RH', 'conversion' => 'none', 'precision' => 0, 'units' => '%', 'hourly_agg' => 'avg'],
-        'Soil Temperature (2 in.)' => ['label' => 'Soil Temp 2in', 'conversion' => 'kelvin_to_fahrenheit', 'precision' => 1, 'units' => 'F', 'hourly_agg' => 'avg'],
         'Solar Radiation' => ['label' => 'Solar Rad', 'conversion' => 'none', 'precision' => 0, 'units' => 'W/m^2', 'hourly_agg' => 'avg'],
         'Water Temperature' => ['label' => 'Water Temp', 'conversion' => 'kelvin_to_fahrenheit', 'precision' => 1, 'units' => 'F', 'hourly_agg' => 'avg'],
         'Wind Chill' => ['label' => 'Wind Chill', 'conversion' => 'kelvin_to_fahrenheit', 'precision' => 1, 'units' => 'F', 'hourly_agg' => 'min'],
