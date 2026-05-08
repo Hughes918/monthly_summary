@@ -68,6 +68,7 @@
 
     #deos-header {
         background: #eee;
+        border-bottom: 1px solid #000;
     }
 
     #header {
@@ -237,23 +238,22 @@
         }
 
         #logo-title-link {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: center;
-            width: 100%;
-            font-size: clamp(20px, 4.2vw, 20px) !important;
+            display: -webkit-box !important;
+            -webkit-box-orient: vertical !important;
+            -webkit-line-clamp: 2 !important;
+            overflow: hidden !important;
+            font-size: clamp(1.2rem, 5.5vw + 0.45rem, 1.55rem) !important;
             font-weight: 700;
-            letter-spacing: 0;
-            line-height: 1.2 !important;
+            letter-spacing: -0.02em;
+            line-height: 1.18 !important;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
 
         #logo-title-link .mobile-title-line-1,
         #logo-title-link .mobile-title-line-2 {
-            display: block;
-            white-space: nowrap;
-            width: 100%;
-            line-height: 1.15;
+            display: inline !important;
+            white-space: normal !important;
         }
 
         #header-mobile-menu-toggle {
@@ -297,5 +297,88 @@
             line-height: 1.7em;
             text-align: left;
         }
+    }
+
+    /* Fluid masthead: title stays large, max 2 lines; hide logo when header strip is narrow */
+    #header {
+        container-type: inline-size;
+        container-name: deos-header;
+        height: auto !important;
+        min-height: 72px;
+        padding-top: 12px;
+        padding-bottom: 12px;
+        box-sizing: border-box;
+    }
+
+    @container deos-header (max-width: 680px) {
+        #header-logo {
+            display: none !important;
+        }
+    }
+
+    /* Fallback when container queries unsupported */
+    @supports not (container-type: inline-size) {
+        @media screen and (max-width: 680px) {
+            #header-logo {
+                display: none !important;
+            }
+        }
+    }
+
+    #header .grid-x {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    #header-title {
+        display: flex !important;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        flex: 1 1 auto;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    #header-logo {
+        flex-shrink: 0;
+    }
+
+    #header-logo-title {
+        flex: 1 1 auto;
+        min-width: 0;
+        margin-left: 0 !important;
+        position: static !important;
+        top: auto !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        display: block !important;
+        width: auto !important;
+        text-align: left !important;
+    }
+
+    #logo-title-link {
+        display: -webkit-box !important;
+        -webkit-box-orient: vertical !important;
+        -webkit-line-clamp: 2 !important;
+        overflow: hidden !important;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        font-family: 'OpenSans', sans-serif;
+        font-size: clamp(1.2rem, 4vw + 0.55rem, 2.05rem) !important;
+        font-weight: 700 !important;
+        line-height: 1.16 !important;
+        letter-spacing: -0.02em;
+        color: #000 !important;
+        text-decoration: none !important;
+    }
+
+    #logo-title-link .mobile-title-line-1,
+    #logo-title-link .mobile-title-line-2 {
+        display: inline !important;
+        white-space: normal !important;
     }
 </style>

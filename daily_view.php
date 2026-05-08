@@ -14,6 +14,10 @@ require_once __DIR__ . '/daily_view_helpers.php';
         gtag('config', 'G-BTMTESR1DZ');
     </script>
     <?php $dailyViewCssVersion = @filemtime(__DIR__ . '/assets/daily_view.css') ?: time(); ?>
+    <?php
+    $stylesCssVersion = @filemtime(__DIR__ . '/styles.css') ?: time();
+    ?>
+    <link rel='stylesheet' href='styles.css?v=<?php echo urlencode((string) $stylesCssVersion); ?>'>
     <link rel='stylesheet' href='assets/daily_view.css?v=<?php echo urlencode((string) $dailyViewCssVersion); ?>'>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'>
 </head>
@@ -93,14 +97,16 @@ $validFlags = ['1', '3', '7'];
 
 <?php renderSharedHeader(); ?>
 
+<div class='summary-banner-container daily-page-switcher'>
+    <nav class='page-context-nav' aria-label='Page navigation'>
+        <a href='index.php?station=<?php echo urlencode($realTimeStation); ?>&date=<?php echo urlencode($monthlyDateParam); ?>'>Monthly Summary</a>
+        <span class='is-active' aria-current='page'>Daily Summary <span class='new-badge'>NEW</span></span>
+        <a href='../../station/index.php?station=<?php echo urlencode($realTimeStation); ?>' target='_blank' rel='noopener noreferrer'>Real Time <i class='fa-solid fa-arrow-up-right-from-square' aria-hidden='true'></i></a>
+    </nav>
+</div>
 <div class='page-title-wrap'>
     <div class='title-header'>
-        <nav class='page-context-nav' aria-label='Page navigation'>
-            <a href='index.php?station=<?php echo urlencode($realTimeStation); ?>&date=<?php echo urlencode($monthlyDateParam); ?>'>Monthly Summary</a>
-            <span class='is-active' aria-current='page'>Daily Summary</span>
-            <a href='../../station/index.php?station=<?php echo urlencode($realTimeStation); ?>' target='_blank' rel='noopener noreferrer'>Real Time <i class='fa-solid fa-arrow-up-right-from-square' aria-hidden='true'></i></a>
-        </nav>
-        <h1><?php echo htmlspecialchars($stationDisplayName); ?></h1>
+        <h1 class='banner-title'><?php echo htmlspecialchars($stationDisplayName); ?></h1>
         <p class='page-subtitle'><?php echo htmlspecialchars($startDisplay . ' • ' . ($timeInterval === 'hourly' ? 'Hourly' : '5-Minute')); ?></p>
     </div>
     <button type='button' id='infoButton' class='info-button' title='Parameter Information' aria-label='Open parameter information' aria-expanded='false' aria-controls='infoModal'><i>i</i></button>

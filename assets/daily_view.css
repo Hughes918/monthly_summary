@@ -18,31 +18,40 @@ body.quick-facelift {
     background: var(--page-bg);
 }
 
-.quick-facelift h1 {
-    max-width: 1280px;
-    margin: 0 auto 18px;
-    padding: 8px 4px 0;
-    text-align: left;
-    font-size: clamp(1.7rem, 2vw + 1rem, 2.5rem);
-    line-height: 1.12;
-    letter-spacing: -0.03em;
-    color: var(--accent-strong);
-}
 
 .quick-facelift .page-title-wrap {
     max-width: 1280px;
-    margin: 0 auto 18px;
-    padding: 8px 4px 0;
+    margin: 0 auto 14px;
+    padding: 0 clamp(8px, 2vw, 16px) 0;
+    min-width: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: clamp(12px, 3vw, 20px);
 }
 
-.quick-facelift .page-title-wrap h1 {
-    margin: 0;
-    max-width: none;
-    padding: 0;
+/* Nav-only banner on daily matches index width/rhythm without duplicating outer margin below pills */
+.quick-facelift .summary-banner-container.daily-page-switcher {
+    margin-bottom: 0;
+}
+
+.quick-facelift .title-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Tighter band around the subtitle (h1 uses .banner-title globally with 18px bottom) */
+.quick-facelift .title-header .banner-title {
+    margin-bottom: 12px;
 }
 
 .quick-facelift .page-subtitle {
-    margin: 8px 0 0;
+    margin: 4px 0 0;
     font-size: 1.05rem;
     font-weight: 600;
     color: var(--text-muted);
@@ -779,75 +788,6 @@ body.quick-facelift {
     }
 }
 
-/* Info Modal Styles */
-.quick-facelift .page-title-wrap {
-    max-width: 1280px;
-    margin: 0 auto 18px;
-    padding: 8px 4px 0;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 20px;
-}
-
-.quick-facelift .title-header {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0;
-    flex: 1;
-}
-
-.quick-facelift .page-context-nav {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 0 0 10px;
-    font-size: 0.92rem;
-    font-weight: 600;
-}
-
-.quick-facelift .page-context-nav a,
-.quick-facelift .page-context-nav .is-active {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid #c7d8cc;
-    text-decoration: none;
-    line-height: 1.2;
-}
-
-.quick-facelift .page-context-nav a {
-    color: #2f6b50;
-    background: #fff;
-    gap: 6px;
-}
-
-.quick-facelift .page-context-nav a:hover {
-    background: #eef5f0;
-}
-
-.quick-facelift .page-context-nav .is-active {
-    color: #fff;
-    background: #2f6b50;
-    border-color: #2f6b50;
-}
-
-.quick-facelift .page-context-nav .new-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 1px 6px;
-    border-radius: 999px;
-    background: #f2c94c;
-    color: #573600;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    line-height: 1.1;
-}
 
 .quick-facelift .info-button {
     flex-shrink: 0;
@@ -1083,12 +1023,6 @@ body.quick-facelift {
     .quick-facelift .title-header {
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .quick-facelift .page-context-nav {
-        justify-content: flex-start;
-        font-size: 0.86rem;
-        gap: 6px;
     }
 
     .quick-facelift .modal-content {
