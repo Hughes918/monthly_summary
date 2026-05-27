@@ -68,7 +68,8 @@
 
     #deos-header {
         background: #eee;
-        border-bottom: 1px solid #000;
+        border-bottom: 1px solid #8a8a8a;
+        font-size: 17px;
     }
 
     #header {

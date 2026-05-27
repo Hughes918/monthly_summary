@@ -48,6 +48,8 @@ body.quick-facelift {
 /* Tighter band around the subtitle (h1 uses .banner-title globally with 18px bottom) */
 .quick-facelift .title-header .banner-title {
     margin-bottom: 12px;
+    padding-bottom: 4px;
+    font-size: clamp(1.5rem, 4.5vw + 0.85rem, 2.65rem);
 }
 
 .quick-facelift .page-subtitle {

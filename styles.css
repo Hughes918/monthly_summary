@@ -541,7 +541,7 @@ table.dataTable thead {
 /* Add a bit of padding between the top row and the banner title */
 .banner-title {
     margin: 0 0 18px;
-    padding: 0;
+    padding: 0 0 4px;
     max-width: none;
     text-align: left;
     font-size: clamp(1.5rem, 4.5vw + 0.85rem, 2.65rem);

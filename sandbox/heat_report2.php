@@ -458,7 +458,7 @@ function heat_report2_heat_risk_overview_bullet(array $siteResults, array $heatR
     }
 
     if ($cityPeaks === []) {
-        return 'Heat risk data is not available yet for the Delaware sample cities.';
+        return 'HeatRisk data is not available yet for the Delaware sample cities.';
     }
 
     $peakLabel = $heatRiskLevels[(string) $statePeak] ?? ('level ' . $statePeak);
@@ -467,7 +467,7 @@ function heat_report2_heat_risk_overview_bullet(array $siteResults, array $heatR
         $cityParts[] = $city . ' peaks at ' . ($heatRiskLevels[(string) $lvl] ?? ('level ' . $lvl));
     }
 
-    return 'Heat risk reaches ' . $peakLabel . ' (' . $statePeak . ') statewide; '
+    return 'HeatRisk reaches ' . $peakLabel . ' (' . $statePeak . ') statewide; '
         . implode(', ', $cityParts) . '.';
 }
 
@@ -506,7 +506,7 @@ function heat_report2_build_result(string $identifyUrl, array $heatRiskLevels, b
 {
     [$err, $response] = heat_report2_http_get($identifyUrl, $isLocal);
     if ($err !== '') {
-        return ['Heat risk service: ' . $err, []];
+        return ['HeatRisk service: ' . $err, []];
     }
 
     $payload = json_decode($response, true);
@@ -593,7 +593,7 @@ function heat_report2_build_report_overview(array $siteResults, array $heatRiskL
             'issued' => $issued,
             'period' => 'Unavailable (no valid forecast dates yet).',
             'bullets' => [
-                'Heat risk scores are not available yet.',
+                'HeatRisk scores are not available yet.',
                 'Forecast high temperatures are not available yet.',
                 'Precipitation chances are not available yet.',
             ],
@@ -752,8 +752,8 @@ $cpcNextWeek = heat_report2_cpc_next_week_forecast($isLocal);
                         <th scope="col" class="forecast-day-col">Forecast Day</th>
                         <th scope="col">Daily max °F</th>
                         <th scope="col">Max heat index °F</th>
-                        <th scope="col">Daily min °F</th>
-                        <th scope="col">Heat risk</th>
+                        <th scope="col">Overnight min °F</th>
+                        <th scope="col">HeatRisk</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -815,7 +815,7 @@ $cpcNextWeek = heat_report2_cpc_next_week_forecast($isLocal);
                 class="heat-risk-cat-img"
                 src="heat_risk_cat.png?v=<?php echo $heatRiskCatVer; ?>"
                 <?php if ($heatRiskCatW !== null && $heatRiskCatH !== null): ?>width="<?php echo $heatRiskCatW; ?>" height="<?php echo $heatRiskCatH; ?>" <?php endif; ?>
-                alt="NWS heat risk category reference: levels 0 (little to none) through 4 (extreme) with color scale."
+                alt="NWS HeatRisk category reference: levels 0 (little to none) through 4 (extreme) with color scale."
                 loading="lazy"
                 decoding="async"
             >
@@ -825,10 +825,10 @@ $cpcNextWeek = heat_report2_cpc_next_week_forecast($isLocal);
     <footer class="page-notes">
         <h2>About this page</h2>
         <p>
-            Seven-day heat risk from the NOAA experimental ImageServer identify service
+            Seven-day HeatRisk from the NOAA experimental ImageServer identify service
             (<code>Values[i]</code> paired with <code>catalogItems.features[i]</code>). Daily high and low from NWS
             <code>/forecast</code> day/night periods; max heat index from daytime <code>forecastHourly</code> hours.
-            Rows are sorted by heat-risk valid date in Eastern Time.
+            Rows are sorted by HeatRisk valid date in Eastern Time.
         </p>
 
         <h3>Max heat index column</h3>
@@ -847,7 +847,7 @@ $cpcNextWeek = heat_report2_cpc_next_week_forecast($isLocal);
                     <strong><?php echo htmlspecialchars($block['label']); ?></strong>
                     (<?php echo htmlspecialchars(number_format($block['lat'], 4) . '°N, ' . number_format(abs($block['lon']), 4) . '°W'); ?>)
                     <br>
-                    Heat risk: <a href="<?php echo htmlspecialchars($block['url']); ?>"><?php echo htmlspecialchars($block['url']); ?></a>
+                    HeatRisk: <a href="<?php echo htmlspecialchars($block['url']); ?>"><?php echo htmlspecialchars($block['url']); ?></a>
                     <br>
                     Weather.gov points: <a href="<?php echo htmlspecialchars($block['points_url']); ?>"><?php echo htmlspecialchars($block['points_url']); ?></a>
                 </li>
