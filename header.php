@@ -28,11 +28,10 @@
         </div>
         <ul id="header-nav">
             <li class="header-nav-option"><a href="http://deos.udel.edu">Home</a></li>
-            <li class="header-nav-option"><a href="http://deos.udel.edu/almanac/">Almanac</a></li>
             <li class="header-nav-option"><a href="http://deos.udel.edu/about/">About</a></li>
             <li class="header-nav-option"><a href="http://deos.udel.edu/data/">Data</a></li>
-            <li class="header-nav-option"><a href="http://deos.udel.edu/applications/">Applications</a></li>
-            <li class="header-nav-option"><a href="http://climate.udel.edu/delawares-climate/" target="_blank">Climate</a></li>
+            <li class="header-nav-option"><a href="https://cema.udel.edu/applications/" target="_blank">Applications <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" style="vertical-align:-1px; margin-left:2px;"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3z"></path><path d="M5 5h7v2H7v10h10v-5h2v7H5V5z"></path></svg></a></li>
+            <li class="header-nav-option"><a href="http://climate.udel.edu/delawares-climate/" target="_blank">Climate <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" style="vertical-align:-1px; margin-left:2px;"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3z"></path><path d="M5 5h7v2H7v10h10v-5h2v7H5V5z"></path></svg></a></li>
         </ul>
     </div>
 </header>
@@ -174,13 +173,17 @@
             text-align: center;
             display: inline-block !important;
             font-family: 'OpenSans', sans-serif;
-            padding: 0 10px;  // adjust horizontal spacing
+            padding: 0 14px;  // adjust horizontal spacing
             border-top: none; // remove top borders in mobile
 
             a {
                 color: #818181;
                 text-decoration: none;
             }
+        }
+
+        .header-nav-option + .header-nav-option {
+            margin-left: 10px;
         }
     }
 
